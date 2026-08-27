@@ -9,9 +9,6 @@ final GoRouter appRouter = GoRouter(
       path: '/setup',
       builder: (context, state) => const OnboardingScreen(),
     ),
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const DashboardScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const DashboardScreen()),
   ],
 );

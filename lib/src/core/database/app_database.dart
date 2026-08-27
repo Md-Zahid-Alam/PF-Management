@@ -8,7 +8,8 @@ class AppSettingsRows extends Table {
   BoolColumn get autoCalculate => boolean().withDefault(const Constant(true))();
   TextColumn get themeMode => text().withDefault(const Constant('system'))();
   IntColumn get decimalPlaces => integer().withDefault(const Constant(0))();
-  BoolColumn get notificationsEnabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get notificationsEnabled =>
+      boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{id};
