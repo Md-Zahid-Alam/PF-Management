@@ -1,0 +1,2012 @@
+FINAL CODEX MASTER PROMPT — OFFLINE PF (PROVIDENT FUND) TRACKER & AUTOMATION APP
+
+ROLE
+You are my Senior Mobile App Developer, Software Architect, Database Architect, UI/UX Designer, QA Engineer, Financial Calculation Engineer, and Project Manager.
+
+Your job is to ACTUALLY BUILD the application inside the project environment, not merely explain how to build it.
+
+==================================================
+0. PRODUCT VISION
+==================================================
+
+I want a production-quality OFFLINE PF (Provident Fund) Tracker and Automation app for employees.
+
+The first target platform is ANDROID.
+
+The app will initially be completely offline:
+- No login
+- No cloud database
+- No server
+- No online synchronization
+- No internet requirement for core functionality
+
+However, the architecture MUST be designed so that the same business logic and data model can later support:
+- Windows/Desktop
+- iOS
+- Optional cloud synchronization
+- Online backup
+- Multiple-device synchronization
+
+Do NOT implement those future features now.
+
+The main purpose is to let an employee configure their organization's PF rules and salary schedule once, then automatically calculate and maintain monthly PF records.
+
+The app should function as a personal PF management and automation system, not merely as a calculator.
+
+==================================================
+1. DEVELOPMENT PRINCIPLES
+==================================================
+
+IMPORTANT RULES:
+
+1. Before writing code, analyze the requirements carefully.
+2. Start with PHASE 1 only and ask necessary questions before coding.
+3. Do not silently invent important business rules.
+4. If a rule is unknown, make it configurable or mark it as unknown.
+5. Do not hard-code company-specific PF rules into UI or calculation logic.
+6. Keep the PF business/calculation engine separate from UI.
+7. Use clean, modular, maintainable architecture.
+8. Use currently stable versions of frameworks/libraries.
+9. Follow official documentation and best practices.
+10. Do not add unnecessary dependencies.
+11. Do not leave TODOs/placeholders for core functionality unless explicitly approved.
+12. Do not use fake data in production functionality.
+13. Handle loading, empty, error, pending, and success states.
+14. Validate all user inputs.
+15. Protect financial data and prevent accidental deletion.
+16. Do not expose sensitive data through logs.
+17. Never hard-code secrets/API keys.
+18. Do not suppress errors just to make the build pass.
+19. When an error occurs, investigate the root cause and fix it.
+20. Preserve existing functionality when modifying the project.
+21. Before major architectural changes or deletion of working code, explain why.
+22. Financial calculations must be deterministic and thoroughly tested.
+23. Never assume missing financial information is zero unless the user explicitly enters zero.
+24. Clearly distinguish calculated values, actual company statement values, estimates, and unknown values.
+
+==================================================
+2. CURRENT ORGANIZATION PF POLICY
+==================================================
+
+These are the current rules for my organization.
+
+IMPORTANT:
+These values are DEFAULT company rules, NOT permanently hard-coded rules.
+
+The user must be able to change them from PF Rules/Organization Settings.
+
+CURRENT DEFAULTS:
+
+- PF becomes applicable after the employee completes probation and becomes permanent.
+- PF start date is the Permanent Employee/PF Start Date.
+- Basic Salary = 60% of Gross Salary.
+- Employee PF contribution = 10% of Basic Salary.
+- Employer/Company PF contribution = 10% of Basic Salary.
+- Employee and employer contributions are therefore equal under the current default policy.
+- PF maturity period = 2 years from Joining Date.
+- Exit before maturity: employee receives own contribution; employer contribution is not received.
+- Exit on maturity date: treated as MATURE.
+- Exit after maturity: employee receives own contribution + employer contribution.
+- PF investment/profit exists, but exact profit formula and entitlement rules are currently UNKNOWN.
+- Profit must therefore be optional/manual for now.
+- PF annual statement year = July 1 to June 30.
+- PF statement-year configuration must be changeable for other organizations.
+
+==================================================
+3. PF ELIGIBILITY / EMPLOYMENT DATES
+==================================================
+
+The app must distinguish these dates:
+
+1. Joining Date
+2. Probation Start Date
+3. Permanent Employee Date
+4. PF Start Date
+5. PF Maturity Date
+6. Exit/Leaving Date
+
+The user must be able to record:
+- Joining date
+- Permanent employee date
+- PF start date
+- Optional probation information
+
+PF contribution calculation starts from PF Start Date.
+
+Do NOT automatically assume PF starts on Joining Date.
+
+Current maturity rule:
+Maturity is calculated from Joining Date.
+
+The architecture must allow the maturity basis to be changed later to:
+- Joining Date
+- PF Start Date
+- Permanent Employee Date
+
+Default:
+Joining Date
+
+==================================================
+4. PF MATURITY RULE
+==================================================
+
+Default maturity period:
+2 years.
+
+Maturity Date:
+Joining Date + configured maturity period.
+
+IMPORTANT:
+An employee is considered mature when:
+
+Exit Date >= Maturity Date
+
+Therefore:
+- Exit Date < Maturity Date = Before maturity
+- Exit Date == Maturity Date = Mature
+- Exit Date > Maturity Date = Mature
+
+Exactly equal to the maturity date MUST be treated as mature.
+
+The maturity period must be configurable by organization.
+
+The Dashboard and PF Maturity screen should show:
+- Joining date
+- PF start date
+- Maturity period
+- Maturity date
+- Current maturity status
+- Remaining time until maturity
+- Days/months/years remaining where appropriate
+
+==================================================
+5. SALARY STRUCTURE
+==================================================
+
+Current default:
+Basic Salary = 60% of Gross Salary.
+
+Example:
+Gross = 30,000
+Basic = 30,000 × 60% = 18,000
+
+Basic salary percentage must be configurable.
+
+The calculation engine must never assume Basic = 60% permanently.
+
+==================================================
+6. EMPLOYEE PF CONTRIBUTION
+==================================================
+
+Current default:
+Employee PF = 10% of Basic Salary.
+
+Example:
+Basic = 18,000
+Employee PF = 18,000 × 10% = 1,800
+
+Employee contribution rate must be configurable.
+
+==================================================
+7. EMPLOYER PF CONTRIBUTION
+==================================================
+
+Current default:
+Employer PF = 10% of Basic Salary.
+
+Example:
+Basic = 18,000
+Employer PF = 1,800
+
+Employer contribution rate must be independently configurable.
+
+DO NOT hard-code employer contribution as equal to employee contribution.
+
+Future organizations may have:
+Employee = 10%
+Employer = 12%
+
+The engine must support that.
+
+==================================================
+8. MONTHLY PF CALCULATION
+==================================================
+
+For each applicable salary/work month:
+
+Basic Salary = Gross Salary × Basic Salary %
+
+Employee PF = Basic Salary × Employee PF %
+
+Employer PF = Basic Salary × Employer PF %
+
+Total Monthly PF = Employee PF + Employer PF
+
+Example:
+Gross = 30,000
+Basic % = 60%
+Employee PF = 10%
+Employer PF = 10%
+
+Basic = 18,000
+Employee PF = 1,800
+Employer PF = 1,800
+Total = 3,600
+
+PF contribution starts only from PF Start Date.
+
+Do not generate PF records before PF eligibility begins.
+
+==================================================
+9. SALARY MONTH VS SALARY PAYMENT DATE
+==================================================
+
+THIS IS VERY IMPORTANT.
+
+The salary/work month and salary payment/credit date are TWO DIFFERENT concepts.
+
+Example for my current organization:
+
+January 2026 salary:
+- Salary/work month = January 2026
+- Salary is credited around February 1–5, 2026
+- PF for January is calculated based on January salary
+- Salary credited date belongs to February
+
+Therefore each monthly PF record must distinguish:
+
+1. PF/Salary Month
+2. Salary Credited Date
+3. Gross Salary
+4. Basic Salary
+5. Employee PF
+6. Employer PF
+7. Total PF
+
+DO NOT move January PF into February just because January salary was paid in February.
+
+The PF record remains:
+PF Month = January 2026
+Salary Credited Date = February 3, 2026, for example
+
+==================================================
+10. COMPANY SALARY SCHEDULE
+==================================================
+
+The user must be able to configure the organization's salary payment schedule.
+
+Different organizations may pay salaries at different times.
+
+Examples:
+
+Company A:
+January salary → January 28–31
+
+Company B:
+January salary → February 1–5
+
+Company C:
+January salary → February 7
+
+DO NOT hard-code my company's 1–5 schedule.
+
+Create configurable salary schedule settings.
+
+Support concepts such as:
+- Salary period basis
+- Same-month or following-month payment
+- Payment window type
+- Payment start day
+- Payment end day
+- Expected payment date/schedule
+
+The actual salary credited date must remain editable for every monthly record.
+
+==================================================
+11. AUTOMATIC PF GENERATION DATE
+==================================================
+
+The LAST DATE of the configured salary payment schedule is the default PF Scheduled Generation Date.
+
+Example:
+
+Configured salary schedule:
+1st–5th of following month
+
+January salary:
+Payment window = February 1–5
+
+PF Scheduled Generation Date:
+February 5, 2026
+
+At/after this date, the app should automatically generate/calculate January PF if Auto Calculate PF is ON and required salary information is available.
+
+The app is offline, so automation is LOCAL.
+
+It means:
+- Check dates when the app starts/opens
+- Process missed due PF periods
+- Optionally use local device notifications if supported
+
+It does NOT mean server-side background processing.
+
+==================================================
+12. AUTO CALCULATE PF ON/OFF
+==================================================
+
+Create a persistent setting:
+
+"Auto Calculate PF"
+
+Options:
+- ON
+- OFF
+
+Default:
+ON
+
+This setting is a user preference and MUST remain persistent.
+
+If user selects ON:
+- It remains ON indefinitely until the user manually changes it to OFF.
+
+If user selects OFF:
+- It remains OFF indefinitely until the user manually changes it to ON.
+
+Do NOT automatically reset it after:
+- App restart
+- Phone restart
+- App update
+- Database migration
+- Backup/restore
+- Month change
+- Year change
+
+Store the setting in persistent local storage/database.
+
+The app must only change this setting when the user explicitly changes it.
+
+==================================================
+13. AUTO PF CALCULATION — ON
+==================================================
+
+When Auto Calculate PF = ON and a PF scheduled generation date has arrived:
+
+1. Check whether the PF record already exists.
+2. Check whether the employee was PF-eligible for that month.
+3. Identify the applicable salary.
+4. Calculate Basic Salary.
+5. Calculate Employee PF.
+6. Calculate Employer PF.
+7. Calculate Total PF.
+8. Create the monthly PF record.
+9. Mark it "Automatically Calculated".
+10. Add it to the calculated PF balance.
+11. Keep the record editable.
+12. Prevent duplicate records.
+
+If salary information is unavailable:
+- Do not calculate using zero.
+- Do not invent a salary.
+- Mark it "Pending Salary Information".
+- Show the user that action is required.
+
+==================================================
+14. AUTO PF CALCULATION — OFF
+==================================================
+
+When Auto Calculate PF = OFF:
+
+Do NOT automatically create/add PF records.
+
+When the PF scheduled generation date arrives, show:
+
+"January 2026 PF is ready for calculation."
+
+Provide:
+[Calculate PF]
+
+The user can manually calculate it.
+
+Mark the resulting record:
+"Manually Calculated"
+
+The configured PF rules remain active regardless of Auto Calculate PF ON/OFF.
+
+The switch controls automatic record generation, not whether PF rules exist.
+
+==================================================
+15. APP OPENING AFTER MISSED GENERATION DATE
+==================================================
+
+Because the app is offline, the user may not open it on the exact generation date.
+
+When the app opens:
+
+1. Check current local date.
+2. Find all applicable PF periods whose scheduled generation dates have passed.
+3. Process missing periods according to Auto Calculate PF setting.
+4. Never create duplicates.
+
+If Auto Calculate PF = ON:
+- Generate all eligible overdue records for which required data is available.
+
+If Auto Calculate PF = OFF:
+- Show them as pending and require manual calculation.
+
+Example:
+January PF scheduled generation date = February 5.
+User opens app on February 10.
+
+If ON:
+→ January PF is generated.
+
+Store:
+Scheduled generation date = February 5
+Actual generation date = February 10
+
+If OFF:
+→ Show January PF as ready/pending.
+
+==================================================
+16. DUPLICATE PROTECTION
+==================================================
+
+Each employment/organization + PF/salary month must have a unique PF record.
+
+Never create duplicates if:
+- App is opened repeatedly
+- Device restarts
+- User opens app after several missed days
+- User changes salary schedule
+- Auto Calculate is toggled
+- App is updated
+- Database migration occurs
+
+Use appropriate unique identifiers/constraints.
+
+==================================================
+17. MANUAL CALCULATION
+==================================================
+
+Provide a "Calculate Now" option.
+
+The user can manually calculate a PF period before or after the normal schedule if necessary.
+
+Mark it:
+"Manually Calculated"
+
+Do not create duplicate records if one already exists.
+
+==================================================
+18. MANUAL OVERRIDE / ACTUAL VALUES
+==================================================
+
+Even when Auto Calculate PF = ON, the user must be able to edit/override a monthly PF record.
+
+Allow editing:
+- Gross salary
+- Basic salary
+- Employee contribution
+- Employer contribution
+- Other adjustment
+- Salary credited date
+- Notes
+
+The app should preserve the original automatic calculation and indicate:
+"Manually Adjusted"
+
+Do not silently destroy the original calculated information.
+
+==================================================
+19. SALARY HISTORY
+==================================================
+
+Salary can increase over time.
+
+Create Salary History.
+
+Each salary record should support:
+- Effective date/month
+- Gross salary
+- Basic salary percentage
+- Calculated basic salary
+- Employee PF rate
+- Employer PF rate
+- Notes
+
+Do NOT overwrite old salary records.
+
+Example:
+January 2026:
+Gross = 30,000
+
+July 2026:
+Gross = 35,000
+
+January–June use 30,000.
+July onward use 35,000.
+
+The user can override an individual month's actual salary if it differs from expected salary.
+
+The salary history remains intact.
+
+==================================================
+20. PROFIT / INVESTMENT RETURN
+==================================================
+
+The company invests PF funds, but the exact profit calculation formula is currently UNKNOWN.
+
+Therefore:
+
+- Profit is OPTIONAL.
+- Do NOT invent a profit rate.
+- Do NOT automatically calculate profit.
+- Do NOT assume profit is based on employee contribution, employer contribution, total balance, average balance, opening balance, closing balance, or any other basis.
+- Do NOT assume profit entitlement before or after maturity.
+
+For the initial version, profit is entered manually when known.
+
+Profit record should support:
+- Profit amount
+- Profit period
+- Date credited
+- Optional profit rate
+- Calculation method (optional)
+- Source/reference (optional)
+- Notes
+
+If profit has not been entered:
+Display "Profit not entered" or "Unknown".
+
+Do NOT misleadingly display missing profit as ৳0.
+
+The architecture must allow automatic profit calculation in a future update.
+
+==================================================
+21. PROFIT IN EXIT ESTIMATE
+==================================================
+
+Profit entitlement/calculation before or after maturity is currently UNKNOWN.
+
+Therefore the Exit Estimator must not make unsupported claims.
+
+For now:
+- Include known/manual profit if applicable.
+- Clearly indicate when profit information is missing.
+- Show the result as an estimate.
+
+Example:
+"Profit: Not configured / Not entered"
+
+Do not guarantee profit.
+
+==================================================
+22. PF WITHDRAWAL / LOAN
+==================================================
+
+PF withdrawal, advance, loan, or partial withdrawal is NOT part of the current version.
+
+Do not implement it now.
+
+However, design the data architecture so it can be added later without major restructuring.
+
+Do not add unnecessary UI for it now.
+
+==================================================
+23. EXIT / WITHDRAWAL ESTIMATOR
+==================================================
+
+Create an Exit Estimate screen.
+
+User selects/enters:
+- Exit date
+
+If:
+Exit Date < Maturity Date
+
+Current company rule:
+- Employee contribution = received
+- Employer contribution = not received
+- Known/manual profit = shown separately
+- Unknown profit = clearly identified
+
+If:
+Exit Date >= Maturity Date
+
+Current company rule:
+- Employee contribution = received
+- Employer contribution = received
+- Known/manual profit = shown separately
+- Unknown profit = clearly identified
+
+Show:
+- Employee contribution
+- Employer contribution
+- Known profit
+- Unknown/unconfigured profit
+- Adjustments
+- Amount forfeited, if applicable
+- Estimated amount receivable
+
+Label it:
+"Estimated PF Amount"
+
+NOT:
+"Guaranteed PF Amount"
+
+Display disclaimer:
+"This is an estimate based on the PF rules and records entered into the app. Your company's official PF statement and applicable policies may differ."
+
+==================================================
+24. PF STATEMENT YEAR
+==================================================
+
+The company provides an annual PF statement.
+
+Current organization:
+July 1 → June 30
+
+Examples:
+PF Statement Year 2025–26:
+July 1, 2025 → June 30, 2026
+
+PF Statement Year 2026–27:
+July 1, 2026 → June 30, 2027
+
+The statement year is a separate concept from:
+- Salary/PF Month
+- Salary Credited Date
+
+DO NOT assign a PF record to a statement year based on salary payment date alone.
+
+Example:
+June 2026 salary
+credited July 3, 2026
+still belongs to PF Statement Year 2025–26 because the PF/work month is June 2026.
+
+Make statement-year configuration changeable.
+
+At minimum configure:
+- Statement year start month
+- Statement year start day
+
+Default:
+July 1
+
+==================================================
+25. ACTUAL COMPANY PF STATEMENT
+==================================================
+
+Because the company provides annual PF statements, implement an optional Actual PF Statement feature.
+
+The user can enter information from the official company PF statement.
+
+Fields:
+- Statement year
+- Statement date
+- Opening balance
+- Employee contribution
+- Employer contribution
+- Profit/return
+- Other adjustment
+- Closing balance
+- Notes
+
+All fields should be optional where appropriate.
+
+The official company statement should be treated as the authoritative actual record.
+
+The app's calculations are estimates/calculations based on entered information.
+
+==================================================
+26. CALCULATED VS ACTUAL
+==================================================
+
+Keep CALCULATED and ACTUAL values separate.
+
+CALCULATED:
+Values derived from salary and configured PF rules.
+
+ACTUAL:
+Values copied from company payroll/PF statement.
+
+Never silently replace one with the other.
+
+Provide comparison:
+
+Calculated closing balance:
+৳85,450
+
+Actual company statement:
+৳85,720
+
+Difference:
++৳270
+
+The user should be able to identify discrepancies.
+
+==================================================
+27. MONTHLY PF RECORD MODEL
+==================================================
+
+Each monthly PF record should support:
+
+- PF/Salary Month
+- Salary Credited Date
+- Gross Salary
+- Basic Salary
+- Basic Salary %
+- Employee PF Rate
+- Employee PF Contribution
+- Employer PF Rate
+- Employer PF Contribution
+- Total Contribution
+- Known Profit/Return
+- Other Adjustment
+- Opening Calculated Balance
+- Closing Calculated Balance
+- Scheduled PF Generation Date
+- Actual PF Generation Date
+- Calculation Source/Status
+- Original Automatic Calculation values where applicable
+- Manual Override values where applicable
+- Notes
+
+Statuses:
+- Scheduled
+- Pending Salary Information
+- Automatically Calculated
+- Manually Calculated
+- Manually Adjusted
+- Confirmed
+
+==================================================
+28. PF CALCULATION ENGINE
+==================================================
+
+Create a dedicated, unit-testable PF Calculation/Rules Engine.
+
+DO NOT put financial business logic directly inside UI screens/widgets.
+
+Functions should cover:
+- Basic salary calculation
+- Employee PF calculation
+- Employer PF calculation
+- Total monthly contribution
+- Salary effective-date selection
+- PF eligibility
+- Maturity date
+- Maturity status
+- Statement-year assignment
+- Scheduled PF generation date
+- Exit estimate
+- Balance calculation
+- Manual adjustments
+
+Example:
+
+gross = 30000
+basicRate = 60%
+employeePFRate = 10%
+employerPFRate = 10%
+
+basic = 18000
+employeePF = 1800
+employerPF = 1800
+total = 3600
+
+==================================================
+29. MONEY / ROUNDING
+==================================================
+
+Financial calculations must be handled safely.
+
+Do not blindly rely on floating-point arithmetic for money.
+
+Use an appropriate decimal/money representation.
+
+Define consistent:
+- Decimal precision
+- Rounding rules
+- Currency formatting
+
+Default currency:
+BDT (৳)
+
+Currency must be configurable.
+
+==================================================
+30. DATA STORAGE
+==================================================
+
+The app must be offline-first.
+
+Use a reliable local database suitable for:
+- Android
+- Future desktop
+- Future iOS
+- Future synchronization
+
+Keep database/repository layer independent from UI.
+
+The data layer should be designed so a future cloud repository can be added without rewriting the entire application.
+
+Major entities should include:
+
+- UserProfile
+- Organization
+- Employment
+- PFRules
+- SalarySchedule
+- SalaryHistory
+- MonthlyPFRecord
+- ProfitRecord
+- PFStatementYear
+- ActualPFStatement
+- AppSettings
+- BackupMetadata
+
+Design entities so future features can be added without major restructuring.
+
+==================================================
+31. USER PROFILE
+==================================================
+
+Create Profile section.
+
+Allow:
+- Employee name
+- Employee ID (optional)
+- Organization/company name
+- Joining date
+- Permanent employee date
+- PF start date
+- Current employment status
+- Currency
+
+Do not collect unnecessary personal information.
+
+==================================================
+32. ORGANIZATION / PF RULE SETTINGS
+==================================================
+
+Create "Organization & PF Rules" section.
+
+Configurable fields:
+
+- Organization name
+- Basic salary %
+- Employee PF %
+- Employer PF %
+- PF maturity period
+- Maturity basis
+- Employer contribution forfeiture before maturity
+- Employer contribution entitlement after maturity
+- Profit method (optional/unknown/manual)
+- Currency
+- PF statement year start month/day
+- Salary schedule
+
+Default current-company values:
+Basic = 60%
+Employee PF = 10%
+Employer PF = 10%
+Maturity = 2 years
+Maturity basis = Joining Date
+Before maturity employer contribution = not received
+After maturity employer contribution = received
+Statement year = July 1–June 30
+
+Do not assume profit rules.
+
+==================================================
+33. DASHBOARD
+==================================================
+
+Create a modern dashboard showing:
+
+- Current calculated PF balance
+- Employee contribution total
+- Employer contribution total
+- Known profit
+- Total contribution
+- PF months
+- PF start date
+- Joining date
+- Maturity date
+- Maturity status/countdown
+- Estimated amount if leaving today
+- Estimated amount after maturity
+- Latest PF month
+- Auto Calculate PF status
+- Pending PF actions
+- Actual vs calculated discrepancy summary if available
+
+Example:
+
+CURRENT PF BALANCE
+৳XX,XXX
+
+MY CONTRIBUTION
+৳XX,XXX
+
+COMPANY CONTRIBUTION
+৳XX,XXX
+
+KNOWN PROFIT
+৳X,XXX
+
+MATURITY
+01 January 2028
+Matures in X months
+
+AUTO CALCULATE PF
+ON
+
+==================================================
+34. PF CALCULATOR
+==================================================
+
+Create dedicated calculator.
+
+Inputs:
+- Gross salary
+- Basic salary %
+- Employee PF %
+- Employer PF %
+
+Outputs:
+- Basic salary
+- Employee PF
+- Employer PF
+- Total monthly PF
+- Annual employee contribution
+- Annual employer contribution
+- Annual total contribution
+
+==================================================
+35. MONTHLY PF RECORDS
+==================================================
+
+Create Monthly PF Records screen.
+
+Features:
+- List all PF months
+- Search/filter
+- Filter by year
+- Filter by status
+- View details
+- Add manually
+- Edit
+- Delete with confirmation
+- Calculate Now
+- Recalculate
+- Show automatic/manual status
+- Show salary credited date
+- Show calculated vs actual where applicable
+
+==================================================
+36. SALARY HISTORY
+==================================================
+
+Create Salary History screen.
+
+Features:
+- Add salary
+- Edit salary
+- Delete with confirmation
+- Effective date/month
+- Gross salary
+- Basic percentage
+- PF rates
+- Notes
+- Historical records must remain intact
+
+==================================================
+37. PROFIT HISTORY
+==================================================
+
+Create Profit History.
+
+Features:
+- Add profit
+- Edit
+- Delete
+- Period
+- Amount
+- Optional rate
+- Date credited
+- Notes
+- Show total known profit
+- Show yearly profit
+
+Do not auto-calculate profit.
+
+==================================================
+38. PF MATURITY SCREEN
+==================================================
+
+Show:
+- Joining date
+- PF start date
+- Maturity basis
+- Maturity period
+- Maturity date
+- Current status
+- Remaining time
+- Employer contribution entitlement status
+
+==================================================
+39. EXIT ESTIMATE SCREEN
+==================================================
+
+User selects exit date.
+
+Show:
+- Maturity status
+- Employee contribution
+- Employer contribution
+- Known profit
+- Unknown profit warning
+- Adjustments
+- Forfeited employer amount if applicable
+- Estimated receivable amount
+
+==================================================
+40. REPORTS
+==================================================
+
+Reports should include:
+
+- Monthly PF report
+- Yearly PF report
+- PF Statement Year report
+- Salary history
+- Employee contribution
+- Employer contribution
+- Known profit
+- Total PF growth
+- Actual vs calculated comparison
+- Exit estimate
+
+Allow filters:
+- Date range
+- PF year
+- Statement year
+- Contribution type
+- Status
+
+==================================================
+41. BACKUP & RESTORE
+==================================================
+
+Because there is no cloud backup initially, backup/restore is IMPORTANT.
+
+Implement:
+
+- Export all data to a backup file
+- Import/restore backup
+- Validate imported backup
+- Handle invalid/corrupted backup safely
+- Confirm before destructive restore
+- Version the backup format
+- Support future migration of older backups
+
+Backup must include:
+- User profile
+- Organization
+- PF rules
+- Salary schedule
+- Salary history
+- Monthly PF records
+- Profit records
+- PF statement years
+- Actual PF statements
+- Settings
+
+Do not invent sandbox/download paths; use the platform's normal file picker/export mechanism.
+
+==================================================
+42. DATA SAFETY
+==================================================
+
+Because PF information is financial/personal:
+
+- Validate all data
+- Protect database integrity
+- Do not expose sensitive data in logs
+- Confirm destructive actions
+- Provide "Delete All Data" with strong confirmation
+- Handle database errors safely
+- Validate imported backup files
+- Avoid unnecessary personal information
+
+Future optional feature:
+PIN/biometric app lock
+
+Do not implement unless requested, but keep architecture extensible.
+
+==================================================
+43. UI/UX
+==================================================
+
+Design a modern professional personal-finance style UI.
+
+Requirements:
+- Clean
+- Minimal
+- Professional
+- Easy to understand
+- Large readable financial numbers
+- Clear labels
+- Consistent spacing
+- Consistent typography
+- Good icons
+- Responsive layouts
+- Accessible controls
+- Light mode
+- Dark mode
+- System theme
+- Simple navigation
+
+Avoid unnecessary animations.
+
+Clearly distinguish:
+- Employee contribution
+- Employer contribution
+- Profit
+- Total balance
+- Forfeited amount
+- Calculated values
+- Actual values
+- Unknown values
+
+Use charts only where they genuinely improve understanding.
+
+==================================================
+44. REQUIRED SCREENS
+==================================================
+
+At minimum:
+
+1. Splash/App startup
+2. Dashboard
+3. PF Calculator
+4. Monthly PF Records
+5. Add/Edit Monthly PF
+6. Salary History
+7. Add/Edit Salary
+8. Profit History
+9. Add/Edit Profit
+10. PF Maturity
+11. Exit Estimate
+12. Reports
+13. Profile
+14. Organization & PF Rules
+15. Salary Schedule Settings
+16. Backup & Restore
+17. Settings
+18. About
+
+Navigation must be simple and intuitive.
+
+==================================================
+45. NOTIFICATIONS
+==================================================
+
+Because the app is offline, use local notifications only if supported by the chosen platform.
+
+Optional notifications:
+- PF calculation due
+- PF automatically calculated
+- Missing salary information
+- Maturity approaching
+
+Notifications must be configurable.
+
+Do not require internet or a server.
+
+==================================================
+46. EDGE CASES
+==================================================
+
+Correctly handle:
+
+- Employee still in probation
+- PF start date in future
+- PF starts mid-year
+- Salary increases
+- Multiple salary changes
+- Salary credited date differs from expected date
+- Salary payment window crosses month boundary
+- Missing salary information
+- Missing PF record
+- No profit information
+- Profit explicitly equal to zero
+- Exit before maturity
+- Exit exactly on maturity
+- Exit after maturity
+- Leap years
+- Different month lengths
+- Partial months
+- Manual adjustments
+- Duplicate records
+- Invalid values
+- Deleted records
+- Backup restore
+- Older backup versions
+- App update
+- Device restart
+- Missed automatic calculation dates
+- Auto Calculate setting changes
+
+==================================================
+47. MISSING DATA RULE
+==================================================
+
+Never silently treat missing data as zero.
+
+Examples:
+
+Profit missing:
+"Profit: Not entered"
+
+Profit explicitly zero:
+"Profit: ৳0"
+
+Missing monthly salary:
+"Salary information required"
+
+Missing PF record:
+"PF record missing"
+
+Incomplete calculation:
+"Estimate incomplete"
+
+==================================================
+48. AUTOMATION STATUS MODEL
+==================================================
+
+Use a clear status lifecycle:
+
+Scheduled
+→ Pending Salary Information (if needed)
+→ Automatically Calculated OR Manually Calculated
+→ Manually Adjusted (if edited)
+→ Confirmed
+
+Do not force the user through unnecessary steps.
+
+Keep status visible.
+
+==================================================
+49. FUTURE FEATURES — DESIGN FOR THEM, DO NOT IMPLEMENT
+==================================================
+
+Future possibilities:
+
+- Cloud synchronization
+- User accounts
+- Google login
+- Online backup
+- Multiple devices
+- Windows desktop
+- iOS
+- Multiple employers
+- Multiple employment records
+- Automatic profit calculation
+- PDF reports
+- Excel/CSV export
+- Biometric/PIN app lock
+- PF withdrawal/loan
+- Notifications/reminders
+- Automatic salary increase reminders
+- Company PF policy templates
+
+Do NOT implement these now unless explicitly requested.
+
+==================================================
+50. MULTIPLE ORGANIZATION / EMPLOYMENT
+==================================================
+
+Current use case:
+One employee + one current organization.
+
+Do not build a complex multi-company UI now.
+
+However:
+Do not hard-code a single company into the database architecture.
+
+Store Organization and Employment separately enough that future multiple-employment support is possible.
+
+==================================================
+51. PF STATEMENT COMPARISON
+==================================================
+
+The annual statement comparison is an important feature.
+
+For each PF statement year, show:
+
+CALCULATED:
+- Opening balance
+- Employee contribution
+- Employer contribution
+- Known profit
+- Adjustments
+- Closing balance
+
+ACTUAL COMPANY STATEMENT:
+- Opening balance
+- Employee contribution
+- Employer contribution
+- Profit
+- Adjustments
+- Closing balance
+
+Then show differences.
+
+Example:
+
+Calculated closing balance: ৳85,450
+Actual closing balance: ৳85,720
+Difference: ৳270
+
+Clearly label actual company statement as authoritative.
+
+==================================================
+52. AUTOMATION EXAMPLE
+==================================================
+
+Example configuration:
+
+Joining Date:
+01 January 2026
+
+PF Start Date:
+01 April 2026
+
+Basic Salary:
+60%
+
+Employee PF:
+10%
+
+Employer PF:
+10%
+
+Maturity:
+2 years from Joining Date
+
+Salary schedule:
+1st–5th of following month
+
+Auto Calculate PF:
+ON
+
+Salary:
+
+April 2026:
+Gross = ৳30,000
+
+May 2026:
+Gross = ৳30,000
+
+June 2026:
+Gross = ৳30,000
+
+July 2026:
+Gross = ৳35,000
+
+The app should understand:
+
+April:
+Basic = ৳18,000
+Employee PF = ৳1,800
+Employer PF = ৳1,800
+Total = ৳3,600
+
+May:
+same
+
+June:
+same
+
+July:
+Basic = ৳21,000
+Employee PF = ৳2,100
+Employer PF = ৳2,100
+Total = ৳4,200
+
+For April:
+Salary payment window = May 1–5
+Scheduled PF generation date = May 5
+
+For July:
+Salary payment window = August 1–5
+Scheduled PF generation date = August 5
+
+If the user opens the app after a missed generation date:
+Process all eligible overdue periods without duplicates.
+
+==================================================
+53. ARCHITECTURE
+==================================================
+
+Choose a technology stack appropriate for:
+- Android first
+- Future Windows
+- Future iOS
+- Shared business logic
+- Local database
+- Future cloud synchronization
+
+Prefer a cross-platform architecture if it does not compromise the quality of the Android app.
+
+Keep these layers logically separated:
+
+Presentation/UI
+↓
+Application/Use Cases
+↓
+PF Rules & Calculation Engine
+↓
+Repositories
+↓
+Local Database
+
+The future cloud layer should be addable behind repository interfaces.
+
+==================================================
+54. TESTING REQUIREMENTS
+==================================================
+
+Write automated tests for critical calculations.
+
+At minimum test:
+
+1. Basic salary calculation
+2. Employee PF calculation
+3. Employer PF calculation
+4. Total contribution
+5. PF eligibility
+6. Salary history selection
+7. Salary changes
+8. Maturity date
+9. Exact maturity date
+10. Before maturity
+11. After maturity
+12. Statement year assignment
+13. Salary schedule calculation
+14. PF scheduled generation date
+15. Missed generation
+16. Duplicate protection
+17. Auto Calculate ON
+18. Auto Calculate OFF
+19. Persistent Auto Calculate setting
+20. Manual override
+21. Missing salary
+22. Missing profit
+23. Explicit zero profit
+24. Leap years
+25. Month boundaries
+26. Backup/restore
+27. Calculated vs actual comparison
+
+Test realistic examples using BDT.
+
+==================================================
+55. DEVELOPMENT PHASES
+==================================================
+
+PHASE 1 — REQUIREMENTS
+
+Before coding:
+- Analyze this entire specification.
+- Identify contradictions.
+- Identify truly necessary missing requirements.
+- Ask only necessary questions.
+- Produce final feature list.
+- Produce user flows.
+- Produce screen list.
+- Produce database/data model.
+- Produce calculation rules.
+- Produce automation workflow.
+- Produce architecture proposal.
+
+DO NOT start implementation until Phase 1 is approved.
+
+If everything required is already clear, explicitly say so and ask for approval to proceed rather than asking unnecessary questions.
+
+--------------------------------------------------
+PHASE 2 — PROJECT SETUP
+
+After approval:
+- Create project
+- Configure architecture
+- Configure theme/design system
+- Configure navigation
+- Configure local database
+- Configure testing
+- Configure calculation engine
+
+--------------------------------------------------
+PHASE 3 — PF RULES & CALCULATION ENGINE
+
+Implement:
+- PF eligibility
+- Salary calculation
+- Employee contribution
+- Employer contribution
+- Total contribution
+- Maturity
+- Statement year
+- Salary schedule
+- Automatic generation
+- Exit estimate
+
+Write tests before/alongside implementation.
+
+--------------------------------------------------
+PHASE 4 — DATABASE
+
+Implement:
+- Models
+- Repositories
+- CRUD
+- Constraints
+- Migrations/versioning
+- Backup/restore
+
+--------------------------------------------------
+PHASE 5 — AUTOMATION
+
+Implement:
+- Persistent Auto Calculate setting
+- Schedule calculation
+- Due-period detection
+- Missed-period processing
+- Duplicate protection
+- Pending salary handling
+- Local notifications if supported
+
+--------------------------------------------------
+PHASE 6 — UI
+
+Implement screens one by one.
+
+After each major feature:
+- Build
+- Run tests
+- Check navigation
+- Fix errors
+- Verify data persistence
+
+--------------------------------------------------
+PHASE 7 — REPORTS & STATEMENTS
+
+Implement:
+- PF reports
+- Statement years
+- Actual statements
+- Calculated vs actual comparison
+- Exit estimates
+
+--------------------------------------------------
+PHASE 8 — FINAL QA
+
+Test:
+- Unit
+- Integration
+- UI where appropriate
+- Database
+- Backup/restore
+- Automation
+- Edge cases
+- Financial calculations
+- UI responsiveness
+- Performance
+- Error handling
+
+--------------------------------------------------
+PHASE 9 — RELEASE
+
+Before declaring complete:
+- Remove debug code
+- Remove unnecessary dependencies
+- Fix build errors
+- Fix important warnings
+- Verify calculations
+- Verify database integrity
+- Verify backup/restore
+- Verify automation
+- Verify persistent settings
+- Create production-ready Android build
+- Provide exact build/run instructions
+- Provide release instructions
+
+==================================================
+56. WHEN I REQUEST CHANGES
+==================================================
+
+When I ask for a change:
+
+1. Understand the request.
+2. Identify affected modules/files.
+3. Briefly explain implementation approach.
+4. Make the smallest safe change.
+5. Test affected functionality.
+6. Verify existing functionality remains intact.
+7. Report:
+   - What changed
+   - Files changed
+   - Tests performed
+   - Any remaining issues
+
+Do not unnecessarily rewrite the entire project.
+
+==================================================
+57. COMMUNICATION STYLE
+==================================================
+
+Be concise but technically clear.
+
+When you need information:
+- Ask numbered questions.
+
+When you complete a task:
+- State what was completed
+- State files/modules changed
+- State tests performed
+- State remaining issues
+
+Do not give long theoretical explanations unless necessary.
+
+====================================================================
+58. HISTORICAL PF RECONSTRUCTION FROM EMPLOYMENT & SALARY HISTORY
+====================================================================
+
+IMPORTANT:
+The user may start using the app long after joining the company.
+
+The app MUST NOT require the user to manually enter an opening PF balance just because the app was installed/started later.
+
+Instead, the app must reconstruct historical PF contributions from:
+- Employment information
+- PF eligibility/start date
+- Effective-dated PF rules
+- Salary history
+- Organization salary schedule
+
+The app's App Start/Tracking Date must NOT determine when PF calculation begins.
+
+PF calculation history should begin from the actual PF eligibility date.
+
+REQUIRED HISTORICAL INPUTS:
+1. Joining Date
+2. Joining Gross Salary
+3. Probation Period
+4. Permanent Employee Date
+5. PF Start Date
+6. Salary History / Salary Changes
+7. PF Rules
+8. Organization Salary Schedule
+
+The user may start using the app at any point during employment.
+
+JOINING SALARY:
+The Joining Gross Salary is the first salary-history record.
+Example:
+Joining Date: 01 January 2024
+Joining Gross Salary: ৳30,000
+Salary History automatically starts with:
+Effective From: 01 January 2024
+Gross Salary: ৳30,000
+
+PROBATION:
+Allow a configurable probation period.
+Example:
+Joining Date: 01 January 2024
+Probation: 6 months
+Expected Permanent Date: 01 July 2024
+
+Because permanent status may depend on performance, the user must be able to enter/override the actual Permanent Employee Date.
+
+PF START DATE:
+PF Start Date is a separate field.
+Default suggestion may be Permanent Employee Date, but the user must be able to edit it.
+Do NOT assume PF always starts on Joining Date.
+
+HISTORICAL SALARY CHANGES:
+Do NOT require every month's salary manually.
+Use effective-dated salary history.
+
+Example:
+01 January 2024 → ৳30,000
+01 January 2025 → ৳35,000
+01 January 2026 → ৳40,000
+
+Apply:
+Jan-Dec 2024 → ৳30,000
+Jan-Dec 2025 → ৳35,000
+Jan 2026 onward → ৳40,000
+
+If salary changes mid-month, support a configurable policy. Do not silently invent a rule.
+
+HISTORICAL PF RECONSTRUCTION:
+When initial setup is completed, calculate all historical PF periods from PF Start Date through the latest eligible PF month using:
+- Applicable PF rule for that period
+- Applicable salary for that period
+- Salary schedule
+- Employee PF rate
+- Employer PF rate
+- Basic salary percentage
+
+Generate monthly historical records with:
+- PF/Salary Month
+- Gross Salary
+- Basic Salary
+- Employee PF
+- Employer PF
+- Total PF
+- Applicable PF rule reference
+- Historical/calculated status
+
+Mark them "Historical / Automatically Calculated".
+
+APP START DATE VS PF HISTORY:
+Example:
+Joining Date: January 2024
+PF Start Date: July 2024
+User starts app: August 2026
+
+Calculate historical PF from July 2024 through the latest eligible month, even though the app was not installed during those months.
+
+CURRENT PF BALANCE:
+Current Calculated PF Balance =
+Historical Employee Contributions
++ Historical Employer Contributions
++ Known Profit
++ Adjustments
++ Future/current contributions as they are generated.
+
+Do not add an artificial Opening Balance if historical monthly records have been generated.
+
+HISTORICAL PROFIT:
+Profit is optional because the exact company profit formula is unknown.
+Do not estimate, invent, or treat missing profit as zero.
+Display "Historical profit not entered".
+Allow later entry from company PF statements.
+
+COMPANY PF STATEMENT RECONCILIATION:
+Allow comparison between calculated historical balance and official company PF statement.
+Example:
+App calculated: ৳125,000
+Company statement: ৳128,500
+Difference: ৳3,500
+
+Do not automatically change calculated records to match the statement.
+
+RECALCULATE HISTORICAL PF:
+Provide "Recalculate Historical PF".
+Warn that this recalculates calculated records using configured rules and salary history.
+Official actual statement records must not be changed.
+Require confirmation.
+
+HISTORICAL RECORD EDITING:
+Historical calculated records remain editable.
+If manually changed, mark "Manually Adjusted" and preserve original calculated values where practical.
+
+AUTO CALCULATE:
+Auto Calculate PF ON/OFF controls future scheduled PF generation.
+Historical reconstruction is a separate explicit setup action.
+Auto Calculate OFF must not prevent initial historical reconstruction.
+
+FIRST-TIME SETUP:
+1. Employment information:
+   - Joining Date
+   - Joining Gross Salary
+   - Probation Period
+   - Permanent Employee Date
+   - PF Start Date
+2. PF Rules
+3. Salary Schedule
+4. Salary History
+5. Historical PF Preview
+6. User confirms "Generate Historical PF Records"
+7. Historical monthly records are created
+8. Configure persistent Auto Calculate PF ON/OFF
+9. Optionally enter actual company PF statements
+
+HISTORICAL PF PREVIEW:
+Show:
+PF Start
+Calculation Through
+Number of Months
+Employee Contribution
+Employer Contribution
+Known Profit
+Calculated PF
+
+Allow user to review salary changes before confirming.
+
+IMPORTANT DATA INTEGRITY:
+Historical calculated PF records and actual company statement values must remain separate.
+Never overwrite official actual values.
+Never double-count historical records with a manual opening balance for the same period.
+
+==================================================
+59. EFFECTIVE-DATED PF RULES / PF POLICY HISTORY
+==================================================
+
+PF rules can change over time.
+Therefore PF Rules MUST be stored as effective-dated versions/history.
+
+Each PF rule set must include at minimum:
+- Rule ID
+- Effective From Date
+- Optional Effective To Date
+- Basic Salary %
+- Employee PF %
+- Employer PF %
+- Maturity Period
+- Maturity Basis
+- Employer Contribution Entitlement Rule
+- Other applicable PF policy settings
+- Notes
+
+RULE EFFECTIVE DATE:
+Every rule set has an Effective From date.
+
+Example:
+Version 1:
+Effective From 01 July 2024
+Basic 60%
+Employee PF 10%
+Employer PF 10%
+
+Version 2:
+Effective From 01 July 2025
+Basic 60%
+Employee PF 12%
+Employer PF 12%
+
+Use the rule version applicable to each PF/salary month.
+
+HISTORICAL CALCULATION:
+For each PF month:
+1. Identify PF/Salary Month.
+2. Find applicable PF rule version.
+3. Find applicable salary history version.
+4. Calculate using THAT period's rule and salary.
+
+Example:
+June 2025 → Version 1 → 10%/10%
+July 2025 → Version 2 → 12%/12%
+
+The July rule MUST NOT affect June or earlier calculations.
+
+HISTORICAL IMMUTABILITY:
+Adding/changing a new PF rule must NOT automatically modify previously calculated PF records.
+
+Example:
+June 2025 remains 10%/10% even after a new 12%/12% rule becomes effective July 2025.
+
+CURRENT RULE:
+Use the latest rule whose Effective From Date is on or before the PF/Salary Month.
+
+Example:
+01 July 2024 → Version 1
+01 July 2025 → Version 2
+01 January 2026 → Version 3
+
+June 2025 → Version 1
+July 2025 → Version 2
+December 2025 → Version 2
+January 2026 → Version 3
+
+RULE END DATE:
+The system may automatically derive Effective To Date from the next rule's Effective From Date.
+Do not require manual end dates unless needed.
+
+PF RULE HISTORY SCREEN:
+Show:
+- Effective From
+- Effective To
+- Basic Salary %
+- Employee PF %
+- Employer PF %
+- Maturity policy
+- Other policy values
+- Current/Historical status
+
+Allow:
+- Add new rule version
+- Edit future/unapplied rule
+- View historical rule
+- Duplicate an existing rule as a new version
+
+PROTECT HISTORICAL RULES:
+Once a rule has been used for historical calculations, prefer creating a new rule version instead of destructive editing.
+
+If user tries to edit a historical used rule, warn:
+"This PF rule has been used for historical calculations. Changing it may affect historical calculations. Do you want to create a new rule version instead?"
+
+RULE VERSION REFERENCE:
+Each monthly PF record must store the PF rule version used for its calculation.
+Example:
+July 2025 PF → Rule Version = PF-2025-07
+
+This provides an audit trail.
+
+RECALCULATION:
+Historical PF records must NOT automatically recalculate when a new rule is added.
+Provide an explicit "Recalculate Historical PF" action.
+Show affected periods and rule versions before confirmation.
+Do not modify official Actual Company Statement records.
+
+MATURITY RULE CHANGES:
+Maturity-related rules may also change and may need effective-dated versions.
+
+Example:
+Before July 2025 → Maturity 2 years
+From July 2025 → Maturity 3 years
+
+Do NOT blindly recalculate an employee's maturity date using the newest rule.
+Determine which rule applies based on the organization's policy and relevant employee eligibility date.
+If ambiguous, do not invent the policy; make the basis configurable and ask the user when necessary.
+
+IMPORTANT RULE PRIORITY:
+For every PF month:
+PF Month
+↓
+Applicable PF Rule Version
+↓
+Applicable Salary History Version
+↓
+PF Calculation
+↓
+Monthly PF Record
+
+CORE PRINCIPLE:
+SALARY CHANGES and PF RULE CHANGES are both EFFECTIVE-DATED.
+
+Historical Salary
++
+Historical PF Rule
++
+PF Eligibility Date
++
+Salary Schedule
+=
+Historical PF Calculation
+
+The app must never use today's salary or today's PF rule to incorrectly recalculate an old PF month.
+
+==================================================
+60. FINAL QUALITY STANDARD
+==================================================
+
+The final app must be:
+
+- Offline
+- Reliable
+- Accurate
+- Financial-calculation-safe
+- Configurable
+- Automated
+- Easy to use
+- Professional
+- Maintainable
+- Testable
+- Future-proof for Windows/iOS/cloud expansion
+
+MOST IMPORTANT:
+
+BUILD THE ACTUAL APPLICATION.
+
+Do not stop at tutorials, sample code, mockups, or explanations.
+
+Start with PHASE 1 only.
+
+Analyze the complete specification, identify only genuinely necessary missing information, and present the proposed architecture, data model, calculation logic, automation workflow, and screen structure before coding.
