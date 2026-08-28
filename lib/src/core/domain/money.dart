@@ -1,6 +1,10 @@
 class Rate {
   const Rate._(this.partsPerMillion);
 
+  factory Rate.fromPartsPerMillion(int partsPerMillion) {
+    return Rate._(partsPerMillion);
+  }
+
   factory Rate.fromPercent(String percent) {
     final normalized = percent.trim();
     final negative = normalized.startsWith('-');

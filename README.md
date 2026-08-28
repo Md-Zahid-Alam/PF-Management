@@ -4,7 +4,7 @@ Offline-first Provident Fund tracker for Android, built with Flutter and a layer
 
 ## Current phase
 
-Phase 3 calculation engine: the Phase 2 app/CI foundation plus deterministic fixed-point PF calculations, effective-dated histories, maturity, schedules, reconstruction, balances, exit estimates, statement reconciliation, and domain tests.
+Phase 4 database: the CI-verified calculation engine plus a normalized Drift/SQLite schema, migrations, repository contracts, transactional CRUD, audit-preserving overrides, versioned backup/restore, and in-memory persistence tests.
 
 ## Command-line bootstrap and verification
 
@@ -31,3 +31,5 @@ No credentials or signing keys are stored in the repository. See [release prepar
 - `test`: unit and widget tests
 
 Business calculations are independent of Flutter widgets and Drift. See the [calculation-engine contract](docs/CALCULATION_ENGINE.md).
+
+Persistence is isolated behind domain repositories. See the [database architecture](docs/DATABASE.md).
