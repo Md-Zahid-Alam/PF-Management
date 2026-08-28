@@ -453,4 +453,3 @@ Money? _nullableMoney(int? units, int decimalPlaces, String currencyCode) {
 
 DateTime _dateOnly(DateTime value) =>
     DateTime(value.year, value.month, value.day);
-

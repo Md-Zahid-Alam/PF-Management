@@ -175,4 +175,3 @@ class BackupMetadataRows extends AuditedTable {
   DateTimeColumn get exportedAt => dateTime()();
   TextColumn get checksum => text()();
 }
-
