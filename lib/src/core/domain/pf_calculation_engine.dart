@@ -222,12 +222,14 @@ class PFCalculationEngine {
       }
     }
     for (final item in knownProfit) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate)))
+      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate))) {
         balance += item.amount;
+      }
     }
     for (final item in adjustments) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate)))
+      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate))) {
         balance += item.amount;
+      }
     }
     return balance;
   }
@@ -261,12 +263,14 @@ class PFCalculationEngine {
       employer += record.employerContribution;
     }
     for (final item in knownProfit) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate)))
+      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate))) {
         profit += item.amount;
+      }
     }
     for (final item in adjustments) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate)))
+      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate))) {
         adjustmentTotal += item.amount;
+      }
     }
     final status = maturityStatus(
       exitDate,
