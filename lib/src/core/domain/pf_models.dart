@@ -41,7 +41,10 @@ class PFRuleVersion {
 }
 
 class SalaryHistoryEntry {
-  const SalaryHistoryEntry({required this.effectiveFrom, required this.grossSalary});
+  const SalaryHistoryEntry({
+    required this.effectiveFrom,
+    required this.grossSalary,
+  });
 
   final DateTime effectiveFrom;
   final Money grossSalary;
@@ -54,7 +57,10 @@ class SalarySchedule {
     required this.paymentWindowEndDay,
   }) : assert(paymentMonthOffset >= 0),
        assert(paymentWindowStartDay >= 1 && paymentWindowStartDay <= 31),
-       assert(paymentWindowEndDay >= paymentWindowStartDay && paymentWindowEndDay <= 31);
+       assert(
+         paymentWindowEndDay >= paymentWindowStartDay &&
+             paymentWindowEndDay <= 31,
+       );
 
   final int paymentMonthOffset;
   final int paymentWindowStartDay;
@@ -62,9 +68,11 @@ class SalarySchedule {
 }
 
 class StatementYearConfiguration {
-  const StatementYearConfiguration({required this.startMonth, required this.startDay})
-    : assert(startMonth >= 1 && startMonth <= 12),
-      assert(startDay >= 1 && startDay <= 31);
+  const StatementYearConfiguration({
+    required this.startMonth,
+    required this.startDay,
+  }) : assert(startMonth >= 1 && startMonth <= 12),
+       assert(startDay >= 1 && startDay <= 31);
 
   final int startMonth;
   final int startDay;
@@ -78,7 +86,9 @@ class PFStatementYear {
 
   @override
   bool operator ==(Object other) =>
-      other is PFStatementYear && other.startYear == startYear && other.endYear == endYear;
+      other is PFStatementYear &&
+      other.startYear == startYear &&
+      other.endYear == endYear;
 
   @override
   int get hashCode => Object.hash(startYear, endYear);

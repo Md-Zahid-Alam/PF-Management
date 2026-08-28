@@ -31,7 +31,9 @@ class PFCalculationEngine {
 
   bool isEligibleForMonth(EmploymentDates employment, YearMonth month) {
     final overlapsPFStart = !employment.pfStartDate.isAfter(month.lastDay);
-    final overlapsExit = employment.exitDate == null || !employment.exitDate!.isBefore(month.firstDay);
+    final overlapsExit =
+        employment.exitDate == null ||
+        !employment.exitDate!.isBefore(month.firstDay);
     return overlapsPFStart && overlapsExit;
   }
 
@@ -51,7 +53,8 @@ class PFCalculationEngine {
     DateTime? selectedDate;
     for (final version in versions) {
       final date = _dateOnly(effectiveFrom(version));
-      if (!date.isAfter(selectionDate) && (selectedDate == null || date.isAfter(selectedDate))) {
+      if (!date.isAfter(selectionDate) &&
+          (selectedDate == null || date.isAfter(selectedDate))) {
         selected = version;
         selectedDate = date;
       }
@@ -59,12 +62,18 @@ class PFCalculationEngine {
     return selected;
   }
 
-  DateTime calculateMaturityDate(EmploymentDates employment, PFRuleVersion rule) {
+  DateTime calculateMaturityDate(
+    EmploymentDates employment,
+    PFRuleVersion rule,
+  ) {
     final basis = switch (rule.maturityBasis) {
       MaturityBasis.joiningDate => employment.joiningDate,
       MaturityBasis.pfStartDate => employment.pfStartDate,
-      MaturityBasis.permanentDate => employment.permanentDate ??
-          (throw const MissingCalculationInput('Permanent date is required by the maturity rule.')),
+      MaturityBasis.permanentDate =>
+        employment.permanentDate ??
+            (throw const MissingCalculationInput(
+              'Permanent date is required by the maturity rule.',
+            )),
     };
     return _addMonthsClamped(basis, rule.maturityMonths);
   }
@@ -77,13 +86,17 @@ class PFCalculationEngine {
     final basisDate = switch (basis) {
       MaturityBasis.joiningDate => employment.joiningDate,
       MaturityBasis.pfStartDate => employment.pfStartDate,
-      MaturityBasis.permanentDate => employment.permanentDate ??
-          (throw const MissingCalculationInput('Permanent date is required by the maturity rule.')),
+      MaturityBasis.permanentDate =>
+        employment.permanentDate ??
+            (throw const MissingCalculationInput(
+              'Permanent date is required by the maturity rule.',
+            )),
     };
     PFRuleVersion? selected;
     for (final rule in ruleHistory) {
       if (!rule.effectiveFrom.isAfter(basisDate) &&
-          (selected == null || rule.effectiveFrom.isAfter(selected.effectiveFrom))) {
+          (selected == null ||
+              rule.effectiveFrom.isAfter(selected.effectiveFrom))) {
         selected = rule;
       }
     }
@@ -101,7 +114,11 @@ class PFCalculationEngine {
 
   DateTime scheduledGenerationDate(YearMonth pfMonth, SalarySchedule schedule) {
     final paymentMonth = pfMonth.addMonths(schedule.paymentMonthOffset);
-    return _clampedDate(paymentMonth.year, paymentMonth.month, schedule.paymentWindowEndDay);
+    return _clampedDate(
+      paymentMonth.year,
+      paymentMonth.month,
+      schedule.paymentWindowEndDay,
+    );
   }
 
   PFStatementYear statementYearFor(
@@ -113,7 +130,9 @@ class PFCalculationEngine {
       configuration.startMonth,
       configuration.startDay,
     );
-    final startYear = pfMonth.lastDay.isBefore(boundaryThisYear) ? pfMonth.year - 1 : pfMonth.year;
+    final startYear = pfMonth.lastDay.isBefore(boundaryThisYear)
+        ? pfMonth.year - 1
+        : pfMonth.year;
     return PFStatementYear(startYear: startYear, endYear: startYear + 1);
   }
 
@@ -133,7 +152,9 @@ class PFCalculationEngine {
       (entry) => entry.effectiveFrom,
     );
     if (salary == null) {
-      throw MissingCalculationInput('Salary information is required for $month.');
+      throw MissingCalculationInput(
+        'Salary information is required for $month.',
+      );
     }
     final rule = selectEffectiveVersion(
       month,
@@ -141,9 +162,14 @@ class PFCalculationEngine {
       (version) => version.effectiveFrom,
     );
     if (rule == null) {
-      throw MissingCalculationInput('PF rule information is required for $month.');
+      throw MissingCalculationInput(
+        'PF rule information is required for $month.',
+      );
     }
-    final basic = calculateBasicSalary(salary.grossSalary, rule.basicSalaryRate);
+    final basic = calculateBasicSalary(
+      salary.grossSalary,
+      rule.basicSalaryRate,
+    );
     final employee = calculateEmployeeContribution(basic, rule.employeePFRate);
     final employer = calculateEmployerContribution(basic, rule.employerPFRate);
     return MonthlyPFCalculation(
@@ -196,10 +222,12 @@ class PFCalculationEngine {
       }
     }
     for (final item in knownProfit) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate))) balance += item.amount;
+      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate)))
+        balance += item.amount;
     }
     for (final item in adjustments) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate))) balance += item.amount;
+      if (!_dateOnly(item.date).isAfter(_dateOnly(throughDate)))
+        balance += item.amount;
     }
     return balance;
   }
@@ -213,8 +241,14 @@ class PFCalculationEngine {
     required Iterable<DatedMoney> adjustments,
     required bool profitComplete,
   }) {
-    final includedRecords = records.where((record) => !record.month.firstDay.isAfter(exitDate)).toList();
-    final prototype = _prototypeMoney(includedRecords, knownProfit, adjustments);
+    final includedRecords = records
+        .where((record) => !record.month.firstDay.isAfter(exitDate))
+        .toList();
+    final prototype = _prototypeMoney(
+      includedRecords,
+      knownProfit,
+      adjustments,
+    );
     var employee = Money.zero(
       decimalPlaces: prototype.decimalPlaces,
       currencyCode: prototype.currencyCode,
@@ -227,30 +261,40 @@ class PFCalculationEngine {
       employer += record.employerContribution;
     }
     for (final item in knownProfit) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate))) profit += item.amount;
+      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate)))
+        profit += item.amount;
     }
     for (final item in adjustments) {
-      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate))) adjustmentTotal += item.amount;
+      if (!_dateOnly(item.date).isAfter(_dateOnly(exitDate)))
+        adjustmentTotal += item.amount;
     }
-    final status = maturityStatus(exitDate, calculateMaturityDate(employment, maturityRule));
+    final status = maturityStatus(
+      exitDate,
+      calculateMaturityDate(employment, maturityRule),
+    );
     final employerEntitled = status == MaturityStatus.mature
         ? maturityRule.employerEntitledAfterMaturity
         : maturityRule.employerEntitledBeforeMaturity;
-    final receivedEmployer = employerEntitled ? employer : Money.zero(
-      decimalPlaces: prototype.decimalPlaces,
-      currencyCode: prototype.currencyCode,
-    );
+    final receivedEmployer = employerEntitled
+        ? employer
+        : Money.zero(
+            decimalPlaces: prototype.decimalPlaces,
+            currencyCode: prototype.currencyCode,
+          );
     return ExitEstimate(
       status: status,
       employeeContribution: employee,
       employerContribution: receivedEmployer,
       knownProfit: profit,
       adjustments: adjustmentTotal,
-      forfeitedEmployerContribution: employerEntitled ? -Money.zero(
-        decimalPlaces: prototype.decimalPlaces,
-        currencyCode: prototype.currencyCode,
-      ) : employer,
-      estimatedReceivable: employee + receivedEmployer + profit + adjustmentTotal,
+      forfeitedEmployerContribution: employerEntitled
+          ? -Money.zero(
+              decimalPlaces: prototype.decimalPlaces,
+              currencyCode: prototype.currencyCode,
+            )
+          : employer,
+      estimatedReceivable:
+          employee + receivedEmployer + profit + adjustmentTotal,
       profitComplete: profitComplete,
     );
   }
@@ -262,7 +306,10 @@ class PFCalculationEngine {
     return StatementComparison(
       calculated: calculated,
       actual: actual,
-      openingDifference: _difference(actual.openingBalance, calculated.openingBalance),
+      openingDifference: _difference(
+        actual.openingBalance,
+        calculated.openingBalance,
+      ),
       employeeDifference: _difference(
         actual.employeeContribution,
         calculated.employeeContribution,
@@ -272,8 +319,14 @@ class PFCalculationEngine {
         calculated.employerContribution,
       ),
       profitDifference: _difference(actual.profit, calculated.profit),
-      adjustmentDifference: _difference(actual.adjustments, calculated.adjustments),
-      closingDifference: _difference(actual.closingBalance, calculated.closingBalance),
+      adjustmentDifference: _difference(
+        actual.adjustments,
+        calculated.adjustments,
+      ),
+      closingDifference: _difference(
+        actual.closingBalance,
+        calculated.closingBalance,
+      ),
     );
   }
 
@@ -304,13 +357,22 @@ class PFCalculationEngine {
   static DateTime _addMonthsClamped(DateTime date, int months) {
     final targetMonth = DateTime(date.year, date.month + months);
     final lastDay = DateTime(targetMonth.year, targetMonth.month + 1, 0).day;
-    return DateTime(targetMonth.year, targetMonth.month, date.day > lastDay ? lastDay : date.day);
+    return DateTime(
+      targetMonth.year,
+      targetMonth.month,
+      date.day > lastDay ? lastDay : date.day,
+    );
   }
 
   static DateTime _clampedDate(int year, int month, int requestedDay) {
     final lastDay = DateTime(year, month + 1, 0).day;
-    return DateTime(year, month, requestedDay > lastDay ? lastDay : requestedDay);
+    return DateTime(
+      year,
+      month,
+      requestedDay > lastDay ? lastDay : requestedDay,
+    );
   }
 
-  static DateTime _dateOnly(DateTime value) => DateTime(value.year, value.month, value.day);
+  static DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
 }

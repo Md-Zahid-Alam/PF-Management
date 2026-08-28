@@ -15,7 +15,9 @@ class Rate {
       throw FormatException('Percentage supports at most 4 decimal places.');
     }
     final paddedFraction = fraction.padRight(4, '0');
-    final value = whole * 10000 + (paddedFraction.isEmpty ? 0 : int.parse(paddedFraction));
+    final value =
+        whole * 10000 +
+        (paddedFraction.isEmpty ? 0 : int.parse(paddedFraction));
     return Rate._(negative ? -value : value);
   }
 
@@ -62,7 +64,9 @@ class Money implements Comparable<Money> {
     }
     final scale = _powerOfTen(decimalPlaces);
     final padded = fraction.padRight(decimalPlaces, '0');
-    final units = int.parse(pieces.first) * scale + (padded.isEmpty ? 0 : int.parse(padded));
+    final units =
+        int.parse(pieces.first) * scale +
+        (padded.isEmpty ? 0 : int.parse(padded));
     return Money._(negative ? -units : units, decimalPlaces, currencyCode);
   }
 
@@ -79,7 +83,8 @@ class Money implements Comparable<Money> {
   final String currencyCode;
 
   Money multiply(Rate rate) {
-    final numerator = BigInt.from(minorUnits) * BigInt.from(rate.partsPerMillion);
+    final numerator =
+        BigInt.from(minorUnits) * BigInt.from(rate.partsPerMillion);
     final rounded = _divideHalfUp(numerator, BigInt.from(1000000));
     return Money._(rounded.toInt(), decimalPlaces, currencyCode);
   }
@@ -103,8 +108,11 @@ class Money implements Comparable<Money> {
   }
 
   void _requireCompatible(Money other) {
-    if (decimalPlaces != other.decimalPlaces || currencyCode != other.currencyCode) {
-      throw ArgumentError('Money values must use the same currency and precision.');
+    if (decimalPlaces != other.decimalPlaces ||
+        currencyCode != other.currencyCode) {
+      throw ArgumentError(
+        'Money values must use the same currency and precision.',
+      );
     }
   }
 
@@ -113,7 +121,9 @@ class Money implements Comparable<Money> {
     final absolute = numerator.abs();
     final quotient = absolute ~/ denominator;
     final remainder = absolute.remainder(denominator);
-    final rounded = remainder * BigInt.two >= denominator ? quotient + BigInt.one : quotient;
+    final rounded = remainder * BigInt.two >= denominator
+        ? quotient + BigInt.one
+        : quotient;
     return negative ? -rounded : rounded;
   }
 

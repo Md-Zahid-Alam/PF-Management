@@ -31,7 +31,10 @@ void main() {
     test('calculates approved whole-BDT example with half-up rounding', () {
       final gross = Money.parse('30000');
       final basic = engine.calculateBasicSalary(gross, Rate.fromPercent('60'));
-      final employee = engine.calculateEmployeeContribution(basic, Rate.fromPercent('10'));
+      final employee = engine.calculateEmployeeContribution(
+        basic,
+        Rate.fromPercent('10'),
+      );
 
       expect(basic, Money.parse('18000'));
       expect(employee, Money.parse('1800'));
@@ -40,12 +43,21 @@ void main() {
     test('supports configurable decimal places', () {
       final amount = Money.parse('10.05', decimalPlaces: 2);
 
-      expect(amount.multiply(Rate.fromPercent('50')), Money.parse('5.03', decimalPlaces: 2));
+      expect(
+        amount.multiply(Rate.fromPercent('50')),
+        Money.parse('5.03', decimalPlaces: 2),
+      );
     });
 
     test('rounds exact halves away from zero', () {
-      expect(Money.parse('5').multiply(Rate.fromPercent('10')), Money.parse('1'));
-      expect(Money.parse('-5').multiply(Rate.fromPercent('10')), Money.parse('-1'));
+      expect(
+        Money.parse('5').multiply(Rate.fromPercent('10')),
+        Money.parse('1'),
+      );
+      expect(
+        Money.parse('-5').multiply(Rate.fromPercent('10')),
+        Money.parse('-1'),
+      );
     });
 
     test('rejects incompatible currency precision', () {
@@ -63,15 +75,24 @@ void main() {
         pfStartDate: DateTime(2026, 4, 20),
       );
 
-      expect(engine.isEligibleForMonth(midMonth, const YearMonth(2026, 4)), isTrue);
-      expect(engine.isEligibleForMonth(midMonth, const YearMonth(2026, 3)), isFalse);
+      expect(
+        engine.isEligibleForMonth(midMonth, const YearMonth(2026, 4)),
+        isTrue,
+      );
+      expect(
+        engine.isEligibleForMonth(midMonth, const YearMonth(2026, 3)),
+        isFalse,
+      );
     });
 
     test('end-of-month policy selects a mid-month salary change', () {
       final salary = engine.selectEffectiveVersion(
         const YearMonth(2026, 7),
         <SalaryHistoryEntry>[
-          SalaryHistoryEntry(effectiveFrom: DateTime(2026), grossSalary: Money.parse('30000')),
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026),
+            grossSalary: Money.parse('30000'),
+          ),
           SalaryHistoryEntry(
             effectiveFrom: DateTime(2026, 7, 15),
             grossSalary: Money.parse('35000'),
@@ -98,19 +119,23 @@ void main() {
       ];
 
       expect(
-        engine.selectEffectiveVersion(
-          const YearMonth(2026, 6),
-          rules,
-          (rule) => rule.effectiveFrom,
-        )!.id,
+        engine
+            .selectEffectiveVersion(
+              const YearMonth(2026, 6),
+              rules,
+              (rule) => rule.effectiveFrom,
+            )!
+            .id,
         'PF-2026-01',
       );
       expect(
-        engine.selectEffectiveVersion(
-          const YearMonth(2026, 7),
-          rules,
-          (rule) => rule.effectiveFrom,
-        )!.id,
+        engine
+            .selectEffectiveVersion(
+              const YearMonth(2026, 7),
+              rules,
+              (rule) => rule.effectiveFrom,
+            )!
+            .id,
         'PF-2026-07',
       );
     });
@@ -144,7 +169,10 @@ void main() {
         month: const YearMonth(2026, 4),
         employment: employment,
         salaryHistory: <SalaryHistoryEntry>[
-          SalaryHistoryEntry(effectiveFrom: DateTime(2026), grossSalary: Money.parse('30000')),
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026),
+            grossSalary: Money.parse('30000'),
+          ),
         ],
         ruleHistory: <PFRuleVersion>[unequalRule],
         salarySchedule: followingMonthSchedule,
@@ -160,8 +188,14 @@ void main() {
         employment: employment,
         calculationThrough: const YearMonth(2026, 7),
         salaryHistory: <SalaryHistoryEntry>[
-          SalaryHistoryEntry(effectiveFrom: DateTime(2026), grossSalary: Money.parse('30000')),
-          SalaryHistoryEntry(effectiveFrom: DateTime(2026, 7), grossSalary: Money.parse('35000')),
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026),
+            grossSalary: Money.parse('30000'),
+          ),
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026, 7),
+            grossSalary: Money.parse('35000'),
+          ),
         ],
         ruleHistory: <PFRuleVersion>[defaultRule],
         salarySchedule: followingMonthSchedule,
@@ -180,11 +214,17 @@ void main() {
       );
 
       expect(
-        engine.scheduledGenerationDate(const YearMonth(2026, 1), endOfMonthSchedule),
+        engine.scheduledGenerationDate(
+          const YearMonth(2026, 1),
+          endOfMonthSchedule,
+        ),
         DateTime(2026, 2, 28),
       );
       expect(
-        engine.scheduledGenerationDate(const YearMonth(2027, 1), endOfMonthSchedule),
+        engine.scheduledGenerationDate(
+          const YearMonth(2027, 1),
+          endOfMonthSchedule,
+        ),
         DateTime(2027, 2, 28),
       );
     });
@@ -192,12 +232,24 @@ void main() {
 
   group('maturity and statement years', () {
     test('exit exactly on maturity date is mature', () {
-      final maturityDate = engine.calculateMaturityDate(employment, defaultRule);
+      final maturityDate = engine.calculateMaturityDate(
+        employment,
+        defaultRule,
+      );
 
       expect(maturityDate, DateTime(2028));
-      expect(engine.maturityStatus(DateTime(2027, 12, 31), maturityDate), MaturityStatus.beforeMaturity);
-      expect(engine.maturityStatus(DateTime(2028), maturityDate), MaturityStatus.mature);
-      expect(engine.maturityStatus(DateTime(2028, 1, 2), maturityDate), MaturityStatus.mature);
+      expect(
+        engine.maturityStatus(DateTime(2027, 12, 31), maturityDate),
+        MaturityStatus.beforeMaturity,
+      );
+      expect(
+        engine.maturityStatus(DateTime(2028), maturityDate),
+        MaturityStatus.mature,
+      );
+      expect(
+        engine.maturityStatus(DateTime(2028, 1, 2), maturityDate),
+        MaturityStatus.mature,
+      );
     });
 
     test('clamps leap-day maturity safely', () {
@@ -206,34 +258,43 @@ void main() {
         pfStartDate: DateTime(2024, 2, 29),
       );
 
-      expect(engine.calculateMaturityDate(leapEmployment, defaultRule), DateTime(2026, 2, 28));
-    });
-
-    test('selects the maturity rule effective on the configured basis date', () {
-      final laterRule = PFRuleVersion(
-        id: 'later',
-        effectiveFrom: DateTime(2027),
-        basicSalaryRate: Rate.fromPercent('60'),
-        employeePFRate: Rate.fromPercent('10'),
-        employerPFRate: Rate.fromPercent('10'),
-        maturityMonths: 36,
-        maturityBasis: MaturityBasis.joiningDate,
-      );
-
       expect(
-        engine
-            .selectMaturityRule(
-              employment: employment,
-              basis: MaturityBasis.joiningDate,
-              ruleHistory: <PFRuleVersion>[defaultRule, laterRule],
-            )
-            .id,
-        defaultRule.id,
+        engine.calculateMaturityDate(leapEmployment, defaultRule),
+        DateTime(2026, 2, 28),
       );
     });
+
+    test(
+      'selects the maturity rule effective on the configured basis date',
+      () {
+        final laterRule = PFRuleVersion(
+          id: 'later',
+          effectiveFrom: DateTime(2027),
+          basicSalaryRate: Rate.fromPercent('60'),
+          employeePFRate: Rate.fromPercent('10'),
+          employerPFRate: Rate.fromPercent('10'),
+          maturityMonths: 36,
+          maturityBasis: MaturityBasis.joiningDate,
+        );
+
+        expect(
+          engine
+              .selectMaturityRule(
+                employment: employment,
+                basis: MaturityBasis.joiningDate,
+                ruleHistory: <PFRuleVersion>[defaultRule, laterRule],
+              )
+              .id,
+          defaultRule.id,
+        );
+      },
+    );
 
     test('assigns June and July to the correct July-June statement years', () {
-      const configuration = StatementYearConfiguration(startMonth: 7, startDay: 1);
+      const configuration = StatementYearConfiguration(
+        startMonth: 7,
+        startDay: 1,
+      );
 
       expect(
         engine.statementYearFor(const YearMonth(2026, 6), configuration),
@@ -254,7 +315,10 @@ void main() {
         employment: employment,
         calculationThrough: const YearMonth(2026, 5),
         salaryHistory: <SalaryHistoryEntry>[
-          SalaryHistoryEntry(effectiveFrom: DateTime(2026), grossSalary: Money.parse('30000')),
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026),
+            grossSalary: Money.parse('30000'),
+          ),
         ],
         ruleHistory: <PFRuleVersion>[defaultRule],
         salarySchedule: followingMonthSchedule,
@@ -320,10 +384,15 @@ void main() {
 
   group('company statement reconciliation', () {
     test('keeps actual and calculated values separate', () {
-      final calculated = StatementSnapshot(closingBalance: Money.parse('85450'));
+      final calculated = StatementSnapshot(
+        closingBalance: Money.parse('85450'),
+      );
       final actual = StatementSnapshot(closingBalance: Money.parse('85720'));
 
-      final comparison = engine.reconcileStatement(calculated: calculated, actual: actual);
+      final comparison = engine.reconcileStatement(
+        calculated: calculated,
+        actual: actual,
+      );
 
       expect(comparison.calculated.closingBalance, Money.parse('85450'));
       expect(comparison.actual.closingBalance, Money.parse('85720'));
