@@ -16,9 +16,7 @@ class DriftSalaryRepository implements SalaryRepository {
   Future<List<StoredSalary>> getForEmployment(String employmentId) async {
     final query = database.select(database.salaryHistoryRows)
       ..where((row) => row.employmentId.equals(employmentId))
-      ..orderBy([
-        (row) => OrderingTerm.asc(row.effectiveFrom),
-      ]);
+      ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)]);
     return (await query.get()).map(_salaryFromRow).toList(growable: false);
   }
 
@@ -33,9 +31,7 @@ class DriftSalaryRepository implements SalaryRepository {
             row.employmentId.equals(employmentId) &
             row.effectiveFrom.isSmallerOrEqualValue(_dateOnly(onDate)),
       )
-      ..orderBy([
-        (row) => OrderingTerm.desc(row.effectiveFrom),
-      ])
+      ..orderBy([(row) => OrderingTerm.desc(row.effectiveFrom)])
       ..limit(1);
     final row = await query.getSingleOrNull();
     return row == null ? null : _salaryFromRow(row);
@@ -93,9 +89,7 @@ class DriftPFRuleRepository implements PFRuleRepository {
   Future<List<StoredPFRule>> getForOrganization(String organizationId) async {
     final query = database.select(database.pfRuleVersions)
       ..where((row) => row.organizationId.equals(organizationId))
-      ..orderBy([
-        (row) => OrderingTerm.asc(row.effectiveFrom),
-      ]);
+      ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)]);
     return (await query.get()).map(_ruleFromRow).toList(growable: false);
   }
 
@@ -110,9 +104,7 @@ class DriftPFRuleRepository implements PFRuleRepository {
             row.organizationId.equals(organizationId) &
             row.effectiveFrom.isSmallerOrEqualValue(_dateOnly(onDate)),
       )
-      ..orderBy([
-        (row) => OrderingTerm.desc(row.effectiveFrom),
-      ])
+      ..orderBy([(row) => OrderingTerm.desc(row.effectiveFrom)])
       ..limit(1);
     final row = await query.getSingleOrNull();
     return row == null ? null : _ruleFromRow(row);
@@ -201,9 +193,7 @@ class DriftMonthlyPFRepository implements MonthlyPFRepository {
   ) async {
     final query = database.select(database.monthlyPfRecords)
       ..where((row) => row.employmentId.equals(employmentId))
-      ..orderBy([
-        (row) => OrderingTerm.asc(row.pfMonth),
-      ]);
+      ..orderBy([(row) => OrderingTerm.asc(row.pfMonth)]);
     return (await query.get()).map(_monthlyFromRow).toList(growable: false);
   }
 
