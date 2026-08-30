@@ -4,7 +4,7 @@ Offline-first Provident Fund tracker for Android, built with Flutter and a layer
 
 ## Current phase
 
-Phase 4 database: the CI-verified calculation engine plus a normalized Drift/SQLite schema, migrations, repository contracts, transactional CRUD, audit-preserving overrides, versioned backup/restore, and in-memory persistence tests.
+Phase 5 automation: persistent Auto Calculate and notification settings, salary-schedule due-date detection, missed-period catch-up, duplicate-safe automatic/manual calculation, pending-input handling, historical preview/recalculation safeguards, and Android local notifications.
 
 ## Command-line bootstrap and verification
 
@@ -33,3 +33,5 @@ No credentials or signing keys are stored in the repository. See [release prepar
 Business calculations are independent of Flutter widgets and Drift. See the [calculation-engine contract](docs/CALCULATION_ENGINE.md).
 
 Persistence is isolated behind domain repositories. See the [database architecture](docs/DATABASE.md).
+
+Local automation runs when the application invokes the automation service; it does not require a server or internet connection. See the [automation contract](docs/AUTOMATION.md).

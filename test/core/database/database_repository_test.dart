@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pf_tracker/src/core/database/app_database.dart' as db;
 import 'package:pf_tracker/src/core/database/database_backup_service.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
+import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
@@ -80,6 +81,25 @@ void main() {
     );
     expect(await repository.getForEmployment('employment-1'), hasLength(1));
   });
+
+  test(
+    'automation settings persist Auto Calculate and notifications',
+    () async {
+      final repository = DriftAutomationSettingsRepository(database);
+      expect((await repository.get()).autoCalculate, isTrue);
+
+      await repository.save(
+        const AutomationSettings(
+          autoCalculate: false,
+          notificationsEnabled: false,
+        ),
+      );
+
+      final stored = await repository.get();
+      expect(stored.autoCalculate, isFalse);
+      expect(stored.notificationsEnabled, isFalse);
+    },
+  );
 
   test(
     'manual adjustment preserves the original calculated snapshot',

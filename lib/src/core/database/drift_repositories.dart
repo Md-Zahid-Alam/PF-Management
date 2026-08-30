@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:pf_tracker/src/core/database/app_database.dart' as db;
+import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
@@ -221,6 +222,41 @@ class DriftMonthlyPFRepository implements MonthlyPFRepository {
   }
 
   @override
+  Future<void> replaceCalculated(
+    StoredMonthlyPFRecord record, {
+    bool allowManualReplacement = false,
+  }) async {
+    _validateMonthlyMoney(record);
+    await database.transaction(() async {
+      final existing = await (database.select(
+        database.monthlyPfRecords,
+      )..where((row) => row.id.equals(record.id))).getSingleOrNull();
+      if (existing == null) {
+        await database
+            .into(database.monthlyPfRecords)
+            .insert(_monthlyCompanion(record));
+        return;
+      }
+      if (existing.status == 'manuallyAdjusted' && !allowManualReplacement) {
+        throw StateError(
+          'A manually adjusted month requires explicit replacement.',
+        );
+      }
+      if (existing.employmentId != record.employmentId ||
+          YearMonth.fromDate(existing.pfMonth) != record.month) {
+        throw StateError('Recalculation cannot change record identity.');
+      }
+      await database
+          .into(database.monthlyPfRecords)
+          .insertOnConflictUpdate(
+            _monthlyCompanion(
+              _copyRecord(record, createdAt: existing.createdAt),
+            ),
+          );
+    });
+  }
+
+  @override
   Future<void> saveManualAdjustment(
     StoredMonthlyPFRecord adjustedRecord,
   ) async {
@@ -427,6 +463,77 @@ class DriftMonthlyPFRepository implements MonthlyPFRepository {
       notes: row.notes,
     );
   }
+}
+
+class DriftAutomationSettingsRepository
+    implements AutomationSettingsRepository {
+  DriftAutomationSettingsRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<AutomationSettings> get() async {
+    final row = await (database.select(
+      database.appSettingsRows,
+    )..where((row) => row.id.equals(1))).getSingleOrNull();
+    if (row != null) {
+      return AutomationSettings(
+        autoCalculate: row.autoCalculate,
+        notificationsEnabled: row.notificationsEnabled,
+      );
+    }
+    const settings = AutomationSettings();
+    await save(settings);
+    return settings;
+  }
+
+  @override
+  Future<void> save(AutomationSettings settings) async {
+    await database
+        .into(database.appSettingsRows)
+        .insertOnConflictUpdate(
+          db.AppSettingsRowsCompanion.insert(
+            id: const Value(1),
+            autoCalculate: Value(settings.autoCalculate),
+            notificationsEnabled: Value(settings.notificationsEnabled),
+          ),
+        );
+  }
+}
+
+StoredMonthlyPFRecord _copyRecord(
+  StoredMonthlyPFRecord record, {
+  required DateTime createdAt,
+}) {
+  return StoredMonthlyPFRecord(
+    id: record.id,
+    employmentId: record.employmentId,
+    month: record.month,
+    grossSalary: record.grossSalary,
+    basicSalary: record.basicSalary,
+    employeeContribution: record.employeeContribution,
+    employerContribution: record.employerContribution,
+    adjustment: record.adjustment,
+    basicRate: record.basicRate,
+    employeeRate: record.employeeRate,
+    employerRate: record.employerRate,
+    source: record.source,
+    status: record.status,
+    createdAt: createdAt,
+    updatedAt: record.updatedAt,
+    salaryHistoryId: record.salaryHistoryId,
+    ruleVersionId: record.ruleVersionId,
+    salaryCreditedDate: record.salaryCreditedDate,
+    scheduledGenerationDate: record.scheduledGenerationDate,
+    actualGenerationDate: record.actualGenerationDate,
+    originalGrossSalary: record.originalGrossSalary,
+    originalBasicSalary: record.originalBasicSalary,
+    originalEmployeeContribution: record.originalEmployeeContribution,
+    originalEmployerContribution: record.originalEmployerContribution,
+    manuallyAdjustedAt: record.manuallyAdjustedAt,
+    confirmedAt: record.confirmedAt,
+    notes: record.notes,
+  );
 }
 
 Money _money(int units, int decimalPlaces, String currencyCode) {

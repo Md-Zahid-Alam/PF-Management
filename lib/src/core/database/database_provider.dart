@@ -20,3 +20,8 @@ final pfRuleRepositoryProvider = Provider<PFRuleRepository>((ref) {
 final monthlyPFRepositoryProvider = Provider<MonthlyPFRepository>((ref) {
   return DriftMonthlyPFRepository(ref.watch(appDatabaseProvider));
 });
+
+final automationSettingsRepositoryProvider =
+    Provider<AutomationSettingsRepository>((ref) {
+      return DriftAutomationSettingsRepository(ref.watch(appDatabaseProvider));
+    });
