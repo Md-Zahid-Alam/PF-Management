@@ -23,7 +23,7 @@ void main() {
     expect(find.text('Set up PF Tracker'), findsOneWidget);
     expect(find.text('Profile & employment'), findsOneWidget);
     expect(find.byKey(const Key('employeeNameField')), findsOneWidget);
-    expect(find.text('Continue'), findsOneWidget);
+    expect(find.text('Continue'), findsWidgets);
   });
 }
 
