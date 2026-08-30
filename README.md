@@ -4,7 +4,7 @@ Offline-first Provident Fund tracker for Android, built with Flutter and a layer
 
 ## Current phase
 
-Phase 5 automation: persistent Auto Calculate and notification settings, salary-schedule due-date detection, missed-period catch-up, duplicate-safe automatic/manual calculation, pending-input handling, historical preview/recalculation safeguards, and Android local notifications.
+Phase 6 UI is in progress. The first verified slice adds responsive application navigation, a professional dashboard empty state, and a functional PF calculator backed by the deterministic calculation engine. Phase 5 local automation remains complete and CI-verified.
 
 ## Command-line bootstrap and verification
 

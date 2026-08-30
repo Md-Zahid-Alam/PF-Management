@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -25,7 +26,7 @@ class OnboardingScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: null,
+                  onPressed: () => context.go('/'),
                   child: const Text('Start setup'),
                 ),
               ),

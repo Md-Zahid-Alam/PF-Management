@@ -22,7 +22,14 @@ abstract final class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surfaceContainerLowest,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        labelTextStyle: WidgetStatePropertyAll(
+          TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }

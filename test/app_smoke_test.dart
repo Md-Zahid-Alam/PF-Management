@@ -8,5 +8,11 @@ void main() {
 
     expect(find.text('Set up PF Tracker'), findsOneWidget);
     expect(find.text('Start setup'), findsOneWidget);
+
+    await tester.tap(find.text('Start setup'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PF Dashboard'), findsOneWidget);
+    expect(find.text('Calculator'), findsOneWidget);
   });
 }
