@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
+import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
 
 class DriftSalaryRepository implements SalaryRepository {
@@ -499,6 +500,152 @@ class DriftAutomationSettingsRepository
           ),
         );
   }
+}
+
+class DriftInitialSetupRepository implements InitialSetupRepository {
+  DriftInitialSetupRepository(this.database);
+
+  static const profileId = 'primary-profile';
+  static const organizationId = 'primary-organization';
+  static const employmentId = 'primary-employment';
+
+  final db.AppDatabase database;
+
+  @override
+  Future<bool> hasCompletedSetup() async {
+    final employment = await (database.select(
+      database.employments,
+    )..where((row) => row.id.equals(employmentId))).getSingleOrNull();
+    return employment != null;
+  }
+
+  @override
+  Future<InitialPFSetup?> load() async {
+    final profile = await (database.select(
+      database.userProfiles,
+    )..where((row) => row.id.equals(profileId))).getSingleOrNull();
+    final organization = await (database.select(
+      database.organizations,
+    )..where((row) => row.id.equals(organizationId))).getSingleOrNull();
+    final employment = await (database.select(
+      database.employments,
+    )..where((row) => row.id.equals(employmentId))).getSingleOrNull();
+    final salary =
+        await (database.select(database.salaryHistoryRows)
+              ..where((row) => row.employmentId.equals(employmentId))
+              ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)])
+              ..limit(1))
+            .getSingleOrNull();
+    final rule =
+        await (database.select(database.pfRuleVersions)
+              ..where((row) => row.organizationId.equals(organizationId))
+              ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)])
+              ..limit(1))
+            .getSingleOrNull();
+    final schedule =
+        await (database.select(database.salarySchedules)
+              ..where((row) => row.organizationId.equals(organizationId))
+              ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)])
+              ..limit(1))
+            .getSingleOrNull();
+    if (profile == null ||
+        organization == null ||
+        employment == null ||
+        salary == null ||
+        rule == null ||
+        schedule == null) {
+      return null;
+    }
+    return InitialPFSetup(
+      employeeName: profile.employeeName,
+      employeeCode: profile.employeeCode,
+      organizationName: organization.name,
+      joiningDate: employment.joiningDate,
+      permanentDate: employment.permanentDate,
+      pfStartDate: employment.pfStartDate,
+      salary: DriftSalaryRepository._salaryFromRow(salary),
+      rule: DriftPFRuleRepository._ruleFromRow(rule),
+      salarySchedule: EffectiveSalarySchedule(
+        id: schedule.id,
+        effectiveFrom: schedule.effectiveFrom,
+        schedule: SalarySchedule(
+          paymentMonthOffset: schedule.paymentMonthOffset,
+          paymentWindowStartDay: schedule.paymentWindowStartDay,
+          paymentWindowEndDay: schedule.paymentWindowEndDay,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> save(InitialPFSetup setup) async {
+    final now = setup.salary.updatedAt;
+    await database.transaction(() async {
+      await database
+          .into(database.userProfiles)
+          .insertOnConflictUpdate(
+            db.UserProfilesCompanion.insert(
+              id: profileId,
+              employeeName: setup.employeeName.trim(),
+              employeeCode: Value(_trimmedOrNull(setup.employeeCode)),
+              preferredCurrency: setup.salary.grossSalary.currencyCode,
+              createdAt: setup.salary.createdAt,
+              updatedAt: now,
+            ),
+          );
+      await database
+          .into(database.organizations)
+          .insertOnConflictUpdate(
+            db.OrganizationsCompanion.insert(
+              id: organizationId,
+              name: setup.organizationName.trim(),
+              currencyCode: setup.salary.grossSalary.currencyCode,
+              createdAt: setup.rule.createdAt,
+              updatedAt: now,
+            ),
+          );
+      await database
+          .into(database.employments)
+          .insertOnConflictUpdate(
+            db.EmploymentsCompanion.insert(
+              id: employmentId,
+              profileId: profileId,
+              organizationId: organizationId,
+              joiningDate: _dateOnly(setup.joiningDate),
+              permanentDate: Value(
+                setup.permanentDate == null
+                    ? null
+                    : _dateOnly(setup.permanentDate!),
+              ),
+              pfStartDate: _dateOnly(setup.pfStartDate),
+              createdAt: setup.salary.createdAt,
+              updatedAt: now,
+            ),
+          );
+      await DriftSalaryRepository(database).save(setup.salary);
+      await DriftPFRuleRepository(database).save(setup.rule);
+      final schedule = setup.salarySchedule;
+      await database
+          .into(database.salarySchedules)
+          .insertOnConflictUpdate(
+            db.SalarySchedulesCompanion.insert(
+              id: schedule.id,
+              organizationId: organizationId,
+              effectiveFrom: _dateOnly(schedule.effectiveFrom),
+              paymentMonthOffset: schedule.schedule.paymentMonthOffset,
+              paymentWindowStartDay: schedule.schedule.paymentWindowStartDay,
+              paymentWindowEndDay: schedule.schedule.paymentWindowEndDay,
+              createdAt: setup.salary.createdAt,
+              updatedAt: now,
+            ),
+          );
+    });
+  }
+}
+
+String? _trimmedOrNull(String? value) {
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
 }
 
 StoredMonthlyPFRecord _copyRecord(

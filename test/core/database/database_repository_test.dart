@@ -8,6 +8,7 @@ import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
 
 void main() {
@@ -100,6 +101,62 @@ void main() {
       expect(stored.notificationsEnabled, isFalse);
     },
   );
+
+  test('initial setup is saved and loaded atomically', () async {
+    final repository = DriftInitialSetupRepository(database);
+    final setup = InitialPFSetup(
+      employeeName: 'Zahid Alam',
+      employeeCode: 'PF-100',
+      organizationName: 'Example Company',
+      joiningDate: DateTime(2024),
+      permanentDate: DateTime(2024, 7),
+      pfStartDate: DateTime(2025),
+      salary: StoredSalary(
+        id: 'initial-salary',
+        employmentId: DriftInitialSetupRepository.employmentId,
+        effectiveFrom: DateTime(2025),
+        grossSalary: Money.parse('30000'),
+        createdAt: now,
+        updatedAt: now,
+      ),
+      rule: StoredPFRule(
+        rule: PFRuleVersion(
+          id: 'initial-pf-rule',
+          effectiveFrom: DateTime(2025),
+          basicSalaryRate: Rate.fromPercent('60'),
+          employeePFRate: Rate.fromPercent('10'),
+          employerPFRate: Rate.fromPercent('10'),
+          maturityMonths: 24,
+          maturityBasis: MaturityBasis.joiningDate,
+        ),
+        organizationId: DriftInitialSetupRepository.organizationId,
+        partialMonthPolicy: PartialMonthPolicy.fullContribution,
+        effectiveVersionPolicy: EffectiveVersionPolicy.monthEnd,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      salarySchedule: EffectiveSalarySchedule(
+        id: 'initial-schedule',
+        effectiveFrom: DateTime(2025),
+        schedule: const SalarySchedule(
+          paymentMonthOffset: 1,
+          paymentWindowStartDay: 1,
+          paymentWindowEndDay: 5,
+        ),
+      ),
+    );
+
+    expect(await repository.hasCompletedSetup(), isFalse);
+    await repository.save(setup);
+
+    expect(await repository.hasCompletedSetup(), isTrue);
+    final loaded = await repository.load();
+    expect(loaded!.employeeName, 'Zahid Alam');
+    expect(loaded.organizationName, 'Example Company');
+    expect(loaded.salary.grossSalary, Money.parse('30000'));
+    expect(loaded.rule.rule.maturityMonths, 24);
+    expect(loaded.salarySchedule.schedule.paymentWindowEndDay, 5);
+  });
 
   test(
     'manual adjustment preserves the original calculated snapshot',

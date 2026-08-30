@@ -13,6 +13,10 @@ final GoRouter appRouter = GoRouter(
       path: '/setup',
       builder: (context, state) => const OnboardingScreen(),
     ),
+    GoRoute(
+      path: '/setup/edit',
+      builder: (context, state) => const OnboardingScreen(editExisting: true),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return AppShell(navigationShell: navigationShell);

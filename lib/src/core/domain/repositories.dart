@@ -1,5 +1,6 @@
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
 
 abstract interface class SalaryRepository {
@@ -41,4 +42,10 @@ abstract interface class AutomationNotificationGateway {
   Future<void> initialize();
   Future<bool> requestPermission();
   Future<void> show(AutomationNotification notification);
+}
+
+abstract interface class InitialSetupRepository {
+  Future<bool> hasCompletedSetup();
+  Future<InitialPFSetup?> load();
+  Future<void> save(InitialPFSetup setup);
 }

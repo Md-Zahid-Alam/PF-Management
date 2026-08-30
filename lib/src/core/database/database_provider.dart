@@ -25,3 +25,7 @@ final automationSettingsRepositoryProvider =
     Provider<AutomationSettingsRepository>((ref) {
       return DriftAutomationSettingsRepository(ref.watch(appDatabaseProvider));
     });
+
+final initialSetupRepositoryProvider = Provider<InitialSetupRepository>((ref) {
+  return DriftInitialSetupRepository(ref.watch(appDatabaseProvider));
+});
