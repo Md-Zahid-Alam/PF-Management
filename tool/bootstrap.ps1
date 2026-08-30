@@ -7,6 +7,9 @@ if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
 flutter create --platforms=android --org=com.zahidalam --project-name=pf_tracker .
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+dart run tool/configure_android_host.dart
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 flutter pub get
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

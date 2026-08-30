@@ -33,6 +33,6 @@ chmod +x tool/*.sh
 ./tool/verify.sh
 ```
 
-Bootstrap generates the Android Gradle host, resolves dependencies, and generates Drift sources. Verification checks formatting, analyzes source, runs tests, and builds `build/app/outputs/flutter-apk/app-debug.apk`.
+Bootstrap generates the Android Gradle host, configures its Java 17 and core-library desugaring requirements for local notifications, resolves dependencies, and generates Drift sources. Verification checks formatting, analyzes source, runs tests, and builds `build/app/outputs/flutter-apk/app-debug.apk`.
 
 Package and Gradle downloads require internet during initial build setup. The installed version 1 app has no backend and needs no internet.

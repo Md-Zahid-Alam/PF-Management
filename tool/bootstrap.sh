@@ -7,6 +7,7 @@ command -v flutter >/dev/null || {
 }
 
 flutter create --platforms=android --org=com.zahidalam --project-name=pf_tracker .
+dart run tool/configure_android_host.dart
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 echo 'Bootstrap complete. Run tool/verify.sh next.'

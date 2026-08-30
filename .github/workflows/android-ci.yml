@@ -47,6 +47,9 @@ jobs:
           --project-name=pf_tracker
           .
 
+      - name: Configure Android notification requirements
+        run: dart run tool/configure_android_host.dart
+
       - name: Resolve dependencies
         run: flutter pub get
 
