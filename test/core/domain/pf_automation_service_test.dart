@@ -163,7 +163,7 @@ void main() {
       salaryHistory: <StoredSalary>[_salary(gross: '40000')],
       ruleHistory: <StoredPFRule>[_rule()],
       schedules: <EffectiveSalarySchedule>[_schedule],
-      replaceManualMonths: const <YearMonth>{YearMonth(2026, 1)},
+      replaceManualMonths: <YearMonth>{const YearMonth(2026, 1)},
     );
     expect(records.items.first.grossSalary, Money.parse('40000'));
     expect(records.items.first.status, 'automaticallyCalculated');
