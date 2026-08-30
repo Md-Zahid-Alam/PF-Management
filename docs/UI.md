@@ -13,6 +13,10 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Atomic persistence of the full initial setup
 - Restart detection that bypasses onboarding after a complete setup exists
 - Reopening the setup editor from Profile, Organization & PF Rules, or Salary Schedule in Settings
+- Effective-dated salary history with add, edit, and protected deletion
+- Monthly PF record search plus year and status filtering
+- Manual month calculation through the deterministic calculation engine
+- Duplicate-safe monthly creation and confirmed record deletion
 
 ## Validation and safety
 

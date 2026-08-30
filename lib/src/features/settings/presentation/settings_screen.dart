@@ -33,6 +33,13 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/setup/edit'),
           ),
+          ListTile(
+            leading: const Icon(Icons.payments_outlined),
+            title: const Text('Salary History'),
+            subtitle: const Text('Effective-dated salary changes'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/salary-history'),
+          ),
           const Divider(),
           const ListTile(
             enabled: false,
