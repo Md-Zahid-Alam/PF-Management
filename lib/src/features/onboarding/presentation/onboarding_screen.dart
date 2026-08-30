@@ -134,7 +134,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       label: 'Joining date',
                       value: _joiningDate,
                       onChanged: (value) => setState(() {
-                        _joiningDate = value;
+                        _joiningDate = value!;
                       }),
                     ),
                     const SizedBox(height: 12),
@@ -151,7 +151,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       label: 'PF start date',
                       value: _pfStartDate,
                       onChanged: (value) => setState(() {
-                        _pfStartDate = value;
+                        _pfStartDate = value!;
                       }),
                     ),
                   ],
