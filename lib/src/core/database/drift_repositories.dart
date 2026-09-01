@@ -460,7 +460,7 @@ class DriftMonthlyPFRepository implements MonthlyPFRepository {
         currencyCode,
       ),
       manuallyAdjustedAt: row.manuallyAdjustedAt,
-      confirmedAt: row.confirmedAt,
+      confirmedAt: row.confirmedAt?.toUtc(),
       notes: row.notes,
     );
   }
