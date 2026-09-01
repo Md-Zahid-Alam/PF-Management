@@ -4,6 +4,8 @@ import 'package:pf_tracker/src/features/calculator/presentation/pf_calculator_sc
 import 'package:pf_tracker/src/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_records_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/manual_pf_record_screen.dart';
+import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_record_adjustment_screen.dart';
+import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_record_detail_screen.dart';
 import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_history_screen.dart';
@@ -39,6 +41,24 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/records/add',
       builder: (context, state) => const ManualPFRecordScreen(),
+    ),
+    GoRoute(
+      path: '/records/:recordId',
+      builder: (context, state) {
+        return MonthlyRecordDetailScreen(
+          recordId: state.pathParameters['recordId']!,
+        );
+      },
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'adjust',
+          builder: (context, state) {
+            return MonthlyRecordAdjustmentScreen(
+              recordId: state.pathParameters['recordId']!,
+            );
+          },
+        ),
+      ],
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

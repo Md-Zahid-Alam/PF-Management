@@ -4,7 +4,7 @@ Offline-first Provident Fund tracker for Android, built with Flutter and a layer
 
 ## Current phase
 
-Phase 6 UI is in progress. The current slice adds effective-dated Salary History and functional Monthly PF Records with search/filtering, manual engine-backed month calculation, duplicate protection, status display, and confirmed deletion. Persistent onboarding, responsive navigation, the dashboard foundation, and PF calculator are already CI-verified.
+Phase 6 UI is in progress. The current slice adds live dashboard totals and maturity/exit summaries plus monthly record details, audited manual adjustments, and confirmation status. Salary History, searchable Monthly PF Records, persistent onboarding, responsive navigation, and the PF calculator are already CI-verified.
 
 ## Command-line bootstrap and verification
 

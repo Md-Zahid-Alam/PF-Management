@@ -17,6 +17,10 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Monthly PF record search plus year and status filtering
 - Manual month calculation through the deterministic calculation engine
 - Duplicate-safe monthly creation and confirmed record deletion
+- Live dashboard totals, current receivable estimate, maturity date, and Auto Calculate status
+- Complete monthly record detail view with scheduled and actual dates
+- Audited manual adjustment that retains the original calculated snapshot
+- Reviewed/confirmed monthly record status
 
 ## Validation and safety
 

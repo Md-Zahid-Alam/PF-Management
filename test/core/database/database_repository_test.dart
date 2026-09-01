@@ -197,6 +197,21 @@ void main() {
     },
   );
 
+  test('monthly record confirmation persists its reviewed status', () async {
+    final repository = DriftMonthlyPFRepository(database);
+    await repository.create(_monthlyRecord(now: now));
+    final confirmedAt = now.add(const Duration(minutes: 5));
+
+    await repository.confirm('monthly-1', confirmedAt);
+
+    final stored = await repository.findByMonth(
+      'employment-1',
+      const YearMonth(2026, 4),
+    );
+    expect(stored!.status, 'confirmed');
+    expect(stored.confirmedAt, confirmedAt);
+  });
+
   test('used PF rules are protected from deletion', () async {
     final rules = DriftPFRuleRepository(database);
     final storedRule = _storedRule(now);

@@ -127,6 +127,8 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
                             const SizedBox(height: 10),
                         itemBuilder: (context, index) => _RecordCard(
                           record: filtered[index],
+                          onOpen: () =>
+                              context.push('/records/${filtered[index].id}'),
                           onDelete: () => _confirmDelete(filtered[index]),
                         ),
                       ),
@@ -184,46 +186,65 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
 }
 
 class _RecordCard extends StatelessWidget {
-  const _RecordCard({required this.record, required this.onDelete});
+  const _RecordCard({
+    required this.record,
+    required this.onOpen,
+    required this.onDelete,
+  });
 
   final StoredMonthlyPFRecord record;
+  final VoidCallback onOpen;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final total = record.employeeContribution + record.employerContribution;
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    DateFormat.yMMMM().format(record.month.firstDay),
-                    style: Theme.of(context).textTheme.titleLarge,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      DateFormat.yMMMM().format(record.month.firstDay),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
-                ),
-                Chip(label: Text(_statusLabel(record.status))),
-                IconButton(
-                  tooltip: 'Delete record',
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _AmountLine(label: 'Employee', amount: record.employeeContribution),
-            _AmountLine(label: 'Company', amount: record.employerContribution),
-            const Divider(),
-            _AmountLine(label: 'Total contribution', amount: total, bold: true),
-            if (record.salaryCreditedDate != null)
-              Text(
-                'Salary credited ${DateFormat.yMMMd().format(record.salaryCreditedDate!)}',
+                  Chip(label: Text(_statusLabel(record.status))),
+                  IconButton(
+                    tooltip: 'Delete record',
+                    onPressed: onDelete,
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ],
               ),
-          ],
+              const SizedBox(height: 10),
+              _AmountLine(
+                label: 'Employee',
+                amount: record.employeeContribution,
+              ),
+              _AmountLine(
+                label: 'Company',
+                amount: record.employerContribution,
+              ),
+              const Divider(),
+              _AmountLine(
+                label: 'Total contribution',
+                amount: total,
+                bold: true,
+              ),
+              if (record.salaryCreditedDate != null)
+                Text(
+                  'Salary credited ${DateFormat.yMMMd().format(record.salaryCreditedDate!)}',
+                ),
+            ],
+          ),
         ),
       ),
     );
