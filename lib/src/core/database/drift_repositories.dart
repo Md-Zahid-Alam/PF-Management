@@ -508,9 +508,7 @@ class DriftProfitRepository implements ProfitRepository {
   final db.AppDatabase database;
 
   @override
-  Future<List<StoredProfitRecord>> getForEmployment(
-    String employmentId,
-  ) async {
+  Future<List<StoredProfitRecord>> getForEmployment(String employmentId) async {
     final query = database.select(database.profitRecords)
       ..where((row) => row.employmentId.equals(employmentId))
       ..orderBy([(row) => OrderingTerm.asc(row.creditedDate)]);
@@ -564,11 +562,7 @@ class DriftProfitRepository implements ProfitRepository {
       periodStart: row.periodStart,
       periodEnd: row.periodEnd,
       creditedDate: row.creditedDate,
-      amount: _money(
-        row.amountMinorUnits,
-        row.decimalPlaces,
-        row.currencyCode,
-      ),
+      amount: _money(row.amountMinorUnits, row.decimalPlaces, row.currencyCode),
       optionalRate: row.optionalRatePpm == null
           ? null
           : Rate.fromPartsPerMillion(row.optionalRatePpm!),

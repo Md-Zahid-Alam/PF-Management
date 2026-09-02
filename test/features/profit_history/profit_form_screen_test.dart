@@ -11,9 +11,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          profitRepositoryProvider.overrideWithValue(
-            _MemoryProfitRepository(),
-          ),
+          profitRepositoryProvider.overrideWithValue(_MemoryProfitRepository()),
         ],
         child: const MaterialApp(home: ProfitFormScreen()),
       ),
@@ -32,9 +30,7 @@ class _MemoryProfitRepository implements ProfitRepository {
   Future<void> delete(String id) async {}
 
   @override
-  Future<List<StoredProfitRecord>> getForEmployment(
-    String employmentId,
-  ) async {
+  Future<List<StoredProfitRecord>> getForEmployment(String employmentId) async {
     return <StoredProfitRecord>[];
   }
 
