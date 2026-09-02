@@ -33,6 +33,12 @@ abstract interface class MonthlyPFRepository {
   Future<void> delete(String id);
 }
 
+abstract interface class ProfitRepository {
+  Future<List<StoredProfitRecord>> getForEmployment(String employmentId);
+  Future<void> save(StoredProfitRecord record);
+  Future<void> delete(String id);
+}
+
 abstract interface class AutomationSettingsRepository {
   Future<AutomationSettings> get();
   Future<void> save(AutomationSettings settings);

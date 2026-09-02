@@ -102,3 +102,33 @@ class StoredMonthlyPFRecord {
   final DateTime? confirmedAt;
   final String? notes;
 }
+
+class StoredProfitRecord {
+  const StoredProfitRecord({
+    required this.id,
+    required this.employmentId,
+    required this.creditedDate,
+    required this.amount,
+    required this.createdAt,
+    required this.updatedAt,
+    this.periodStart,
+    this.periodEnd,
+    this.optionalRate,
+    this.calculationMethod,
+    this.sourceReference,
+    this.notes,
+  });
+
+  final String id;
+  final String employmentId;
+  final DateTime? periodStart;
+  final DateTime? periodEnd;
+  final DateTime creditedDate;
+  final Money amount;
+  final Rate? optionalRate;
+  final String? calculationMethod;
+  final String? sourceReference;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}

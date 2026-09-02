@@ -40,6 +40,13 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/salary-history'),
           ),
+          ListTile(
+            leading: const Icon(Icons.trending_up),
+            title: const Text('Profit History'),
+            subtitle: const Text('Credited PF profit and statement details'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/profit-history'),
+          ),
           const Divider(),
           const ListTile(
             enabled: false,

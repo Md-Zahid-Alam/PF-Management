@@ -502,6 +502,83 @@ class DriftAutomationSettingsRepository
   }
 }
 
+class DriftProfitRepository implements ProfitRepository {
+  DriftProfitRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<List<StoredProfitRecord>> getForEmployment(
+    String employmentId,
+  ) async {
+    final query = database.select(database.profitRecords)
+      ..where((row) => row.employmentId.equals(employmentId))
+      ..orderBy([(row) => OrderingTerm.asc(row.creditedDate)]);
+    return (await query.get()).map(_fromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> save(StoredProfitRecord record) async {
+    final periodStart = record.periodStart;
+    final periodEnd = record.periodEnd;
+    if (periodStart != null &&
+        periodEnd != null &&
+        periodEnd.isBefore(periodStart)) {
+      throw ArgumentError('Profit period end cannot precede its start.');
+    }
+    await database.into(database.profitRecords).insertOnConflictUpdate(
+          db.ProfitRecordsCompanion.insert(
+            id: record.id,
+            employmentId: record.employmentId,
+            periodStart: Value(
+              periodStart == null ? null : _dateOnly(periodStart),
+            ),
+            periodEnd: Value(periodEnd == null ? null : _dateOnly(periodEnd)),
+            creditedDate: _dateOnly(record.creditedDate),
+            amountMinorUnits: record.amount.minorUnits,
+            decimalPlaces: record.amount.decimalPlaces,
+            currencyCode: record.amount.currencyCode,
+            optionalRatePpm: Value(record.optionalRate?.partsPerMillion),
+            calculationMethod: Value(record.calculationMethod),
+            sourceReference: Value(record.sourceReference),
+            notes: Value(record.notes),
+            createdAt: record.createdAt,
+            updatedAt: record.updatedAt,
+          ),
+        );
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    await (database.delete(
+      database.profitRecords,
+    )..where((row) => row.id.equals(id))).go();
+  }
+
+  static StoredProfitRecord _fromRow(db.ProfitRecord row) {
+    return StoredProfitRecord(
+      id: row.id,
+      employmentId: row.employmentId,
+      periodStart: row.periodStart,
+      periodEnd: row.periodEnd,
+      creditedDate: row.creditedDate,
+      amount: _money(
+        row.amountMinorUnits,
+        row.decimalPlaces,
+        row.currencyCode,
+      ),
+      optionalRate: row.optionalRatePpm == null
+          ? null
+          : Rate.fromPartsPerMillion(row.optionalRatePpm!),
+      calculationMethod: row.calculationMethod,
+      sourceReference: row.sourceReference,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    );
+  }
+}
+
 class DriftInitialSetupRepository implements InitialSetupRepository {
   DriftInitialSetupRepository(this.database);
 

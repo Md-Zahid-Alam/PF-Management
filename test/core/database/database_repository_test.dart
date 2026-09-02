@@ -212,6 +212,71 @@ void main() {
     expect(stored.confirmedAt, confirmedAt);
   });
 
+  test(
+    'profit repository persists, edits, and deletes profit history',
+    () async {
+      final repository = DriftProfitRepository(database);
+      final original = StoredProfitRecord(
+        id: 'profit-1',
+        employmentId: 'employment-1',
+        periodStart: DateTime(2025, 7),
+        periodEnd: DateTime(2026, 6, 30),
+        creditedDate: DateTime(2026, 8, 15),
+        amount: Money.parse('12500'),
+        optionalRate: Rate.fromPercent('7.5'),
+        calculationMethod: 'Annual statement',
+        sourceReference: 'PF-2026',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await repository.save(original);
+      var stored = (await repository.getForEmployment('employment-1')).single;
+      expect(stored.amount, Money.parse('12500'));
+      expect(stored.optionalRate, Rate.fromPercent('7.5'));
+      expect(stored.sourceReference, 'PF-2026');
+
+      await repository.save(
+        StoredProfitRecord(
+          id: original.id,
+          employmentId: original.employmentId,
+          periodStart: original.periodStart,
+          periodEnd: original.periodEnd,
+          creditedDate: original.creditedDate,
+          amount: Money.parse('13000'),
+          notes: 'Corrected statement',
+          createdAt: original.createdAt,
+          updatedAt: now.add(const Duration(minutes: 1)),
+        ),
+      );
+      stored = (await repository.getForEmployment('employment-1')).single;
+      expect(stored.amount, Money.parse('13000'));
+      expect(stored.notes, 'Corrected statement');
+
+      await repository.delete(original.id);
+      expect(await repository.getForEmployment('employment-1'), isEmpty);
+    },
+  );
+
+  test('profit repository rejects a reversed statement period', () async {
+    final repository = DriftProfitRepository(database);
+    await expectLater(
+      repository.save(
+        StoredProfitRecord(
+          id: 'profit-invalid',
+          employmentId: 'employment-1',
+          periodStart: DateTime(2026, 7),
+          periodEnd: DateTime(2026, 6),
+          creditedDate: DateTime(2026, 8),
+          amount: Money.parse('1000'),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ),
+      throwsArgumentError,
+    );
+  });
+
   test('used PF rules are protected from deletion', () async {
     final rules = DriftPFRuleRepository(database);
     final storedRule = _storedRule(now);

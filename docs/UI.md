@@ -21,6 +21,7 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Complete monthly record detail view with scheduled and actual dates
 - Audited manual adjustment that retains the original calculated snapshot
 - Reviewed/confirmed monthly record status
+- Profit history with add, edit, delete, optional statement period, rate, method, and reference
 
 ## Validation and safety
 
