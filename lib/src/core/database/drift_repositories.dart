@@ -526,7 +526,9 @@ class DriftProfitRepository implements ProfitRepository {
         periodEnd.isBefore(periodStart)) {
       throw ArgumentError('Profit period end cannot precede its start.');
     }
-    await database.into(database.profitRecords).insertOnConflictUpdate(
+    await database
+        .into(database.profitRecords)
+        .insertOnConflictUpdate(
           db.ProfitRecordsCompanion.insert(
             id: record.id,
             employmentId: record.employmentId,

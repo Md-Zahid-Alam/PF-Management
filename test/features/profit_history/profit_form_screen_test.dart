@@ -11,7 +11,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          profitRepositoryProvider.overrideWithValue(_MemoryProfitRepository()),
+          profitRepositoryProvider.overrideWithValue(
+            _MemoryProfitRepository(),
+          ),
         ],
         child: const MaterialApp(home: ProfitFormScreen()),
       ),
