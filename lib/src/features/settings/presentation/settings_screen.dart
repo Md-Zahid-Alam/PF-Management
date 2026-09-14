@@ -129,10 +129,7 @@ class _AutomationSettingsSection extends ConsumerWidget {
                   return;
                 }
               }
-              await _save(
-                ref,
-                value.copyWith(notificationsEnabled: enabled),
-              );
+              await _save(ref, value.copyWith(notificationsEnabled: enabled));
             },
           ),
         ],

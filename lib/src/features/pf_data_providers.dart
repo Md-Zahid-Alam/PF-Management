@@ -44,9 +44,7 @@ final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
   final ruleRepository = ref.watch(pfRuleRepositoryProvider);
   final monthlyRepository = ref.watch(monthlyPFRepositoryProvider);
   final settingsRepository = ref.watch(automationSettingsRepositoryProvider);
-  final notificationGateway = ref.watch(
-    automationNotificationGatewayProvider,
-  );
+  final notificationGateway = ref.watch(automationNotificationGatewayProvider);
 
   final setup = await setupRepository.load();
   if (setup == null) {
