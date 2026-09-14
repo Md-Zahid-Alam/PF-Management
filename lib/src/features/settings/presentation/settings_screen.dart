@@ -120,7 +120,9 @@ class _AutomationSettingsSection extends ConsumerWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Notification permission was not granted.'),
+                        content: Text(
+                          'Notification permission was not granted.',
+                        ),
                       ),
                     );
                   }

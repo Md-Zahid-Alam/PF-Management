@@ -76,8 +76,7 @@ final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
     schedules: <EffectiveSalarySchedule>[setup.salarySchedule],
   );
   if (results.any(
-    (result) =>
-        result.status == AutomationPeriodStatus.automaticallyCalculated,
+    (result) => result.status == AutomationPeriodStatus.automaticallyCalculated,
   )) {
     ref.invalidate(monthlyPFRecordsProvider);
   }
