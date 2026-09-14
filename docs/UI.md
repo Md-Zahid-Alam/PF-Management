@@ -23,9 +23,10 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Reviewed/confirmed monthly record status
 - Profit history with add, edit, delete, optional statement period, rate, method, and reference
 - Effective-dated PF rule history with add, safe edit, protected deletion, and duplicate-as-new-version flows
+- PF statement-year reports grouped by PF work month with opening, contribution, profit, adjustment, and closing totals
 
 ## Validation and safety
 
 The setup flow prevents missing required names and salary, invalid percentages, invalid schedule days, a PF/permanent date before joining, a reversed payment window, and permanent-date maturity without a permanent date. A failed database transaction leaves no partial setup.
 
-Remaining Phase 6 screens will reuse the same navigation, theme, repository boundaries, validation patterns, and confirmation rules.
+Phase 7 reporting builds on the same navigation, domain calculation, repository boundaries, and validation patterns.

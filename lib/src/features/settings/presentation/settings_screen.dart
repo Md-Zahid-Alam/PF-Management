@@ -62,6 +62,13 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/profit-history'),
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.assessment_outlined),
+            title: const Text('PF Reports'),
+            subtitle: const Text('Statement-year balances and contributions'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/reports'),
+          ),
           const ListTile(
             enabled: false,
             leading: Icon(Icons.backup_outlined),

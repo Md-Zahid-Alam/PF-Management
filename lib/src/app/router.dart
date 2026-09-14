@@ -9,6 +9,7 @@ import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_rec
 import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_form_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_history_screen.dart';
+import 'package:pf_tracker/src/features/reports/presentation/pf_reports_screen.dart';
 import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_form_screen.dart';
 import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_history_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
@@ -57,6 +58,10 @@ final GoRouter appRouter = GoRouter(
           },
         ),
       ],
+    ),
+    GoRoute(
+      path: '/reports',
+      builder: (context, state) => const PFReportsScreen(),
     ),
     GoRoute(
       path: '/pf-rule-history',
