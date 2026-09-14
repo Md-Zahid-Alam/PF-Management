@@ -25,6 +25,11 @@ final profitRepositoryProvider = Provider<ProfitRepository>((ref) {
   return DriftProfitRepository(ref.watch(appDatabaseProvider));
 });
 
+final actualPFStatementRepositoryProvider =
+    Provider<ActualPFStatementRepository>((ref) {
+      return DriftActualPFStatementRepository(ref.watch(appDatabaseProvider));
+    });
+
 final automationSettingsRepositoryProvider =
     Provider<AutomationSettingsRepository>((ref) {
       return DriftAutomationSettingsRepository(ref.watch(appDatabaseProvider));

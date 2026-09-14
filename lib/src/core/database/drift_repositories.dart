@@ -608,6 +608,93 @@ class DriftProfitRepository implements ProfitRepository {
   }
 }
 
+class DriftActualPFStatementRepository implements ActualPFStatementRepository {
+  DriftActualPFStatementRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<List<StoredActualPFStatement>> getForEmployment(
+    String employmentId,
+  ) async {
+    final query = database.select(database.actualPfStatements)
+      ..where((row) => row.employmentId.equals(employmentId))
+      ..orderBy([(row) => OrderingTerm.desc(row.statementStartYear)]);
+    return (await query.get()).map(_fromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> save(StoredActualPFStatement statement) async {
+    await database
+        .into(database.actualPfStatements)
+        .insertOnConflictUpdate(
+          db.ActualPfStatementsCompanion.insert(
+            id: statement.id,
+            employmentId: statement.employmentId,
+            statementStartYear: statement.statementStartYear,
+            statementDate: Value(statement.statementDate),
+            openingMinorUnits: Value(
+              statement.snapshot.openingBalance?.minorUnits,
+            ),
+            employeeMinorUnits: Value(
+              statement.snapshot.employeeContribution?.minorUnits,
+            ),
+            employerMinorUnits: Value(
+              statement.snapshot.employerContribution?.minorUnits,
+            ),
+            profitMinorUnits: Value(statement.snapshot.profit?.minorUnits),
+            adjustmentMinorUnits: Value(
+              statement.snapshot.adjustments?.minorUnits,
+            ),
+            closingMinorUnits: Value(
+              statement.snapshot.closingBalance?.minorUnits,
+            ),
+            decimalPlaces: statement.decimalPlaces,
+            currencyCode: statement.currencyCode,
+            notes: Value(statement.notes),
+            createdAt: statement.createdAt,
+            updatedAt: statement.updatedAt,
+          ),
+        );
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    await (database.delete(
+      database.actualPfStatements,
+    )..where((row) => row.id.equals(id))).go();
+  }
+
+  static StoredActualPFStatement _fromRow(db.ActualPfStatement row) {
+    Money? amount(int? value) => value == null
+        ? null
+        : Money.fromMinorUnits(
+            value,
+            decimalPlaces: row.decimalPlaces,
+            currencyCode: row.currencyCode,
+          );
+    return StoredActualPFStatement(
+      id: row.id,
+      employmentId: row.employmentId,
+      statementStartYear: row.statementStartYear,
+      statementDate: row.statementDate,
+      snapshot: StatementSnapshot(
+        openingBalance: amount(row.openingMinorUnits),
+        employeeContribution: amount(row.employeeMinorUnits),
+        employerContribution: amount(row.employerMinorUnits),
+        profit: amount(row.profitMinorUnits),
+        adjustments: amount(row.adjustmentMinorUnits),
+        closingBalance: amount(row.closingMinorUnits),
+      ),
+      decimalPlaces: row.decimalPlaces,
+      currencyCode: row.currencyCode,
+      notes: row.notes,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    );
+  }
+}
+
 class DriftInitialSetupRepository implements InitialSetupRepository {
   DriftInitialSetupRepository(this.database);
 

@@ -38,6 +38,13 @@ final profitHistoryProvider = FutureProvider<List<StoredProfitRecord>>((ref) {
       .getForEmployment(DriftInitialSetupRepository.employmentId);
 });
 
+final actualPFStatementsProvider =
+    FutureProvider<List<StoredActualPFStatement>>((ref) {
+      return ref
+          .watch(actualPFStatementRepositoryProvider)
+          .getForEmployment(DriftInitialSetupRepository.employmentId);
+    });
+
 final automationSettingsProvider = FutureProvider<AutomationSettings>((ref) {
   return ref.watch(automationSettingsRepositoryProvider).get();
 });

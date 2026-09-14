@@ -353,6 +353,34 @@ void main() {
     expect(await salaries.getForEmployment('employment-1'), hasLength(1));
   });
 
+  test('actual PF statements persist nullable official values', () async {
+    final repository = DriftActualPFStatementRepository(database);
+    await repository.save(
+      StoredActualPFStatement(
+        id: 'actual-2025',
+        employmentId: 'employment-1',
+        statementStartYear: 2025,
+        statementDate: DateTime(2026, 6, 30),
+        snapshot: StatementSnapshot(
+          openingBalance: Money.parse('100000'),
+          employeeContribution: Money.parse('12000'),
+          employerContribution: Money.parse('12000'),
+          closingBalance: Money.parse('128500'),
+        ),
+        decimalPlaces: 0,
+        currencyCode: 'BDT',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    final statement = (await repository.getForEmployment('employment-1'))
+        .single;
+    expect(statement.statementStartYear, 2025);
+    expect(statement.snapshot.closingBalance, Money.parse('128500'));
+    expect(statement.snapshot.profit, isNull);
+  });
+
   test('invalid backup is rejected without deleting current data', () async {
     final service = DatabaseBackupService(database);
 

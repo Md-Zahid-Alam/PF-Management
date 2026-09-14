@@ -132,3 +132,29 @@ class StoredProfitRecord {
   final DateTime createdAt;
   final DateTime updatedAt;
 }
+
+class StoredActualPFStatement {
+  const StoredActualPFStatement({
+    required this.id,
+    required this.employmentId,
+    required this.statementStartYear,
+    required this.snapshot,
+    required this.decimalPlaces,
+    required this.currencyCode,
+    required this.createdAt,
+    required this.updatedAt,
+    this.statementDate,
+    this.notes,
+  });
+
+  final String id;
+  final String employmentId;
+  final int statementStartYear;
+  final DateTime? statementDate;
+  final StatementSnapshot snapshot;
+  final int decimalPlaces;
+  final String currencyCode;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}

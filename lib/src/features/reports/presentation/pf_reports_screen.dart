@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
+import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_report_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
-final pfStatementReportsProvider = FutureProvider<List<PFStatementSummary>>((
+class PFStatementReportView {
+  const PFStatementReportView({
+    required this.summary,
+    required this.actual,
+    required this.comparison,
+  });
+
+  final PFStatementSummary summary;
+  final StoredActualPFStatement? actual;
+  final StatementComparison? comparison;
+}
+
+final pfStatementReportsProvider = FutureProvider<List<PFStatementReportView>>((
   ref,
 ) async {
   final records = await ref.watch(monthlyPFRecordsProvider.future);
   final profits = await ref.watch(profitHistoryProvider.future);
-  return const PFReportService().statementSummaries(
+  final actualStatements = await ref.watch(actualPFStatementsProvider.future);
+  final summaries = const PFReportService().statementSummaries(
     records: records,
     profits: profits,
     configuration: const StatementYearConfiguration(
@@ -19,6 +35,23 @@ final pfStatementReportsProvider = FutureProvider<List<PFStatementSummary>>((
       startDay: 1,
     ),
   );
+  const engine = PFCalculationEngine();
+  return <PFStatementReportView>[
+    for (final summary in summaries)
+      PFStatementReportView(
+        summary: summary,
+        actual: _actualFor(actualStatements, summary.year.startYear),
+        comparison: _actualFor(actualStatements, summary.year.startYear) == null
+            ? null
+            : engine.reconcileStatement(
+                calculated: summary.snapshot,
+                actual: _actualFor(
+                  actualStatements,
+                  summary.year.startYear,
+                )!.snapshot,
+              ),
+      ),
+  ];
 });
 
 class PFReportsScreen extends ConsumerWidget {
@@ -61,12 +94,13 @@ class PFReportsScreen extends ConsumerWidget {
 }
 
 class _StatementCard extends StatelessWidget {
-  const _StatementCard(this.summary);
+  const _StatementCard(this.report);
 
-  final PFStatementSummary summary;
+  final PFStatementReportView report;
 
   @override
   Widget build(BuildContext context) {
+    final summary = report.summary;
     final snapshot = summary.snapshot;
     return Card(
       child: ExpansionTile(
@@ -92,8 +126,85 @@ class _StatementCard extends StatelessWidget {
             snapshot.closingBalance!,
             bold: true,
           ),
+          const SizedBox(height: 12),
+          if (report.comparison == null)
+            const Text('No official statement recorded for comparison.')
+          else
+            Column(
+              children: <Widget>[
+                _ComparisonRow(
+                  label: 'Opening balance',
+                  actual: report.actual!.snapshot.openingBalance,
+                  difference: report.comparison!.openingDifference,
+                ),
+                _ComparisonRow(
+                  label: 'Employee contribution',
+                  actual: report.actual!.snapshot.employeeContribution,
+                  difference: report.comparison!.employeeDifference,
+                ),
+                _ComparisonRow(
+                  label: 'Employer contribution',
+                  actual: report.actual!.snapshot.employerContribution,
+                  difference: report.comparison!.employerDifference,
+                ),
+                _ComparisonRow(
+                  label: 'Profit',
+                  actual: report.actual!.snapshot.profit,
+                  difference: report.comparison!.profitDifference,
+                ),
+                _ComparisonRow(
+                  label: 'Adjustments',
+                  actual: report.actual!.snapshot.adjustments,
+                  difference: report.comparison!.adjustmentDifference,
+                ),
+                _ComparisonRow(
+                  label: 'Closing balance',
+                  actual: report.actual!.snapshot.closingBalance,
+                  difference: report.comparison!.closingDifference,
+                ),
+              ],
+            ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () =>
+                  context.push('/reports/${summary.year.startYear}/actual'),
+              icon: const Icon(Icons.fact_check_outlined),
+              label: Text(
+                report.actual == null
+                    ? 'Add actual statement'
+                    : 'Edit actual statement',
+              ),
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _ComparisonRow extends StatelessWidget {
+  const _ComparisonRow({
+    required this.label,
+    required this.actual,
+    required this.difference,
+  });
+
+  final String label;
+  final Money? actual;
+  final Money? difference;
+
+  @override
+  Widget build(BuildContext context) {
+    if (actual == null) return const SizedBox.shrink();
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      title: Text(label),
+      subtitle: Text(
+        'Difference ${difference == null ? '—' : _formatMoney(difference!)}',
+      ),
+      trailing: Text(_formatMoney(actual!)),
     );
   }
 }
@@ -132,4 +243,14 @@ int _scale(int decimalPlaces) {
     value *= 10;
   }
   return value;
+}
+
+StoredActualPFStatement? _actualFor(
+  List<StoredActualPFStatement> statements,
+  int startYear,
+) {
+  for (final statement in statements) {
+    if (statement.statementStartYear == startYear) return statement;
+  }
+  return null;
 }

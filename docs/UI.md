@@ -24,6 +24,7 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Profit history with add, edit, delete, optional statement period, rate, method, and reference
 - Effective-dated PF rule history with add, safe edit, protected deletion, and duplicate-as-new-version flows
 - PF statement-year reports grouped by PF work month with opening, contribution, profit, adjustment, and closing totals
+- Official actual PF statement entry with nullable fields and calculated-versus-actual closing-balance comparison
 
 ## Validation and safety
 
