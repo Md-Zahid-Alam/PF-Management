@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -57,99 +56,101 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            scrollCacheExtent: const ScrollCacheExtent.pixels(2000),
-            children: <Widget>[
-              TextFormField(
-                key: const Key('profitAmountField'),
-                controller: _amount,
-                decoration: const InputDecoration(
-                  labelText: 'Profit amount',
-                  prefixText: '৳ ',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                TextFormField(
+                  key: const Key('profitAmountField'),
+                  controller: _amount,
+                  decoration: const InputDecoration(
+                    labelText: 'Profit amount',
+                    prefixText: '৳ ',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: _validateAmount,
                 ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: _validateAmount,
-              ),
-              const SizedBox(height: 12),
-              _DateTile(
-                label: 'Credited date',
-                value: _creditedDate,
-                required: true,
-                onTap: () => _pickDate(
-                  initial: _creditedDate,
-                  onSelected: (date) => _creditedDate = date,
-                ),
-              ),
-              _DateTile(
-                label: 'Period start (optional)',
-                value: _periodStart,
-                onTap: () => _pickDate(
-                  initial: _periodStart ?? _creditedDate,
-                  onSelected: (date) => _periodStart = date,
-                ),
-                onClear: () => setState(() => _periodStart = null),
-              ),
-              _DateTile(
-                label: 'Period end (optional)',
-                value: _periodEnd,
-                onTap: () => _pickDate(
-                  initial: _periodEnd ?? _creditedDate,
-                  onSelected: (date) => _periodEnd = date,
-                ),
-                onClear: () => setState(() => _periodEnd = null),
-              ),
-              if (_periodStart != null &&
-                  _periodEnd != null &&
-                  _periodEnd!.isBefore(_periodStart!))
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    'Period end must not be before period start.',
-                    style: TextStyle(color: Colors.red),
+                const SizedBox(height: 12),
+                _DateTile(
+                  label: 'Credited date',
+                  value: _creditedDate,
+                  required: true,
+                  onTap: () => _pickDate(
+                    initial: _creditedDate,
+                    onSelected: (date) => _creditedDate = date,
                   ),
                 ),
-              TextFormField(
-                controller: _rate,
-                decoration: const InputDecoration(
-                  labelText: 'Profit rate (optional)',
-                  suffixText: '%',
+                _DateTile(
+                  label: 'Period start (optional)',
+                  value: _periodStart,
+                  onTap: () => _pickDate(
+                    initial: _periodStart ?? _creditedDate,
+                    onSelected: (date) => _periodStart = date,
+                  ),
+                  onClear: () => setState(() => _periodStart = null),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+                _DateTile(
+                  label: 'Period end (optional)',
+                  value: _periodEnd,
+                  onTap: () => _pickDate(
+                    initial: _periodEnd ?? _creditedDate,
+                    onSelected: (date) => _periodEnd = date,
+                  ),
+                  onClear: () => setState(() => _periodEnd = null),
                 ),
-                validator: _validateRate,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _calculationMethod,
-                decoration: const InputDecoration(
-                  labelText: 'Calculation method (optional)',
+                if (_periodStart != null &&
+                    _periodEnd != null &&
+                    _periodEnd!.isBefore(_periodStart!))
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'Period end must not be before period start.',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                TextFormField(
+                  controller: _rate,
+                  decoration: const InputDecoration(
+                    labelText: 'Profit rate (optional)',
+                    suffixText: '%',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: _validateRate,
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _sourceReference,
-                decoration: const InputDecoration(
-                  labelText: 'Statement/reference (optional)',
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _calculationMethod,
+                  decoration: const InputDecoration(
+                    labelText: 'Calculation method (optional)',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notes,
-                decoration: const InputDecoration(labelText: 'Notes'),
-                minLines: 2,
-                maxLines: 4,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                key: const Key('saveProfitButton'),
-                onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Saving…' : 'Save profit'),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _sourceReference,
+                  decoration: const InputDecoration(
+                    labelText: 'Statement/reference (optional)',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _notes,
+                  decoration: const InputDecoration(labelText: 'Notes'),
+                  minLines: 2,
+                  maxLines: 4,
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  key: const Key('saveProfitButton'),
+                  onPressed: _saving ? null : _save,
+                  child: Text(_saving ? 'Saving…' : 'Save profit'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

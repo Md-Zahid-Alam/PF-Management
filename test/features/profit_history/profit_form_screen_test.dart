@@ -23,7 +23,10 @@ void main() {
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -120),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('saveProfitButton')));
     await tester.pump();
