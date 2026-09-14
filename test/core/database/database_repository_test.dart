@@ -287,6 +287,37 @@ void main() {
     expect(await rules.getForOrganization('organization-1'), hasLength(1));
   });
 
+  test('used PF rules are protected from destructive editing', () async {
+    final rules = DriftPFRuleRepository(database);
+    final storedRule = _storedRule(now);
+    await rules.save(storedRule);
+    await DriftMonthlyPFRepository(database).create(_monthlyRecord(now: now));
+
+    await expectLater(
+      rules.save(
+        StoredPFRule(
+          rule: PFRuleVersion(
+            id: storedRule.rule.id,
+            effectiveFrom: storedRule.rule.effectiveFrom,
+            basicSalaryRate: storedRule.rule.basicSalaryRate,
+            employeePFRate: Rate.fromPercent('12'),
+            employerPFRate: storedRule.rule.employerPFRate,
+            maturityMonths: storedRule.rule.maturityMonths,
+            maturityBasis: storedRule.rule.maturityBasis,
+          ),
+          organizationId: storedRule.organizationId,
+          partialMonthPolicy: storedRule.partialMonthPolicy,
+          effectiveVersionPolicy: storedRule.effectiveVersionPolicy,
+          createdAt: storedRule.createdAt,
+          updatedAt: now.add(const Duration(minutes: 1)),
+        ),
+      ),
+      throwsStateError,
+    );
+    final unchanged = (await rules.getForOrganization('organization-1')).single;
+    expect(unchanged.rule.employeePFRate, Rate.fromPercent('10'));
+  });
+
   test('backup round-trip restores all persisted data atomically', () async {
     final salaries = DriftSalaryRepository(database);
     await salaries.save(

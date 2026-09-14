@@ -18,6 +18,12 @@ final salaryHistoryProvider = FutureProvider<List<StoredSalary>>((ref) {
       .getForEmployment(DriftInitialSetupRepository.employmentId);
 });
 
+final pfRuleHistoryProvider = FutureProvider<List<StoredPFRule>>((ref) {
+  return ref
+      .watch(pfRuleRepositoryProvider)
+      .getForOrganization(DriftInitialSetupRepository.organizationId);
+});
+
 final monthlyPFRecordsProvider = FutureProvider<List<StoredMonthlyPFRecord>>((
   ref,
 ) {

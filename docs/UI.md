@@ -22,6 +22,7 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Audited manual adjustment that retains the original calculated snapshot
 - Reviewed/confirmed monthly record status
 - Profit history with add, edit, delete, optional statement period, rate, method, and reference
+- Effective-dated PF rule history with add, safe edit, protected deletion, and duplicate-as-new-version flows
 
 ## Validation and safety
 

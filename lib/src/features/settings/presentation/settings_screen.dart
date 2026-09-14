@@ -48,6 +48,13 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/salary-history'),
           ),
           ListTile(
+            leading: const Icon(Icons.rule_outlined),
+            title: const Text('PF Rule History'),
+            subtitle: const Text('Effective-dated contribution policies'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/pf-rule-history'),
+          ),
+          ListTile(
             leading: const Icon(Icons.trending_up),
             title: const Text('Profit History'),
             subtitle: const Text('Credited PF profit and statement details'),

@@ -115,6 +115,21 @@ class DriftPFRuleRepository implements PFRuleRepository {
   @override
   Future<void> save(StoredPFRule stored) async {
     final rule = stored.rule;
+    final existing = await (database.select(
+      database.pfRuleVersions,
+    )..where((row) => row.id.equals(rule.id))).getSingleOrNull();
+    if (existing != null && !_sameRule(existing, stored)) {
+      final referenced =
+          await (database.select(database.monthlyPfRecords)
+                ..where((row) => row.ruleVersionId.equals(rule.id))
+                ..limit(1))
+              .getSingleOrNull();
+      if (referenced != null) {
+        throw StateError(
+          'A PF rule used by monthly records cannot be changed. Create a new version.',
+        );
+      }
+    }
     await database
         .into(database.pfRuleVersions)
         .insertOnConflictUpdate(
@@ -181,6 +196,24 @@ class DriftPFRuleRepository implements PFRuleRepository {
       updatedAt: row.updatedAt,
       notes: row.notes,
     );
+  }
+
+  static bool _sameRule(db.PfRuleVersion row, StoredPFRule stored) {
+    final rule = stored.rule;
+    return row.organizationId == stored.organizationId &&
+        row.effectiveFrom == _dateOnly(rule.effectiveFrom) &&
+        row.basicRatePpm == rule.basicSalaryRate.partsPerMillion &&
+        row.employeeRatePpm == rule.employeePFRate.partsPerMillion &&
+        row.employerRatePpm == rule.employerPFRate.partsPerMillion &&
+        row.maturityMonths == rule.maturityMonths &&
+        row.maturityBasis == rule.maturityBasis.name &&
+        row.employerEntitledBeforeMaturity ==
+            rule.employerEntitledBeforeMaturity &&
+        row.employerEntitledAfterMaturity ==
+            rule.employerEntitledAfterMaturity &&
+        row.partialMonthPolicy == stored.partialMonthPolicy.name &&
+        row.effectiveVersionPolicy == stored.effectiveVersionPolicy.name &&
+        row.notes == stored.notes;
   }
 }
 

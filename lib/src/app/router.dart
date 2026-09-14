@@ -9,6 +9,8 @@ import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_rec
 import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_form_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_history_screen.dart';
+import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_form_screen.dart';
+import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_history_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_history_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/settings_screen.dart';
@@ -52,6 +54,24 @@ final GoRouter appRouter = GoRouter(
           path: ':profitId/edit',
           builder: (context, state) {
             return ProfitFormScreen(profitId: state.pathParameters['profitId']);
+          },
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/pf-rule-history',
+      builder: (context, state) => const PFRuleHistoryScreen(),
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'add',
+          builder: (context, state) => PFRuleFormScreen(
+            sourceRuleId: state.uri.queryParameters['source'],
+          ),
+        ),
+        GoRoute(
+          path: ':ruleId/edit',
+          builder: (context, state) {
+            return PFRuleFormScreen(ruleId: state.pathParameters['ruleId']);
           },
         ),
       ],
