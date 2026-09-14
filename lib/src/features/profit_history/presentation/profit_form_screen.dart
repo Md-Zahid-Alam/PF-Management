@@ -58,7 +58,7 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(20),
-            cacheExtent: 2000,
+            scrollCacheExtent: 2000,
             children: <Widget>[
               TextFormField(
                 key: const Key('profitAmountField'),
