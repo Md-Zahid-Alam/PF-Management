@@ -1,12 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/src/app/router.dart';
 import 'package:pf_tracker/src/core/theme/app_theme.dart';
+import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
-class PFTrackerApp extends StatelessWidget {
+class PFTrackerApp extends ConsumerStatefulWidget {
   const PFTrackerApp({super.key});
 
   @override
+  ConsumerState<PFTrackerApp> createState() => _PFTrackerAppState();
+}
+
+class _PFTrackerAppState extends ConsumerState<PFTrackerApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(pfAutomationRunProvider);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    ref.watch(pfAutomationRunProvider);
     return MaterialApp.router(
       title: 'PF Tracker',
       debugShowCheckedModeBanner: false,

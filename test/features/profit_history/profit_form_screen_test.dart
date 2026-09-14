@@ -18,6 +18,11 @@ void main() {
     );
 
     await tester.enterText(find.byKey(const Key('profitAmountField')), '0');
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('saveProfitButton')),
+      200,
+      scrollable: find.byType(Scrollable),
+    );
     await tester.tap(find.byKey(const Key('saveProfitButton')));
     await tester.pump();
 
