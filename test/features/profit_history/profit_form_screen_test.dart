@@ -21,7 +21,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('saveProfitButton')),
       200,
-      scrollable: find.byType(Scrollable),
+      scrollable: find.byType(Scrollable).first,
     );
     await tester.tap(find.byKey(const Key('saveProfitButton')));
     await tester.pump();
