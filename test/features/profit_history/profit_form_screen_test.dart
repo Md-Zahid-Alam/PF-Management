@@ -19,7 +19,10 @@ void main() {
 
     await tester.enterText(find.byKey(const Key('profitAmountField')), '0');
     final saveButton = find.byKey(const Key('saveProfitButton'));
-    await tester.ensureVisible(saveButton);
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -400),
+    );
     await tester.pumpAndSettle();
     await tester.tap(saveButton);
     await tester.pump();
