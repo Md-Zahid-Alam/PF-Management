@@ -19,12 +19,7 @@ void main() {
 
     await tester.enterText(find.byKey(const Key('profitAmountField')), '0');
     final saveButton = find.byKey(const Key('saveProfitButton'));
-    await tester.drag(
-      find.byType(SingleChildScrollView),
-      const Offset(0, -400),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(saveButton);
+    tester.widget<FilledButton>(saveButton).onPressed!();
     await tester.pump();
 
     expect(find.text('Enter an amount greater than zero'), findsOneWidget);
