@@ -18,17 +18,10 @@ void main() {
     );
 
     await tester.enterText(find.byKey(const Key('profitAmountField')), '0');
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('saveProfitButton')),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.drag(
-      find.byType(SingleChildScrollView),
-      const Offset(0, -120),
-    );
+    final saveButton = find.byKey(const Key('saveProfitButton'));
+    await tester.ensureVisible(saveButton);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('saveProfitButton')));
+    await tester.tap(saveButton);
     await tester.pump();
 
     expect(find.text('Enter an amount greater than zero'), findsOneWidget);
