@@ -12,15 +12,23 @@ class InitialPFSetup {
     required this.rule,
     required this.salarySchedule,
     this.employeeCode,
+    this.probationStartDate,
+    this.probationMonths,
     this.permanentDate,
+    this.exitDate,
+    this.employmentStatus = 'active',
   });
 
   final String employeeName;
   final String? employeeCode;
   final String organizationName;
   final DateTime joiningDate;
+  final DateTime? probationStartDate;
+  final int? probationMonths;
   final DateTime? permanentDate;
   final DateTime pfStartDate;
+  final DateTime? exitDate;
+  final String employmentStatus;
   final StoredSalary salary;
   final StoredPFRule rule;
   final EffectiveSalarySchedule salarySchedule;
@@ -29,5 +37,6 @@ class InitialPFSetup {
     joiningDate: joiningDate,
     permanentDate: permanentDate,
     pfStartDate: pfStartDate,
+    exitDate: exitDate,
   );
 }

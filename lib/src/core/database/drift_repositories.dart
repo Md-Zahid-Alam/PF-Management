@@ -814,8 +814,12 @@ class DriftInitialSetupRepository implements InitialSetupRepository {
       employeeCode: profile.employeeCode,
       organizationName: organization.name,
       joiningDate: employment.joiningDate,
+      probationStartDate: employment.probationStartDate,
+      probationMonths: employment.probationMonths,
       permanentDate: employment.permanentDate,
       pfStartDate: employment.pfStartDate,
+      exitDate: employment.exitDate,
+      employmentStatus: employment.status,
       salary: DriftSalaryRepository._salaryFromRow(salary),
       rule: DriftPFRuleRepository._ruleFromRow(rule),
       salarySchedule: EffectiveSalarySchedule(
@@ -865,12 +869,22 @@ class DriftInitialSetupRepository implements InitialSetupRepository {
               profileId: profileId,
               organizationId: organizationId,
               joiningDate: _dateOnly(setup.joiningDate),
+              probationStartDate: Value(
+                setup.probationStartDate == null
+                    ? null
+                    : _dateOnly(setup.probationStartDate!),
+              ),
+              probationMonths: Value(setup.probationMonths),
               permanentDate: Value(
                 setup.permanentDate == null
                     ? null
                     : _dateOnly(setup.permanentDate!),
               ),
               pfStartDate: _dateOnly(setup.pfStartDate),
+              exitDate: Value(
+                setup.exitDate == null ? null : _dateOnly(setup.exitDate!),
+              ),
+              status: Value(setup.employmentStatus),
               createdAt: setup.salary.createdAt,
               updatedAt: now,
             ),

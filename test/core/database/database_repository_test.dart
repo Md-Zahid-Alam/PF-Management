@@ -109,8 +109,12 @@ void main() {
       employeeCode: 'PF-100',
       organizationName: 'Example Company',
       joiningDate: DateTime(2024),
+      probationStartDate: DateTime(2024),
+      probationMonths: 6,
       permanentDate: DateTime(2024, 7),
       pfStartDate: DateTime(2025),
+      exitDate: DateTime(2026),
+      employmentStatus: 'left',
       salary: StoredSalary(
         id: 'initial-salary',
         employmentId: DriftInitialSetupRepository.employmentId,
@@ -153,6 +157,9 @@ void main() {
     final loaded = await repository.load();
     expect(loaded!.employeeName, 'Zahid Alam');
     expect(loaded.organizationName, 'Example Company');
+    expect(loaded.probationMonths, 6);
+    expect(loaded.employmentStatus, 'left');
+    expect(loaded.exitDate, DateTime(2026));
     expect(loaded.salary.grossSalary, Money.parse('30000'));
     expect(loaded.rule.rule.maturityMonths, 24);
     expect(loaded.salarySchedule.schedule.paymentWindowEndDay, 5);

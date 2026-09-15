@@ -26,6 +26,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _employeeCode = TextEditingController();
   final _organizationName = TextEditingController();
   final _grossSalary = TextEditingController();
+  final _currencyCode = TextEditingController(text: 'BDT');
+  final _probationMonths = TextEditingController();
   final _basicRate = TextEditingController(text: '60');
   final _employeeRate = TextEditingController(text: '10');
   final _employerRate = TextEditingController(text: '10');
@@ -35,8 +37,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   var _step = 0;
   var _joiningDate = DateTime.now();
+  DateTime? _probationStartDate;
   DateTime? _permanentDate;
   var _pfStartDate = DateTime.now();
+  DateTime? _exitDate;
+  var _employmentStatus = 'active';
+  var _paymentMonthOffset = 1;
   var _maturityBasis = MaturityBasis.joiningDate;
   var _entitledBeforeMaturity = false;
   var _entitledAfterMaturity = true;
@@ -55,6 +61,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _employeeCode,
       _organizationName,
       _grossSalary,
+      _currencyCode,
+      _probationMonths,
       _basicRate,
       _employeeRate,
       _employerRate,
@@ -139,6 +147,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: 12),
                     _DateField(
+                      label: 'Probation start date (optional)',
+                      value: _probationStartDate,
+                      optional: true,
+                      onChanged: (value) => setState(() {
+                        _probationStartDate = value;
+                      }),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _probationMonths,
+                      decoration: const InputDecoration(
+                        labelText: 'Probation period (optional)',
+                        suffixText: 'months',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return null;
+                        final months = int.tryParse(value);
+                        return months == null || months < 0
+                            ? 'Enter zero or more months'
+                            : null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _DateField(
                       label: 'Permanent date (optional)',
                       value: _permanentDate,
                       optional: true,
@@ -154,6 +187,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         _pfStartDate = value!;
                       }),
                     ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      key: ValueKey(_employmentStatus),
+                      initialValue: _employmentStatus,
+                      decoration: const InputDecoration(
+                        labelText: 'Employment status',
+                      ),
+                      items: const <DropdownMenuItem<String>>[
+                        DropdownMenuItem(
+                          value: 'active',
+                          child: Text('Active'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'left',
+                          child: Text('Left organization'),
+                        ),
+                      ],
+                      onChanged: (value) => setState(() {
+                        _employmentStatus = value ?? 'active';
+                        if (_employmentStatus == 'active') _exitDate = null;
+                      }),
+                    ),
+                    if (_employmentStatus == 'left') ...<Widget>[
+                      const SizedBox(height: 12),
+                      _DateField(
+                        label: 'Exit / leaving date',
+                        value: _exitDate,
+                        onChanged: (value) => setState(() {
+                          _exitDate = value;
+                        }),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -170,7 +235,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _positiveNumberField(
                       controller: _grossSalary,
                       label: 'Joining gross salary',
-                      prefix: '৳ ',
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _currencyCode,
+                      decoration: const InputDecoration(
+                        labelText: 'Currency code',
+                        helperText: 'Use a three-letter code such as BDT',
+                      ),
+                      textCapitalization: TextCapitalization.characters,
+                      validator: (value) =>
+                          RegExp(r'^[A-Za-z]{3}$').hasMatch(value?.trim() ?? '')
+                          ? null
+                          : 'Enter a three-letter currency code',
                     ),
                     const SizedBox(height: 12),
                     _percentageField(_basicRate, 'Basic salary'),
@@ -186,6 +263,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<MaturityBasis>(
+                      key: ValueKey(_maturityBasis),
                       initialValue: _maturityBasis,
                       decoration: const InputDecoration(
                         labelText: 'Maturity basis',
@@ -233,8 +311,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    DropdownButtonFormField<int>(
+                      key: ValueKey(_paymentMonthOffset),
+                      initialValue: _paymentMonthOffset,
+                      decoration: const InputDecoration(
+                        labelText: 'Salary payment month',
+                      ),
+                      items: const <DropdownMenuItem<int>>[
+                        DropdownMenuItem(
+                          value: 0,
+                          child: Text('Same month as salary period'),
+                        ),
+                        DropdownMenuItem(
+                          value: 1,
+                          child: Text('Following month'),
+                        ),
+                      ],
+                      onChanged: (value) => setState(() {
+                        _paymentMonthOffset = value ?? 1;
+                      }),
+                    ),
+                    const SizedBox(height: 12),
                     const Text(
-                      'Salary is paid in the following month. PF generation uses the last day of this payment window.',
+                      'PF generation uses the last day of the configured payment window.',
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -338,6 +437,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _showMessage('Permanent date cannot be before joining date.');
       return;
     }
+    if (_probationStartDate != null &&
+        _probationStartDate!.isBefore(_joiningDate)) {
+      _showMessage('Probation start date cannot be before joining date.');
+      return;
+    }
+    if (_employmentStatus == 'left' && _exitDate == null) {
+      _showMessage('Set the exit date for a completed employment.');
+      return;
+    }
+    if (_exitDate != null && _exitDate!.isBefore(_joiningDate)) {
+      _showMessage('Exit date cannot be before joining date.');
+      return;
+    }
     if (_maturityBasis == MaturityBasis.permanentDate &&
         _permanentDate == null) {
       _showMessage('Set a permanent date for the selected maturity basis.');
@@ -356,13 +468,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       employeeCode: _employeeCode.text,
       organizationName: _organizationName.text,
       joiningDate: _joiningDate,
+      probationStartDate: _probationStartDate,
+      probationMonths: _probationMonths.text.trim().isEmpty
+          ? null
+          : int.parse(_probationMonths.text),
       permanentDate: _permanentDate,
       pfStartDate: _pfStartDate,
+      exitDate: _exitDate,
+      employmentStatus: _employmentStatus,
       salary: StoredSalary(
         id: 'initial-salary',
         employmentId: DriftInitialSetupRepository.employmentId,
         effectiveFrom: _joiningDate,
-        grossSalary: Money.parse(_grossSalary.text),
+        grossSalary: Money.parse(
+          _grossSalary.text,
+          currencyCode: _currencyCode.text.trim().toUpperCase(),
+        ),
         createdAt: now,
         updatedAt: now,
       ),
@@ -388,7 +509,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         id: 'initial-salary-schedule',
         effectiveFrom: _pfStartDate,
         schedule: SalarySchedule(
-          paymentMonthOffset: 1,
+          paymentMonthOffset: _paymentMonthOffset,
           paymentWindowStartDay: windowStart,
           paymentWindowEndDay: windowEnd,
         ),
@@ -427,9 +548,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _employeeCode.text = existing.employeeCode ?? '';
         _organizationName.text = existing.organizationName;
         _joiningDate = existing.joiningDate;
+        _probationStartDate = existing.probationStartDate;
+        _probationMonths.text = existing.probationMonths?.toString() ?? '';
         _permanentDate = existing.permanentDate;
         _pfStartDate = existing.pfStartDate;
+        _exitDate = existing.exitDate;
+        _employmentStatus = existing.employmentStatus;
         _grossSalary.text = existing.salary.grossSalary.minorUnits.toString();
+        _currencyCode.text = existing.salary.grossSalary.currencyCode;
         _basicRate.text = _formatRate(existing.rule.rule.basicSalaryRate);
         _employeeRate.text = _formatRate(existing.rule.rule.employeePFRate);
         _employerRate.text = _formatRate(existing.rule.rule.employerPFRate);
@@ -447,6 +573,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             .toString();
         _windowEnd.text = existing.salarySchedule.schedule.paymentWindowEndDay
             .toString();
+        _paymentMonthOffset =
+            existing.salarySchedule.schedule.paymentMonthOffset;
       });
     } on Object {
       // A setup read failure leaves the recoverable setup form visible.
