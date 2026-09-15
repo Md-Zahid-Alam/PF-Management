@@ -26,6 +26,7 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - PF statement-year reports grouped by PF work month with opening, contribution, profit, adjustment, and closing totals
 - Official actual PF statement entry with nullable fields and calculated-versus-actual closing-balance comparison
 - Effective-dated statement-year configuration and policy-aware exit estimates with explicit unknown-profit warning
+- Native backup export and confirmed, validated restore through the platform file picker
 
 ## Validation and safety
 

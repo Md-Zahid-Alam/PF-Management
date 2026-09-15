@@ -13,6 +13,8 @@ Automated CI is the authoritative Flutter environment for this repository. Every
 - Statements: work-month assignment, actual-versus-calculated differences, missing profit, and explicit zero profit
 - UI: onboarding smoke flow, calculator examples and validation, form validation, and responsive navigation breakpoint
 - Integration and scale: complete reporting-data backup restoration, foreign-key rollback during restore, empty-statement rejection, and forty years of monthly report aggregation
+- Backup UI: native platform save/open picker, destructive-restore confirmation, user-visible failures, and provider refresh after restoration
+- Destructive safety: typed `DELETE` confirmation and atomic dependency-ordered deletion of all local data
 
 ## Device checks still required
 

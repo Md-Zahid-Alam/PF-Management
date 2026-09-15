@@ -494,6 +494,19 @@ void main() {
     expect(preserved.organizationId, 'organization-1');
     expect(await database.select(database.organizations).get(), hasLength(1));
   });
+
+  test('delete all removes parent and dependent data atomically', () async {
+    await DriftPFRuleRepository(database).save(_storedRule(now));
+    await DriftMonthlyPFRepository(database).create(_monthlyRecord(now: now));
+
+    await DatabaseBackupService(database).deleteAll();
+
+    expect(await database.select(database.monthlyPfRecords).get(), isEmpty);
+    expect(await database.select(database.pfRuleVersions).get(), isEmpty);
+    expect(await database.select(database.employments).get(), isEmpty);
+    expect(await database.select(database.organizations).get(), isEmpty);
+    expect(await database.select(database.userProfiles).get(), isEmpty);
+  });
 }
 
 Future<void> _seedEmployment(db.AppDatabase database, DateTime now) async {

@@ -28,7 +28,7 @@ Schema version 2 expands the Phase 2 settings-only database. Fresh databases cre
 
 ## Backup and restore
 
-`DatabaseBackupService` exports every table with a format version and timestamp. Restore validates the complete table envelope before mutation, deletes/inserts in dependency order inside one transaction, and rolls back on malformed values, constraint failures, or foreign-key failures. Platform file selection and user confirmation belong to the later UI phase.
+`DatabaseBackupService` exports every table with a format version and timestamp. Restore validates the complete table envelope before mutation, deletes/inserts in dependency order inside one transaction, and rolls back on malformed values, constraint failures, or foreign-key failures. The UI uses the platform file picker, confirms destructive restore, and requires typing `DELETE` before erasing all local data.
 
 ## Boundary
 

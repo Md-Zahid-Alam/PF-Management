@@ -122,6 +122,10 @@ class DatabaseBackupService {
     });
   }
 
+  Future<void> deleteAll() async {
+    await database.transaction(_deleteAllInDependencyOrder);
+  }
+
   Map<String, Object?> _validatedData(Map<String, Object?> backup) {
     if (backup['formatVersion'] != currentFormatVersion) {
       throw const InvalidBackup('Unsupported backup format version.');

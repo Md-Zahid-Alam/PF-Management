@@ -17,11 +17,16 @@ import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_form_s
 import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_history_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_history_screen.dart';
+import 'package:pf_tracker/src/features/settings/presentation/backup_restore_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/settings_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/setup',
   routes: <RouteBase>[
+    GoRoute(
+      path: '/backup-restore',
+      builder: (context, state) => const BackupRestoreScreen(),
+    ),
     GoRoute(
       path: '/setup',
       builder: (context, state) => const OnboardingScreen(),

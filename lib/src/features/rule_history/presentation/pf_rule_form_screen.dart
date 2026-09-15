@@ -137,30 +137,10 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<PartialMonthPolicy>(
-                  initialValue: _partialMonthPolicy,
-                  decoration: const InputDecoration(
-                    labelText: 'Partial PF-start month',
-                  ),
-                  items: const <DropdownMenuItem<PartialMonthPolicy>>[
-                    DropdownMenuItem(
-                      value: PartialMonthPolicy.fullContribution,
-                      child: Text('Full contribution'),
-                    ),
-                    DropdownMenuItem(
-                      value: PartialMonthPolicy.none,
-                      child: Text('No contribution'),
-                    ),
-                    DropdownMenuItem(
-                      value: PartialMonthPolicy.proratedCalendarDays,
-                      child: Text('Prorated by calendar days'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _partialMonthPolicy = value);
-                    }
-                  },
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('Partial PF-start month'),
+                  subtitle: Text('Full contribution'),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<EffectiveVersionPolicy>(
@@ -230,7 +210,7 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
           _employerRate.text = _rateInput(stored.rule.employerPFRate);
           _maturityMonths.text = stored.rule.maturityMonths.toString();
           _maturityBasis = stored.rule.maturityBasis;
-          _partialMonthPolicy = stored.partialMonthPolicy;
+          _partialMonthPolicy = PartialMonthPolicy.fullContribution;
           _effectiveVersionPolicy = stored.effectiveVersionPolicy;
           _beforeMaturity = stored.rule.employerEntitledBeforeMaturity;
           _afterMaturity = stored.rule.employerEntitledAfterMaturity;

@@ -69,11 +69,12 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/reports'),
           ),
-          const ListTile(
-            enabled: false,
-            leading: Icon(Icons.backup_outlined),
-            title: Text('Backup & Restore'),
-            subtitle: Text('Available in a later Phase 6 UI slice'),
+          ListTile(
+            leading: const Icon(Icons.backup_outlined),
+            title: const Text('Backup & Restore'),
+            subtitle: const Text('Export or safely restore all local PF data'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/backup-restore'),
           ),
         ],
       ),
