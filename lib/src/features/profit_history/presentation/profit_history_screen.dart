@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
+import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
@@ -34,20 +35,21 @@ class ProfitHistoryScreen extends ConsumerWidget {
                   ),
                 ),
               )
-            : ListView.separated(
+            : ListView(
                 padding: const EdgeInsets.all(20),
-                itemCount: items.length,
-                separatorBuilder: (context, index) =>
+                children: <Widget>[
+                  _ProfitSummary(items: items),
+                  const SizedBox(height: 16),
+                  for (final profit in items.reversed) ...<Widget>[
+                    _ProfitCard(
+                      profit: profit,
+                      onEdit: () =>
+                          context.push('/profit-history/${profit.id}/edit'),
+                      onDelete: () => _delete(context, ref, profit),
+                    ),
                     const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final profit = items[items.length - 1 - index];
-                  return _ProfitCard(
-                    profit: profit,
-                    onEdit: () =>
-                        context.push('/profit-history/${profit.id}/edit'),
-                    onDelete: () => _delete(context, ref, profit),
-                  );
-                },
+                  ],
+                ],
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -87,6 +89,64 @@ class ProfitHistoryScreen extends ConsumerWidget {
     }
     await ref.read(profitRepositoryProvider).delete(profit.id);
     ref.invalidate(profitHistoryProvider);
+  }
+}
+
+class _ProfitSummary extends StatelessWidget {
+  const _ProfitSummary({required this.items});
+
+  final List<StoredProfitRecord> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final totals = <int, Money>{};
+    for (final item in items) {
+      final zero = Money.zero(
+        decimalPlaces: item.amount.decimalPlaces,
+        currencyCode: item.amount.currencyCode,
+      );
+      totals[item.creditedDate.year] =
+          (totals[item.creditedDate.year] ?? zero) + item.amount;
+    }
+    final years = totals.keys.toList()..sort((a, b) => b.compareTo(a));
+    var grandTotal = Money.zero(
+      decimalPlaces: items.first.amount.decimalPlaces,
+      currencyCode: items.first.amount.currencyCode,
+    );
+    for (final item in items) {
+      grandTotal += item.amount;
+    }
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              'TOTAL KNOWN PROFIT',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              formatMoney(grandTotal),
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const Divider(height: 28),
+            for (final year in years)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(child: Text('$year')),
+                    Text(formatMoney(totals[year]!)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

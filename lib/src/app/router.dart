@@ -4,6 +4,7 @@ import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/features/calculator/presentation/pf_calculator_screen.dart';
 import 'package:pf_tracker/src/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_records_screen.dart';
+import 'package:pf_tracker/src/features/maturity/presentation/pf_maturity_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/manual_pf_record_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_record_adjustment_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_record_detail_screen.dart';
@@ -20,6 +21,7 @@ import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_histor
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_history_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/backup_restore_screen.dart';
+import 'package:pf_tracker/src/features/settings/presentation/about_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/settings_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -28,6 +30,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/backup-restore',
       builder: (context, state) => const BackupRestoreScreen(),
+    ),
+    GoRoute(path: '/about', builder: (context, state) => const AboutScreen()),
+    GoRoute(
+      path: '/maturity',
+      builder: (context, state) => const PFMaturityScreen(),
     ),
     GoRoute(
       path: '/setup',

@@ -334,27 +334,33 @@ class _MaturityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: <Widget>[
-            const CircleAvatar(child: Icon(Icons.flag_outlined)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Maturity',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text(DateFormat.yMMMd().format(summary.maturityDate)),
-                  Text(summary.maturityDescription),
-                ],
+      child: InkWell(
+        onTap: () => context.push('/maturity'),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: <Widget>[
+              const CircleAvatar(child: Icon(Icons.flag_outlined)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Maturity',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(DateFormat.yMMMd().format(summary.maturityDate)),
+                    Text(summary.maturityDescription),
+                  ],
+                ),
               ),
-            ),
-            Text(formatMoney(summary.afterMaturity)),
-          ],
+              Text(formatMoney(summary.afterMaturity)),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
         ),
       ),
     );
