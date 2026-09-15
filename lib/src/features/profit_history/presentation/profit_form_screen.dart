@@ -159,9 +159,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
 
   String? _validateAmount(String? value) {
     try {
-      return Money.parse(value ?? '').minorUnits > 0
+      return Money.parse(value ?? '').minorUnits >= 0
           ? null
-          : 'Enter an amount greater than zero';
+          : 'Profit amount cannot be negative';
     } on FormatException {
       return 'Enter a valid profit amount';
     }

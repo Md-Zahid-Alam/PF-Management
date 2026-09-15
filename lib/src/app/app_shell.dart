@@ -33,7 +33,7 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final useRail = constraints.maxWidth >= 760;
+        final useRail = useNavigationRailForWidth(constraints.maxWidth);
         if (useRail) {
           return Scaffold(
             body: Row(
@@ -82,3 +82,5 @@ class AppShell extends StatelessWidget {
     );
   }
 }
+
+bool useNavigationRailForWidth(double width) => width >= 760;

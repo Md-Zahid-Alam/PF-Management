@@ -68,6 +68,7 @@ class PFReportService {
     var employer = zero();
     var adjustments = zero();
     var profit = zero();
+    var profitRecorded = false;
     var monthCount = 0;
     for (final record in records) {
       final date = record.month.firstDay;
@@ -87,6 +88,7 @@ class PFReportService {
         opening += item.amount;
       } else if (!item.creditedDate.isAfter(end)) {
         profit += item.amount;
+        profitRecorded = true;
       }
     }
     return PFStatementSummary(
@@ -98,7 +100,7 @@ class PFReportService {
         openingBalance: opening,
         employeeContribution: employee,
         employerContribution: employer,
-        profit: profit,
+        profit: profitRecorded ? profit : null,
         adjustments: adjustments,
         closingBalance: opening + employee + employer + profit + adjustments,
       ),

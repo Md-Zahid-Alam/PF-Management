@@ -25,12 +25,40 @@ void main() {
       const PFStatementYear(startYear: 2026, endYear: 2027),
     );
     expect(reports.first.snapshot.openingBalance, Money.parse('2500'));
+    expect(reports.first.snapshot.profit, isNull);
     expect(reports.first.snapshot.closingBalance, Money.parse('4700'));
     expect(
       reports.last.year,
       const PFStatementYear(startYear: 2025, endYear: 2026),
     );
     expect(reports.last.snapshot.closingBalance, Money.parse('2500'));
+    expect(reports.last.snapshot.profit, Money.parse('500'));
+  });
+
+  test('explicit zero profit remains distinct from missing profit', () {
+    final records = <StoredMonthlyPFRecord>[
+      _record(const YearMonth(2026, 7), employee: 1000, employer: 1000),
+    ];
+    const configuration = StatementYearConfiguration(
+      startMonth: DateTime.july,
+      startDay: 1,
+    );
+
+    final missing = const PFReportService().statementSummaries(
+      records: records,
+      profits: const <StoredProfitRecord>[],
+      configuration: configuration,
+    );
+    final explicitZero = const PFReportService().statementSummaries(
+      records: records,
+      profits: <StoredProfitRecord>[_profit(DateTime(2026, 12, 31), 0)],
+      configuration: configuration,
+    );
+
+    expect(missing.single.snapshot.profit, isNull);
+    expect(explicitZero.single.snapshot.profit, Money.zero());
+    expect(missing.single.snapshot.closingBalance, Money.parse('2000'));
+    expect(explicitZero.single.snapshot.closingBalance, Money.parse('2000'));
   });
 }
 

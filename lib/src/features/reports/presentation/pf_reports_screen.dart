@@ -131,7 +131,15 @@ class _StatementCard extends StatelessWidget {
           _AmountRow('Opening balance', snapshot.openingBalance!),
           _AmountRow('Employee contribution', snapshot.employeeContribution!),
           _AmountRow('Employer contribution', snapshot.employerContribution!),
-          _AmountRow('Known profit', snapshot.profit!),
+          if (snapshot.profit == null)
+            const ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text('Known profit'),
+              trailing: Text('Not entered'),
+            )
+          else
+            _AmountRow('Known profit', snapshot.profit!),
           _AmountRow('Adjustments', snapshot.adjustments!),
           const Divider(),
           _AmountRow(
