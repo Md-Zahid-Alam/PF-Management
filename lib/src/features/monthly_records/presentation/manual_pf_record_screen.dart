@@ -12,7 +12,9 @@ import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class ManualPFRecordScreen extends ConsumerStatefulWidget {
-  const ManualPFRecordScreen({super.key});
+  const ManualPFRecordScreen({this.initialMonth, super.key});
+
+  final YearMonth? initialMonth;
 
   @override
   ConsumerState<ManualPFRecordScreen> createState() =>
@@ -20,8 +22,14 @@ class ManualPFRecordScreen extends ConsumerStatefulWidget {
 }
 
 class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
-  var _month = YearMonth.fromDate(DateTime.now());
+  late YearMonth _month;
   var _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _month = widget.initialMonth ?? YearMonth.fromDate(DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +111,7 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
         schedules: <EffectiveSalarySchedule>[setup.salarySchedule],
       );
       ref.invalidate(monthlyPFRecordsProvider);
+      ref.invalidate(pfAutomationRunProvider);
       if (mounted) {
         context.pop();
       }

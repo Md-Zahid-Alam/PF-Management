@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/src/app/app_shell.dart';
+import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/features/calculator/presentation/pf_calculator_screen.dart';
 import 'package:pf_tracker/src/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_records_screen.dart';
@@ -112,7 +113,13 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/records/add',
-      builder: (context, state) => const ManualPFRecordScreen(),
+      builder: (context, state) {
+        final value = state.uri.queryParameters['month'];
+        final parsed = value == null ? null : DateTime.tryParse('$value-01');
+        return ManualPFRecordScreen(
+          initialMonth: parsed == null ? null : YearMonth.fromDate(parsed),
+        );
+      },
     ),
     GoRoute(
       path: '/records/:recordId',

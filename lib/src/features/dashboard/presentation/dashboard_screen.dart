@@ -19,6 +19,7 @@ class DashboardScreen extends ConsumerWidget {
     final setup = ref.watch(initialPFSetupProvider);
     final records = ref.watch(monthlyPFRecordsProvider);
     final settings = ref.watch(automationSettingsProvider);
+    final automation = ref.watch(pfAutomationRunProvider);
     if (setup.isLoading || records.isLoading || settings.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -55,6 +56,7 @@ class DashboardScreen extends ConsumerWidget {
           ref.invalidate(initialPFSetupProvider);
           ref.invalidate(monthlyPFRecordsProvider);
           ref.invalidate(automationSettingsProvider);
+          ref.invalidate(pfAutomationRunProvider);
           await ref.read(monthlyPFRecordsProvider.future);
         },
         child: ListView(
@@ -64,6 +66,24 @@ class DashboardScreen extends ConsumerWidget {
               'Hello, ${setupValue.employeeName}',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
+            if (automation.hasError) ...<Widget>[
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.error_outline),
+                  title: const Text('PF automation check failed'),
+                  subtitle: const Text('Retry to check for overdue PF months.'),
+                  trailing: IconButton(
+                    tooltip: 'Retry automation',
+                    onPressed: () => ref.invalidate(pfAutomationRunProvider),
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ),
+              ),
+            ],
+            if (automation.asData?.value
+                case final List<AutomationPeriodResult> items)
+              _PendingAutomationActions(items: items),
             const SizedBox(height: 16),
             _BalanceCard(summary: summary),
             const SizedBox(height: 16),
@@ -134,6 +154,81 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PendingAutomationActions extends StatelessWidget {
+  const _PendingAutomationActions({required this.items});
+
+  final List<AutomationPeriodResult> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = items.where((item) {
+      return item.status == AutomationPeriodStatus.readyForManualCalculation ||
+          item.status == AutomationPeriodStatus.pendingSalaryInformation ||
+          item.status == AutomationPeriodStatus.pendingRuleInformation;
+    }).toList();
+    if (pending.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Card(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                'Pending PF actions',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              for (final item in pending) _PendingAutomationTile(item: item),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PendingAutomationTile extends StatelessWidget {
+  const _PendingAutomationTile({required this.item});
+
+  final AutomationPeriodResult item;
+
+  @override
+  Widget build(BuildContext context) {
+    final month = DateFormat.yMMMM().format(item.month.firstDay);
+    final (message, action, route) = switch (item.status) {
+      AutomationPeriodStatus.pendingSalaryInformation => (
+        'Salary information required',
+        'Add salary',
+        '/salary-history/add',
+      ),
+      AutomationPeriodStatus.pendingRuleInformation => (
+        'PF rule information required',
+        'Add rule',
+        '/pf-rule-history/add',
+      ),
+      _ => (
+        '$month PF is ready for calculation',
+        'Calculate PF',
+        '/records/add?month=${item.month}',
+      ),
+    };
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(month),
+      subtitle: Text(message),
+      trailing: TextButton(
+        onPressed: () => context.push(route),
+        child: Text(action),
       ),
     );
   }

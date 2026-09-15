@@ -163,7 +163,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return null;
+                        if (value == null || value.trim().isEmpty) {
+                          return null;
+                        }
                         final months = int.tryParse(value);
                         return months == null || months < 0
                             ? 'Enter zero or more months'
@@ -206,7 +208,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ],
                       onChanged: (value) => setState(() {
                         _employmentStatus = value ?? 'active';
-                        if (_employmentStatus == 'active') _exitDate = null;
+                        if (_employmentStatus == 'active') {
+                          _exitDate = null;
+                        }
                       }),
                     ),
                     if (_employmentStatus == 'left') ...<Widget>[
