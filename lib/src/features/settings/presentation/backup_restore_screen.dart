@@ -128,8 +128,9 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       _invalidateData();
       if (mounted) _message('Backup restored successfully.');
     } on Object {
-      if (mounted)
+      if (mounted) {
         _message('Invalid or corrupted backup. No data was changed.');
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
