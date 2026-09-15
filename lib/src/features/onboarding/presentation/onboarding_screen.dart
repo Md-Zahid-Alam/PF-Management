@@ -169,7 +169,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(height: 12),
                     _positiveNumberField(
                       controller: _grossSalary,
-                      label: 'Current gross salary',
+                      label: 'Joining gross salary',
                       prefix: '৳ ',
                     ),
                     const SizedBox(height: 12),
@@ -361,7 +361,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       salary: StoredSalary(
         id: 'initial-salary',
         employmentId: DriftInitialSetupRepository.employmentId,
-        effectiveFrom: _pfStartDate,
+        effectiveFrom: _joiningDate,
         grossSalary: Money.parse(_grossSalary.text),
         createdAt: now,
         updatedAt: now,
@@ -397,7 +397,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       await ref.read(initialSetupRepositoryProvider).save(setup);
       if (mounted) {
-        context.go(widget.editExisting ? '/settings' : '/');
+        context.go(
+          widget.editExisting ? '/settings' : '/historical-reconstruction',
+        );
       }
     } on Object {
       if (mounted) {

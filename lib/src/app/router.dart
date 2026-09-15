@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_rec
 import 'package:pf_tracker/src/features/monthly_records/presentation/manual_pf_record_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_record_adjustment_screen.dart';
 import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_record_detail_screen.dart';
+import 'package:pf_tracker/src/features/onboarding/presentation/historical_reconstruction_screen.dart';
 import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_form_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_history_screen.dart';
@@ -34,6 +35,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/setup/edit',
       builder: (context, state) => const OnboardingScreen(editExisting: true),
+    ),
+    GoRoute(
+      path: '/historical-reconstruction',
+      builder: (context, state) => const HistoricalReconstructionScreen(),
     ),
     GoRoute(
       path: '/salary-history',
