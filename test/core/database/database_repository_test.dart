@@ -494,7 +494,12 @@ void main() {
 
     await service.restoreAll(backup);
 
-    expect(await database.select(database.userProfiles).get(), isEmpty);
+    final restoredProfile = await database
+        .select(database.userProfiles)
+        .getSingle();
+    expect(restoredProfile.id, 'profile-1');
+    expect(restoredProfile.employeeName, 'Test Employee');
+    expect(await database.select(database.employments).get(), hasLength(1));
   });
 
   test('foreign-key failure rolls back an in-progress restore', () async {
