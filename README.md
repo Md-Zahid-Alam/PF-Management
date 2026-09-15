@@ -2,9 +2,9 @@
 
 Offline-first Provident Fund tracker for Android, built with Flutter and a layered architecture designed for future desktop/iOS and optional synchronization.
 
-## Current phase
+## Current status
 
-Phase 6 UI is in progress. The current slice adds live dashboard totals and maturity/exit summaries plus monthly record details, audited manual adjustments, and confirmation status. Salary History, searchable Monthly PF Records, persistent onboarding, responsive navigation, and the PF calculator are already CI-verified.
+Implementation and automated QA phases are complete. The app includes onboarding, effective-dated salary and PF rules, monthly calculations and automation, audited adjustments, profit history, statement reconciliation, reports, exit estimates, and native backup/restore. Release signing remains an operator-controlled GitHub Actions step.
 
 ## Command-line bootstrap and verification
 
@@ -21,7 +21,7 @@ Android Studio is not required. See [development setup](docs/DEVELOPMENT.md) for
 
 The Android CI workflow installs JDK 17 and Flutter 3.47.2, generates the Android Gradle host, resolves dependencies, generates typed database code, checks formatting, runs static analysis and tests, builds a debug APK, and uploads it as an artifact.
 
-No credentials or signing keys are stored in the repository. See [release preparation](docs/RELEASING.md).
+No credentials or signing keys are stored in the repository. See [release instructions](docs/RELEASING.md).
 
 ## Structure
 
