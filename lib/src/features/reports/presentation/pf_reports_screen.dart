@@ -578,8 +578,9 @@ class _StatementCard extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
-              onPressed: () =>
-                  context.push('/reports/${summary.year.startYear}/actual'),
+              onPressed: () => context.push(
+                '/reports/${summary.year.startYear}/actual?currency=${snapshot.closingBalance!.currencyCode}',
+              ),
               icon: const Icon(Icons.fact_check_outlined),
               label: Text(
                 report.actual == null

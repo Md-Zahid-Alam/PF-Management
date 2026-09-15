@@ -54,7 +54,9 @@ final GoRouter appRouter = GoRouter(
       routes: <RouteBase>[
         GoRoute(
           path: 'add',
-          builder: (context, state) => const SalaryFormScreen(),
+          builder: (context, state) => SalaryFormScreen(
+            currencyCode: state.uri.queryParameters['currency'] ?? 'BDT',
+          ),
         ),
         GoRoute(
           path: ':salaryId/edit',
@@ -70,7 +72,9 @@ final GoRouter appRouter = GoRouter(
       routes: <RouteBase>[
         GoRoute(
           path: 'add',
-          builder: (context, state) => const ProfitFormScreen(),
+          builder: (context, state) => ProfitFormScreen(
+            currencyCode: state.uri.queryParameters['currency'] ?? 'BDT',
+          ),
         ),
         GoRoute(
           path: ':profitId/edit',
@@ -96,6 +100,7 @@ final GoRouter appRouter = GoRouter(
           path: ':startYear/actual',
           builder: (context, state) => ActualStatementFormScreen(
             startYear: int.parse(state.pathParameters['startYear']!),
+            currencyCode: state.uri.queryParameters['currency'] ?? 'BDT',
           ),
         ),
       ],

@@ -14,6 +14,7 @@ class ProfitHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(profitHistoryProvider);
+    final setup = ref.watch(initialPFSetupProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Profit History')),
       body: history.when(
@@ -53,7 +54,11 @@ class ProfitHistoryScreen extends ConsumerWidget {
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/profit-history/add'),
+        onPressed: () {
+          final currency =
+              setup.asData?.value?.salary.grossSalary.currencyCode ?? 'BDT';
+          context.push('/profit-history/add?currency=$currency');
+        },
         icon: const Icon(Icons.add),
         label: const Text('Add profit'),
       ),

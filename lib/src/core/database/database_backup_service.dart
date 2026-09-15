@@ -13,7 +13,8 @@ class InvalidBackup implements Exception {
 class DatabaseBackupService {
   DatabaseBackupService(this.database);
 
-  static const int currentFormatVersion = 1;
+  static const int currentFormatVersion = 2;
+  static const int oldestSupportedFormatVersion = 1;
 
   final db.AppDatabase database;
 
@@ -63,7 +64,7 @@ class DatabaseBackupService {
   }
 
   Future<void> restoreAll(Map<String, Object?> backup) async {
-    final data = _validatedData(backup);
+    final data = _validatedData(_migrateToCurrentFormat(backup));
     await database.transaction(() async {
       await _deleteAllInDependencyOrder();
       await database.batch((batch) {
@@ -153,6 +154,29 @@ class DatabaseBackupService {
       }
     }
     return data;
+  }
+
+  Map<String, Object?> _migrateToCurrentFormat(Map<String, Object?> backup) {
+    final version = backup['formatVersion'];
+    if (version is! int ||
+        version < oldestSupportedFormatVersion ||
+        version > currentFormatVersion) {
+      throw const InvalidBackup('Unsupported backup format version.');
+    }
+    var migrated = Map<String, Object?>.from(backup);
+    var migratedVersion = version;
+    while (migratedVersion < currentFormatVersion) {
+      migrated = switch (migratedVersion) {
+        1 => _migrateVersion1To2(migrated),
+        _ => throw const InvalidBackup('Unsupported backup migration path.'),
+      };
+      migratedVersion++;
+    }
+    return migrated;
+  }
+
+  Map<String, Object?> _migrateVersion1To2(Map<String, Object?> backup) {
+    return <String, Object?>{...backup, 'formatVersion': 2};
   }
 
   Future<void> _deleteAllInDependencyOrder() async {

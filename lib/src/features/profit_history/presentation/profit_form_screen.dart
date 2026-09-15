@@ -9,9 +9,10 @@ import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class ProfitFormScreen extends ConsumerStatefulWidget {
-  const ProfitFormScreen({this.profitId, super.key});
+  const ProfitFormScreen({this.profitId, this.currencyCode = 'BDT', super.key});
 
   final String? profitId;
+  final String currencyCode;
 
   @override
   ConsumerState<ProfitFormScreen> createState() => _ProfitFormScreenState();
@@ -64,9 +65,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                 TextFormField(
                   key: const Key('profitAmountField'),
                   controller: _amount,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Profit amount',
-                    prefixText: '৳ ',
+                    prefixText: '${widget.currencyCode} ',
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
@@ -159,7 +160,12 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
 
   String? _validateAmount(String? value) {
     try {
-      return Money.parse(value ?? '').minorUnits >= 0
+      return Money.parse(
+                value ?? '',
+                currencyCode:
+                    _original?.amount.currencyCode ?? widget.currencyCode,
+              ).minorUnits >=
+              0
           ? null
           : 'Profit amount cannot be negative';
     } on FormatException {
@@ -230,7 +236,10 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
       id: original?.id ?? 'profit-${now.microsecondsSinceEpoch}',
       employmentId: DriftInitialSetupRepository.employmentId,
       creditedDate: _creditedDate,
-      amount: Money.parse(_amount.text),
+      amount: Money.parse(
+        _amount.text,
+        currencyCode: original?.amount.currencyCode ?? widget.currencyCode,
+      ),
       periodStart: _periodStart,
       periodEnd: _periodEnd,
       optionalRate: _rate.text.trim().isEmpty

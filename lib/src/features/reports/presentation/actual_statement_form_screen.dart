@@ -11,9 +11,14 @@ import 'package:pf_tracker/src/features/pf_data_providers.dart';
 import 'package:pf_tracker/src/features/reports/presentation/pf_reports_screen.dart';
 
 class ActualStatementFormScreen extends ConsumerStatefulWidget {
-  const ActualStatementFormScreen({required this.startYear, super.key});
+  const ActualStatementFormScreen({
+    required this.startYear,
+    this.currencyCode = 'BDT',
+    super.key,
+  });
 
   final int startYear;
+  final String currencyCode;
 
   @override
   ConsumerState<ActualStatementFormScreen> createState() =>
@@ -142,11 +147,16 @@ class _ActualStatementFormScreenState
           decimal: true,
           signed: true,
         ),
-        decoration: InputDecoration(labelText: label, prefixText: '৳ '),
+        decoration: InputDecoration(
+          labelText: label,
+          prefixText: '${_original?.currencyCode ?? widget.currencyCode} ',
+        ),
         validator: (value) {
-          if (value == null || value.trim().isEmpty) return null;
+          if (value == null || value.trim().isEmpty) {
+            return null;
+          }
           try {
-            Money.parse(value);
+            _money(value);
             return null;
           } on Object {
             return 'Enter a valid whole BDT amount';
@@ -183,16 +193,22 @@ class _ActualStatementFormScreenState
       firstDate: DateTime(widget.startYear),
       lastDate: DateTime(widget.startYear + 2),
     );
-    if (selected != null && mounted) setState(() => _statementDate = selected);
+    if (selected != null && mounted) {
+      setState(() => _statementDate = selected);
+    }
   }
 
   Future<void> _save() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
     if (!_hasAnyAmount()) {
       setState(() => _emptyStatement = true);
       return;
     }
-    if (_emptyStatement) setState(() => _emptyStatement = false);
+    if (_emptyStatement) {
+      setState(() => _emptyStatement = false);
+    }
     setState(() => _saving = true);
     final now = DateTime.now();
     final original = _original;
@@ -210,7 +226,7 @@ class _ActualStatementFormScreenState
         closingBalance: _money(_closing.text),
       ),
       decimalPlaces: 0,
-      currencyCode: 'BDT',
+      currencyCode: original?.currencyCode ?? widget.currencyCode,
       notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
       createdAt: original?.createdAt ?? now,
       updatedAt: now,
@@ -219,7 +235,9 @@ class _ActualStatementFormScreenState
       await ref.read(actualPFStatementRepositoryProvider).save(statement);
       ref.invalidate(actualPFStatementsProvider);
       ref.invalidate(pfStatementReportsProvider);
-      if (mounted) context.pop();
+      if (mounted) {
+        context.pop();
+      }
     } on Object {
       if (mounted) {
         setState(() => _saving = false);
@@ -238,8 +256,13 @@ class _ActualStatementFormScreenState
     _adjustments,
     _closing,
   ].any((controller) => controller.text.trim().isNotEmpty);
-}
 
-Money? _money(String value) => value.trim().isEmpty ? null : Money.parse(value);
+  Money? _money(String value) => value.trim().isEmpty
+      ? null
+      : Money.parse(
+          value,
+          currencyCode: _original?.currencyCode ?? widget.currencyCode,
+        );
+}
 
 String _input(Money? value) => value?.minorUnits.toString() ?? '';

@@ -484,6 +484,19 @@ void main() {
     expect(await database.select(database.employments).get(), hasLength(1));
   });
 
+  test('version 1 backup migrates before atomic restore', () async {
+    final service = DatabaseBackupService(database);
+    final backup = await service.exportAll(
+      appVersion: '0.1.0',
+      exportedAt: now,
+    );
+    backup['formatVersion'] = 1;
+
+    await service.restoreAll(backup);
+
+    expect(await database.select(database.userProfiles).get(), isEmpty);
+  });
+
   test('foreign-key failure rolls back an in-progress restore', () async {
     final service = DatabaseBackupService(database);
     final backup = await service.exportAll(

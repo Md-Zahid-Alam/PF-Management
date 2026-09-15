@@ -38,7 +38,12 @@ class SalaryHistoryScreen extends ConsumerWidget {
               ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/salary-history/add'),
+        onPressed: () {
+          final currency =
+              history.asData?.value.firstOrNull?.grossSalary.currencyCode ??
+              'BDT';
+          context.push('/salary-history/add?currency=$currency');
+        },
         icon: const Icon(Icons.add),
         label: const Text('Add salary'),
       ),

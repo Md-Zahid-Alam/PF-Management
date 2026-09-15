@@ -9,9 +9,10 @@ import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryFormScreen extends ConsumerStatefulWidget {
-  const SalaryFormScreen({this.salaryId, super.key});
+  const SalaryFormScreen({this.salaryId, this.currencyCode = 'BDT', super.key});
 
   final String? salaryId;
+  final String currencyCode;
 
   @override
   ConsumerState<SalaryFormScreen> createState() => _SalaryFormScreenState();
@@ -54,9 +55,9 @@ class _SalaryFormScreenState extends ConsumerState<SalaryFormScreen> {
               TextFormField(
                 key: const Key('salaryAmountField'),
                 controller: _grossSalary,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Gross salary',
-                  prefixText: '৳ ',
+                  prefixText: '${widget.currencyCode} ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -134,7 +135,10 @@ class _SalaryFormScreenState extends ConsumerState<SalaryFormScreen> {
       id: original?.id ?? 'salary-${now.microsecondsSinceEpoch}',
       employmentId: DriftInitialSetupRepository.employmentId,
       effectiveFrom: _effectiveFrom,
-      grossSalary: Money.parse(_grossSalary.text),
+      grossSalary: Money.parse(
+        _grossSalary.text,
+        currencyCode: original?.grossSalary.currencyCode ?? widget.currencyCode,
+      ),
       createdAt: original?.createdAt ?? now,
       updatedAt: now,
       notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
