@@ -332,6 +332,43 @@ void main() {
     );
     await DriftPFRuleRepository(database).save(_storedRule(now));
     await DriftMonthlyPFRepository(database).create(_monthlyRecord(now: now));
+    await DriftProfitRepository(database).save(
+      StoredProfitRecord(
+        id: 'profit-backup',
+        employmentId: 'employment-1',
+        creditedDate: DateTime(2026, 6, 30),
+        amount: Money.zero(),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await DriftActualPFStatementRepository(database).save(
+      StoredActualPFStatement(
+        id: 'actual-backup',
+        employmentId: 'employment-1',
+        statementStartYear: 2025,
+        snapshot: StatementSnapshot(closingBalance: Money.parse('7200')),
+        decimalPlaces: 0,
+        currencyCode: 'BDT',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await DriftStatementYearDefinitionRepository(database).save(
+      StoredStatementYearDefinition(
+        id: 'statement-year-backup',
+        organizationId: 'organization-1',
+        effectiveFrom: DateTime(2025, 7),
+        configuration: const StatementYearConfiguration(
+          startMonth: DateTime.july,
+          startDay: 1,
+        ),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await DriftAutomationSettingsRepository(database)
+        .save(const AutomationSettings(autoCalculate: false));
     final service = DatabaseBackupService(database);
     final backup = await service.exportAll(
       appVersion: '0.1.0',
@@ -339,6 +376,10 @@ void main() {
     );
 
     await DriftMonthlyPFRepository(database).delete('monthly-1');
+    await DriftProfitRepository(database).delete('profit-backup');
+    await DriftActualPFStatementRepository(database).delete('actual-backup');
+    await database.delete(database.statementYearDefinitions).go();
+    await database.delete(database.appSettingsRows).go();
     expect(
       await DriftMonthlyPFRepository(database).getForEmployment('employment-1'),
       isEmpty,
@@ -351,6 +392,24 @@ void main() {
       hasLength(1),
     );
     expect(await salaries.getForEmployment('employment-1'), hasLength(1));
+    expect(
+      await DriftProfitRepository(database).getForEmployment('employment-1'),
+      hasLength(1),
+    );
+    expect(
+      await DriftActualPFStatementRepository(database)
+          .getForEmployment('employment-1'),
+      hasLength(1),
+    );
+    expect(
+      await DriftStatementYearDefinitionRepository(database)
+          .getForOrganization('organization-1'),
+      hasLength(1),
+    );
+    expect(
+      (await DriftAutomationSettingsRepository(database).get()).autoCalculate,
+      isFalse,
+    );
   });
 
   test('actual PF statements persist nullable official values', () async {
@@ -416,6 +475,24 @@ void main() {
     );
 
     expect(await database.select(database.employments).get(), hasLength(1));
+  });
+
+  test('foreign-key failure rolls back an in-progress restore', () async {
+    final service = DatabaseBackupService(database);
+    final backup = await service.exportAll(
+      appVersion: '0.1.0',
+      exportedAt: now,
+    );
+    final data = backup['data']! as Map<String, Object?>;
+    final employments = data['employments']! as List<Object?>;
+    final employment = employments.single! as Map<String, Object?>;
+    employment['organizationId'] = 'missing-organization';
+
+    await expectLater(service.restoreAll(backup), throwsA(anything));
+
+    final preserved = await database.select(database.employments).getSingle();
+    expect(preserved.organizationId, 'organization-1');
+    expect(await database.select(database.organizations).get(), hasLength(1));
   });
 }
 

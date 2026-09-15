@@ -12,6 +12,7 @@ Automated CI is the authoritative Flutter environment for this repository. Every
 - Data safety: protected historical PF rules, original-value audit snapshots, backup/restore round trips, invalid-backup rollback, and foreign keys
 - Statements: work-month assignment, actual-versus-calculated differences, missing profit, and explicit zero profit
 - UI: onboarding smoke flow, calculator examples and validation, form validation, and responsive navigation breakpoint
+- Integration and scale: complete reporting-data backup restoration, foreign-key rollback during restore, empty-statement rejection, and forty years of monthly report aggregation
 
 ## Device checks still required
 

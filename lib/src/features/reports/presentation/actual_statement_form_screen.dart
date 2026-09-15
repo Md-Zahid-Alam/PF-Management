@@ -33,6 +33,7 @@ class _ActualStatementFormScreenState
   StoredActualPFStatement? _original;
   DateTime? _statementDate;
   var _saving = false;
+  var _emptyStatement = false;
 
   @override
   void initState() {
@@ -97,6 +98,14 @@ class _ActualStatementFormScreenState
                   'Closing balance',
                   key: const Key('actualClosingBalanceField'),
                 ),
+                if (_emptyStatement)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      'Enter at least one official statement amount.',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
                 TextFormField(
                   controller: _notes,
                   decoration: const InputDecoration(
@@ -179,6 +188,11 @@ class _ActualStatementFormScreenState
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_hasAnyAmount()) {
+      setState(() => _emptyStatement = true);
+      return;
+    }
+    if (_emptyStatement) setState(() => _emptyStatement = false);
     setState(() => _saving = true);
     final now = DateTime.now();
     final original = _original;
@@ -215,6 +229,15 @@ class _ActualStatementFormScreenState
       }
     }
   }
+
+  bool _hasAnyAmount() => <TextEditingController>[
+    _opening,
+    _employee,
+    _employer,
+    _profit,
+    _adjustments,
+    _closing,
+  ].any((controller) => controller.text.trim().isNotEmpty);
 }
 
 Money? _money(String value) => value.trim().isEmpty ? null : Money.parse(value);

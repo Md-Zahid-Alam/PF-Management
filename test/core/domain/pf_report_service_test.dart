@@ -60,6 +60,27 @@ void main() {
     expect(missing.single.snapshot.closingBalance, Money.parse('2000'));
     expect(explicitZero.single.snapshot.closingBalance, Money.parse('2000'));
   });
+
+  test('aggregates a forty-year monthly history without losing totals', () {
+    const first = YearMonth(1986, 7);
+    final records = <StoredMonthlyPFRecord>[
+      for (var index = 0; index < 480; index++)
+        _record(first.addMonths(index), employee: 1000, employer: 1000),
+    ];
+
+    final reports = const PFReportService().statementSummaries(
+      records: records,
+      profits: const <StoredProfitRecord>[],
+      configuration: const StatementYearConfiguration(
+        startMonth: DateTime.july,
+        startDay: 1,
+      ),
+    );
+
+    expect(reports, hasLength(40));
+    expect(reports.every((report) => report.monthCount == 12), isTrue);
+    expect(reports.first.snapshot.closingBalance, Money.parse('960000'));
+  });
 }
 
 StoredMonthlyPFRecord _record(
