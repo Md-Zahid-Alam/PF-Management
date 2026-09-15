@@ -7,6 +7,7 @@ import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_report_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/presentation/formatters.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class PFStatementReportView {
@@ -53,12 +54,30 @@ final pfStatementReportsProvider = FutureProvider<List<PFStatementReportView>>((
   ];
 });
 
-class PFReportsScreen extends ConsumerWidget {
+enum _ReportMode { statementYear, monthly, calendarYear, salary, profit }
+
+enum _ContributionView { total, employee, employer, adjustment }
+
+class PFReportsScreen extends ConsumerStatefulWidget {
   const PFReportsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PFReportsScreen> createState() => _PFReportsScreenState();
+}
+
+class _PFReportsScreenState extends ConsumerState<PFReportsScreen> {
+  var _mode = _ReportMode.statementYear;
+  var _contribution = _ContributionView.total;
+  int? _year;
+  String? _status;
+  DateTimeRange? _range;
+
+  @override
+  Widget build(BuildContext context) {
     final reports = ref.watch(pfStatementReportsProvider);
+    final records = ref.watch(monthlyPFRecordsProvider);
+    final salaries = ref.watch(salaryHistoryProvider);
+    final profits = ref.watch(profitHistoryProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('PF Reports'),
@@ -75,34 +94,405 @@ class PFReportsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: reports.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: FilledButton.icon(
-            onPressed: () => ref.invalidate(pfStatementReportsProvider),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry reports'),
+      body:
+          reports.isLoading ||
+              records.isLoading ||
+              salaries.isLoading ||
+              profits.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : reports.hasError ||
+                records.hasError ||
+                salaries.hasError ||
+                profits.hasError
+          ? Center(
+              child: FilledButton.icon(
+                onPressed: _retry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry reports'),
+              ),
+            )
+          : _ReportContent(
+              mode: _mode,
+              reports: reports.requireValue,
+              records: records.requireValue,
+              salaries: salaries.requireValue,
+              profits: profits.requireValue,
+              year: _year,
+              status: _status,
+              range: _range,
+              contribution: _contribution,
+              onModeChanged: (value) => setState(() => _mode = value),
+              onYearChanged: (value) => setState(() => _year = value),
+              onStatusChanged: (value) => setState(() => _status = value),
+              onContributionChanged: (value) =>
+                  setState(() => _contribution = value),
+              onPickRange: _pickRange,
+              onClearRange: () => setState(() => _range = null),
+            ),
+    );
+  }
+
+  Future<void> _pickRange() async {
+    final selected = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+      initialDateRange: _range,
+    );
+    if (selected != null && mounted) {
+      setState(() => _range = selected);
+    }
+  }
+
+  void _retry() {
+    ref.invalidate(pfStatementReportsProvider);
+    ref.invalidate(monthlyPFRecordsProvider);
+    ref.invalidate(salaryHistoryProvider);
+    ref.invalidate(profitHistoryProvider);
+  }
+}
+
+class _ReportContent extends StatelessWidget {
+  const _ReportContent({
+    required this.mode,
+    required this.reports,
+    required this.records,
+    required this.salaries,
+    required this.profits,
+    required this.year,
+    required this.status,
+    required this.range,
+    required this.contribution,
+    required this.onModeChanged,
+    required this.onYearChanged,
+    required this.onStatusChanged,
+    required this.onContributionChanged,
+    required this.onPickRange,
+    required this.onClearRange,
+  });
+
+  final _ReportMode mode;
+  final List<PFStatementReportView> reports;
+  final List<StoredMonthlyPFRecord> records;
+  final List<StoredSalary> salaries;
+  final List<StoredProfitRecord> profits;
+  final int? year;
+  final String? status;
+  final DateTimeRange? range;
+  final _ContributionView contribution;
+  final ValueChanged<_ReportMode> onModeChanged;
+  final ValueChanged<int?> onYearChanged;
+  final ValueChanged<String?> onStatusChanged;
+  final ValueChanged<_ContributionView> onContributionChanged;
+  final VoidCallback onPickRange;
+  final VoidCallback onClearRange;
+
+  @override
+  Widget build(BuildContext context) {
+    final years = <int>{
+      for (final record in records) record.month.year,
+      for (final salary in salaries) salary.effectiveFrom.year,
+      for (final profit in profits) profit.creditedDate.year,
+    }.toList()..sort((a, b) => b.compareTo(a));
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: <Widget>[
+        DropdownButtonFormField<_ReportMode>(
+          initialValue: mode,
+          decoration: const InputDecoration(labelText: 'Report type'),
+          items: const <DropdownMenuItem<_ReportMode>>[
+            DropdownMenuItem(
+              value: _ReportMode.statementYear,
+              child: Text('PF statement years'),
+            ),
+            DropdownMenuItem(
+              value: _ReportMode.monthly,
+              child: Text('Monthly PF'),
+            ),
+            DropdownMenuItem(
+              value: _ReportMode.calendarYear,
+              child: Text('Calendar-year PF'),
+            ),
+            DropdownMenuItem(
+              value: _ReportMode.salary,
+              child: Text('Salary history'),
+            ),
+            DropdownMenuItem(
+              value: _ReportMode.profit,
+              child: Text('Known profit'),
+            ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              onModeChanged(value);
+            }
+          },
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: <Widget>[
+            SizedBox(
+              width: 190,
+              child: DropdownButtonFormField<int?>(
+                initialValue: year,
+                decoration: const InputDecoration(labelText: 'Calendar year'),
+                items: <DropdownMenuItem<int?>>[
+                  const DropdownMenuItem(value: null, child: Text('All years')),
+                  for (final item in years)
+                    DropdownMenuItem(value: item, child: Text('$item')),
+                ],
+                onChanged: onYearChanged,
+              ),
+            ),
+            if (mode == _ReportMode.monthly)
+              SizedBox(
+                width: 210,
+                child: DropdownButtonFormField<String?>(
+                  initialValue: status,
+                  decoration: const InputDecoration(labelText: 'PF status'),
+                  items: const <DropdownMenuItem<String?>>[
+                    DropdownMenuItem(value: null, child: Text('All statuses')),
+                    DropdownMenuItem(
+                      value: 'automaticallyCalculated',
+                      child: Text('Automatically calculated'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'manuallyCalculated',
+                      child: Text('Manually calculated'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'manuallyAdjusted',
+                      child: Text('Manually adjusted'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'confirmed',
+                      child: Text('Confirmed'),
+                    ),
+                  ],
+                  onChanged: onStatusChanged,
+                ),
+              ),
+            if (mode == _ReportMode.monthly || mode == _ReportMode.calendarYear)
+              SizedBox(
+                width: 190,
+                child: DropdownButtonFormField<_ContributionView>(
+                  initialValue: contribution,
+                  decoration: const InputDecoration(
+                    labelText: 'Contribution type',
+                  ),
+                  items: const <DropdownMenuItem<_ContributionView>>[
+                    DropdownMenuItem(
+                      value: _ContributionView.total,
+                      child: Text('Total PF'),
+                    ),
+                    DropdownMenuItem(
+                      value: _ContributionView.employee,
+                      child: Text('Employee'),
+                    ),
+                    DropdownMenuItem(
+                      value: _ContributionView.employer,
+                      child: Text('Employer'),
+                    ),
+                    DropdownMenuItem(
+                      value: _ContributionView.adjustment,
+                      child: Text('Adjustments'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      onContributionChanged(value);
+                    }
+                  },
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: <Widget>[
+            OutlinedButton.icon(
+              onPressed: onPickRange,
+              icon: const Icon(Icons.date_range_outlined),
+              label: Text(
+                range == null
+                    ? 'Date range'
+                    : '${DateFormat.yMd().format(range!.start)} – ${DateFormat.yMd().format(range!.end)}',
+              ),
+            ),
+            if (range != null)
+              IconButton(
+                tooltip: 'Clear date range',
+                onPressed: onClearRange,
+                icon: const Icon(Icons.clear),
+              ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        ..._body(context),
+      ],
+    );
+  }
+
+  List<Widget> _body(BuildContext context) => switch (mode) {
+    _ReportMode.statementYear => _statementWidgets(),
+    _ReportMode.monthly => _monthlyWidgets(),
+    _ReportMode.calendarYear => _yearlyWidgets(),
+    _ReportMode.salary => _salaryWidgets(),
+    _ReportMode.profit => _profitWidgets(),
+  };
+
+  List<Widget> _statementWidgets() {
+    final filtered = reports.where((item) {
+      return (year == null || item.summary.year.startYear == year) &&
+          _inRange(item.summary.periodStart);
+    }).toList();
+    return _withSpacing(<Widget>[
+      for (final item in filtered) _StatementCard(item),
+    ]);
+  }
+
+  List<Widget> _monthlyWidgets() {
+    final filtered = records.where((item) {
+      return (year == null || item.month.year == year) &&
+          (status == null || item.status == status) &&
+          _inRange(item.month.firstDay);
+    }).toList()..sort((a, b) => b.month.compareTo(a.month));
+    return _withSpacing(<Widget>[
+      for (final item in filtered)
+        Card(
+          child: ListTile(
+            title: Text(DateFormat.yMMMM().format(item.month.firstDay)),
+            subtitle: Text(formatPFStatus(item.status)),
+            trailing: Text(_formatMoney(_amountFor(item))),
           ),
         ),
-        data: (items) => items.isEmpty
-            ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Text(
-                    'No PF reports yet. Add or calculate monthly PF records first.',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-            : ListView.separated(
-                padding: const EdgeInsets.all(20),
-                itemCount: items.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) => _StatementCard(items[index]),
-              ),
-      ),
+    ]);
+  }
+
+  List<Widget> _yearlyWidgets() {
+    final grouped = <int, List<StoredMonthlyPFRecord>>{};
+    for (final item in records) {
+      if ((year == null || item.month.year == year) &&
+          _inRange(item.month.firstDay)) {
+        grouped.putIfAbsent(item.month.year, () => []).add(item);
+      }
+    }
+    final years = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+    return _withSpacing(<Widget>[
+      for (final itemYear in years)
+        Card(
+          child: ListTile(
+            title: Text('$itemYear'),
+            subtitle: Text('${grouped[itemYear]!.length} PF months'),
+            trailing: Text(_formatMoney(_sumRecords(grouped[itemYear]!))),
+          ),
+        ),
+    ]);
+  }
+
+  List<Widget> _salaryWidgets() {
+    final filtered = salaries.where((item) {
+      return (year == null || item.effectiveFrom.year == year) &&
+          _inRange(item.effectiveFrom);
+    }).toList()..sort((a, b) => b.effectiveFrom.compareTo(a.effectiveFrom));
+    return _withSpacing(<Widget>[
+      for (final item in filtered)
+        Card(
+          child: ListTile(
+            title: Text(_formatMoney(item.grossSalary)),
+            subtitle: Text(
+              'Effective ${DateFormat.yMMMd().format(item.effectiveFrom)}',
+            ),
+          ),
+        ),
+    ]);
+  }
+
+  List<Widget> _profitWidgets() {
+    final filtered = profits.where((item) {
+      return (year == null || item.creditedDate.year == year) &&
+          _inRange(item.creditedDate);
+    }).toList()..sort((a, b) => b.creditedDate.compareTo(a.creditedDate));
+    final widgets = <Widget>[];
+    if (filtered.isNotEmpty) {
+      widgets.add(
+        Card(
+          child: ListTile(
+            title: const Text('Total known profit'),
+            trailing: Text(_formatMoney(_sumProfits(filtered))),
+          ),
+        ),
+      );
+    }
+    widgets.addAll(<Widget>[
+      for (final item in filtered)
+        Card(
+          child: ListTile(
+            title: Text(_formatMoney(item.amount)),
+            subtitle: Text(
+              'Credited ${DateFormat.yMMMd().format(item.creditedDate)}',
+            ),
+          ),
+        ),
+    ]);
+    return _withSpacing(widgets);
+  }
+
+  bool _inRange(DateTime date) {
+    if (range == null) {
+      return true;
+    }
+    final day = DateTime(date.year, date.month, date.day);
+    return !day.isBefore(range!.start) && !day.isAfter(range!.end);
+  }
+
+  Money _amountFor(StoredMonthlyPFRecord item) => switch (contribution) {
+    _ContributionView.employee => item.employeeContribution,
+    _ContributionView.employer => item.employerContribution,
+    _ContributionView.adjustment => item.adjustment,
+    _ContributionView.total =>
+      item.employeeContribution + item.employerContribution + item.adjustment,
+  };
+
+  Money _sumRecords(List<StoredMonthlyPFRecord> items) {
+    var total = Money.zero(
+      decimalPlaces: items.first.grossSalary.decimalPlaces,
+      currencyCode: items.first.grossSalary.currencyCode,
     );
+    for (final item in items) {
+      total += _amountFor(item);
+    }
+    return total;
+  }
+
+  Money _sumProfits(List<StoredProfitRecord> items) {
+    var total = Money.zero(
+      decimalPlaces: items.first.amount.decimalPlaces,
+      currencyCode: items.first.amount.currencyCode,
+    );
+    for (final item in items) {
+      total += item.amount;
+    }
+    return total;
+  }
+
+  List<Widget> _withSpacing(List<Widget> widgets) {
+    if (widgets.isEmpty) {
+      return const <Widget>[
+        Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('No records match the selected filters.'),
+        ),
+      ];
+    }
+    return <Widget>[
+      for (var index = 0; index < widgets.length; index++) ...<Widget>[
+        widgets[index],
+        if (index != widgets.length - 1) const SizedBox(height: 12),
+      ],
+    ];
   }
 }
 
@@ -217,7 +607,9 @@ class _ComparisonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (actual == null) return const SizedBox.shrink();
+    if (actual == null) {
+      return const SizedBox.shrink();
+    }
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
@@ -271,7 +663,9 @@ StoredActualPFStatement? _actualFor(
   int startYear,
 ) {
   for (final statement in statements) {
-    if (statement.statementStartYear == startYear) return statement;
+    if (statement.statementStartYear == startYear) {
+      return statement;
+    }
   }
   return null;
 }
