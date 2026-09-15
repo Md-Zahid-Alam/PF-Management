@@ -40,9 +40,9 @@ void main() {
       EffectiveHistorySelector.policyFor(const YearMonth(2026, 2), rules)!,
     );
 
-    expect(januaryRule.rule.id, 'old-rule');
+    expect(januaryRule!.rule.id, 'old-rule');
     expect(januarySalary!.id, 'old-salary');
-    expect(februaryRule.rule.id, 'new-rule');
+    expect(februaryRule!.rule.id, 'new-rule');
     expect(februarySalary!.id, 'new-salary');
   });
 
@@ -66,7 +66,7 @@ void main() {
       EffectiveHistorySelector.policyFor(const YearMonth(2026, 1), rules)!,
     );
 
-    expect(rule.rule.id, 'new-rule');
+    expect(rule!.rule.id, 'new-rule');
     expect(salary!.id, 'new-salary');
   });
 }
