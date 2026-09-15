@@ -7,6 +7,7 @@ import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/domain/pf_report_service.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
@@ -20,10 +21,23 @@ class DashboardScreen extends ConsumerWidget {
     final records = ref.watch(monthlyPFRecordsProvider);
     final settings = ref.watch(automationSettingsProvider);
     final automation = ref.watch(pfAutomationRunProvider);
-    if (setup.isLoading || records.isLoading || settings.isLoading) {
+    final profits = ref.watch(profitHistoryProvider);
+    final actualStatements = ref.watch(actualPFStatementsProvider);
+    final statementDefinitions = ref.watch(statementYearDefinitionsProvider);
+    if (setup.isLoading ||
+        records.isLoading ||
+        settings.isLoading ||
+        profits.isLoading ||
+        actualStatements.isLoading ||
+        statementDefinitions.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (setup.hasError || records.hasError || settings.hasError) {
+    if (setup.hasError ||
+        records.hasError ||
+        settings.hasError ||
+        profits.hasError ||
+        actualStatements.hasError ||
+        statementDefinitions.hasError) {
       return Scaffold(
         appBar: AppBar(title: const Text('PF Dashboard')),
         body: Center(
@@ -32,6 +46,9 @@ class DashboardScreen extends ConsumerWidget {
               ref.invalidate(initialPFSetupProvider);
               ref.invalidate(monthlyPFRecordsProvider);
               ref.invalidate(automationSettingsProvider);
+              ref.invalidate(profitHistoryProvider);
+              ref.invalidate(actualPFStatementsProvider);
+              ref.invalidate(statementYearDefinitionsProvider);
             },
             icon: const Icon(Icons.refresh),
             label: const Text('Retry dashboard'),
@@ -46,6 +63,9 @@ class DashboardScreen extends ConsumerWidget {
     final summary = _DashboardSummary.from(
       setup: setupValue,
       records: records.requireValue,
+      profits: profits.requireValue,
+      actualStatements: actualStatements.requireValue,
+      statementDefinitions: statementDefinitions.requireValue,
       settings: settings.requireValue,
       today: DateTime.now(),
     );
@@ -56,6 +76,9 @@ class DashboardScreen extends ConsumerWidget {
           ref.invalidate(initialPFSetupProvider);
           ref.invalidate(monthlyPFRecordsProvider);
           ref.invalidate(automationSettingsProvider);
+          ref.invalidate(profitHistoryProvider);
+          ref.invalidate(actualPFStatementsProvider);
+          ref.invalidate(statementYearDefinitionsProvider);
           ref.invalidate(pfAutomationRunProvider);
           await ref.read(monthlyPFRecordsProvider.future);
         },
@@ -112,7 +135,9 @@ class DashboardScreen extends ConsumerWidget {
                 Expanded(
                   child: _SummaryCard(
                     label: 'Known profit',
-                    value: 'Unknown',
+                    value: summary.profitEntered
+                        ? formatMoney(summary.profit)
+                        : 'Not entered',
                     icon: Icons.trending_up,
                   ),
                 ),
@@ -128,6 +153,23 @@ class DashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             _MaturityCard(summary: summary),
+            if (summary.latestClosingDifference != null) ...<Widget>[
+              const SizedBox(height: 16),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.compare_arrows),
+                  title: const Text('Latest statement difference'),
+                  subtitle: const Text(
+                    'Official company statement compared with calculated balance',
+                  ),
+                  trailing: Text(
+                    formatMoney(summary.latestClosingDifference!),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  onTap: () => context.push('/reports'),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             Card(
               child: Column(
@@ -140,6 +182,15 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     title: const Text('Auto Calculate PF'),
                     trailing: Text(summary.autoCalculate ? 'ON' : 'OFF'),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.work_history_outlined),
+                    title: const Text('Employment dates'),
+                    subtitle: Text(
+                      'Joined ${DateFormat.yMMMd().format(summary.joiningDate)}\n'
+                      'PF started ${DateFormat.yMMMd().format(summary.pfStartDate)}',
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
@@ -263,7 +314,11 @@ class _BalanceCard extends StatelessWidget {
             Text(
               'Estimated if leaving today: ${formatMoney(summary.receivableToday)}',
             ),
-            const Text('Known profit is not included.'),
+            Text(
+              summary.profitEntered
+                  ? 'Includes ${formatMoney(summary.profit)} recorded profit.'
+                  : 'Profit has not been entered.',
+            ),
           ],
         ),
       ),
@@ -365,6 +420,8 @@ class _DashboardSummary {
   const _DashboardSummary({
     required this.employee,
     required this.employer,
+    required this.profit,
+    required this.profitEntered,
     required this.balance,
     required this.receivableToday,
     required this.afterMaturity,
@@ -373,11 +430,17 @@ class _DashboardSummary {
     required this.maturityDescription,
     required this.autoCalculate,
     required this.latestMonth,
+    required this.joiningDate,
+    required this.pfStartDate,
+    required this.latestClosingDifference,
   });
 
   factory _DashboardSummary.from({
     required InitialPFSetup setup,
     required List<StoredMonthlyPFRecord> records,
+    required List<StoredProfitRecord> profits,
+    required List<StoredActualPFStatement> actualStatements,
+    required List<StoredStatementYearDefinition> statementDefinitions,
     required AutomationSettings settings,
     required DateTime today,
   }) {
@@ -385,10 +448,14 @@ class _DashboardSummary {
     var employee = _zeroLike(prototype);
     var employer = _zeroLike(prototype);
     var adjustments = _zeroLike(prototype);
+    var profit = _zeroLike(prototype);
     for (final record in records) {
       employee += record.employeeContribution;
       employer += record.employerContribution;
       adjustments += record.adjustment;
+    }
+    for (final item in profits) {
+      profit += item.amount;
     }
     const engine = PFCalculationEngine();
     final rule = setup.rule.rule;
@@ -409,16 +476,26 @@ class _DashboardSummary {
         : records
               .map((record) => record.month)
               .reduce((a, b) => a.compareTo(b) >= 0 ? a : b);
+    final latestClosingDifference = _latestClosingDifference(
+      records: records,
+      profits: profits,
+      actualStatements: actualStatements,
+      definitions: statementDefinitions,
+      today: today,
+    );
     return _DashboardSummary(
       employee: employee,
       employer: employer,
-      balance: employee + employer + adjustments,
-      receivableToday: employee + receivedEmployer + adjustments,
+      profit: profit,
+      profitEntered: profits.isNotEmpty,
+      balance: employee + employer + profit + adjustments,
+      receivableToday: employee + receivedEmployer + profit + adjustments,
       afterMaturity:
           employee +
           (rule.employerEntitledAfterMaturity
               ? employer
               : _zeroLike(prototype)) +
+          profit +
           adjustments,
       monthCount: records.length,
       maturityDate: maturityDate,
@@ -429,11 +506,16 @@ class _DashboardSummary {
       latestMonth: latest == null
           ? null
           : DateFormat.yMMMM().format(latest.firstDay),
+      joiningDate: setup.joiningDate,
+      pfStartDate: setup.pfStartDate,
+      latestClosingDifference: latestClosingDifference,
     );
   }
 
   final Money employee;
   final Money employer;
+  final Money profit;
+  final bool profitEntered;
   final Money balance;
   final Money receivableToday;
   final Money afterMaturity;
@@ -442,6 +524,48 @@ class _DashboardSummary {
   final String maturityDescription;
   final bool autoCalculate;
   final String? latestMonth;
+  final DateTime joiningDate;
+  final DateTime pfStartDate;
+  final Money? latestClosingDifference;
+
+  static Money? _latestClosingDifference({
+    required List<StoredMonthlyPFRecord> records,
+    required List<StoredProfitRecord> profits,
+    required List<StoredActualPFStatement> actualStatements,
+    required List<StoredStatementYearDefinition> definitions,
+    required DateTime today,
+  }) {
+    if (records.isEmpty || actualStatements.isEmpty) {
+      return null;
+    }
+    var configuration = const StatementYearConfiguration(
+      startMonth: DateTime.july,
+      startDay: 1,
+    );
+    for (final definition in definitions) {
+      if (!definition.effectiveFrom.isAfter(today)) {
+        configuration = definition.configuration;
+      }
+    }
+    final summaries = const PFReportService().statementSummaries(
+      records: records,
+      profits: profits,
+      configuration: configuration,
+    );
+    for (final summary in summaries) {
+      for (final actual in actualStatements) {
+        if (actual.statementStartYear == summary.year.startYear) {
+          return const PFCalculationEngine()
+              .reconcileStatement(
+                calculated: summary.snapshot,
+                actual: actual.snapshot,
+              )
+              .closingDifference;
+        }
+      }
+    }
+    return null;
+  }
 
   static Money _zeroLike(Money value) {
     return Money.zero(
