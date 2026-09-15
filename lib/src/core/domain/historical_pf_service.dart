@@ -1,4 +1,5 @@
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/effective_history_selector.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_automation_service.dart';
@@ -110,16 +111,24 @@ class HistoricalPFService {
       if (!engine.isEligibleForMonth(employment, month)) {
         continue;
       }
-      final salary = _salaryFor(month, salaryHistory);
-      if (salary == null) {
-        throw MissingCalculationInput(
-          'Salary information is required for historical month $month.',
-        );
-      }
-      final rule = _ruleFor(month, ruleHistory);
+      final rule = EffectiveHistorySelector.ruleFor(month, ruleHistory);
       if (rule == null) {
         throw MissingCalculationInput(
           'PF rule information is required for historical month $month.',
+        );
+      }
+      final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
+        month,
+        ruleHistory,
+      )!;
+      final salary = EffectiveHistorySelector.salaryFor(
+        month,
+        salaryHistory,
+        effectiveVersionPolicy,
+      );
+      if (salary == null) {
+        throw MissingCalculationInput(
+          'Salary information is required for historical month $month.',
         );
       }
       final schedule = DuePeriodDetector(engine).scheduleFor(month, schedules);
@@ -188,30 +197,6 @@ class HistoricalPFService {
       decimalPlaces: money.decimalPlaces,
       currencyCode: money.currencyCode,
     );
-  }
-
-  static StoredSalary? _salaryFor(YearMonth month, List<StoredSalary> history) {
-    StoredSalary? selected;
-    for (final salary in history) {
-      if (!salary.effectiveFrom.isAfter(month.lastDay) &&
-          (selected == null ||
-              salary.effectiveFrom.isAfter(selected.effectiveFrom))) {
-        selected = salary;
-      }
-    }
-    return selected;
-  }
-
-  static StoredPFRule? _ruleFor(YearMonth month, List<StoredPFRule> history) {
-    StoredPFRule? selected;
-    for (final rule in history) {
-      if (!rule.rule.effectiveFrom.isAfter(month.lastDay) &&
-          (selected == null ||
-              rule.rule.effectiveFrom.isAfter(selected.rule.effectiveFrom))) {
-        selected = rule;
-      }
-    }
-    return selected;
   }
 
   static String _defaultId(String employmentId, YearMonth month) {

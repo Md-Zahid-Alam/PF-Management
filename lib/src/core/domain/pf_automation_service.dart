@@ -1,4 +1,5 @@
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/effective_history_selector.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
@@ -105,7 +106,25 @@ class PFAutomationService {
         );
         continue;
       }
-      final salary = _salaryFor(month, salaryHistory);
+      final rule = EffectiveHistorySelector.ruleFor(month, ruleHistory);
+      if (rule == null) {
+        final result = AutomationPeriodResult(
+          month: month,
+          scheduledGenerationDate: scheduledDate,
+          status: AutomationPeriodStatus.pendingRuleInformation,
+        );
+        results.add(result);
+        continue;
+      }
+      final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
+        month,
+        ruleHistory,
+      )!;
+      final salary = EffectiveHistorySelector.salaryFor(
+        month,
+        salaryHistory,
+        effectiveVersionPolicy,
+      );
       if (salary == null) {
         final result = AutomationPeriodResult(
           month: month,
@@ -120,17 +139,6 @@ class PFAutomationService {
             title: 'Salary information required',
             body: '$month PF is waiting for salary information.',
             month: month,
-          ),
-        );
-        continue;
-      }
-      final rule = _ruleFor(month, ruleHistory);
-      if (rule == null) {
-        results.add(
-          AutomationPeriodResult(
-            month: month,
-            scheduledGenerationDate: scheduledDate,
-            status: AutomationPeriodStatus.pendingRuleInformation,
           ),
         );
         continue;
@@ -199,15 +207,23 @@ class PFAutomationService {
     if (existing != null) {
       return existing;
     }
-    final salary =
-        _salaryFor(month, salaryHistory) ??
-        (throw MissingCalculationInput(
-          'Salary information is required for $month.',
-        ));
     final rule =
-        _ruleFor(month, ruleHistory) ??
+        EffectiveHistorySelector.ruleFor(month, ruleHistory) ??
         (throw MissingCalculationInput(
           'PF rule information is required for $month.',
+        ));
+    final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
+      month,
+      ruleHistory,
+    )!;
+    final salary =
+        EffectiveHistorySelector.salaryFor(
+          month,
+          salaryHistory,
+          effectiveVersionPolicy,
+        ) ??
+        (throw MissingCalculationInput(
+          'Salary information is required for $month.',
         ));
     final schedule = DuePeriodDetector(engine)
         .scheduleFor(month, schedules)
@@ -297,30 +313,6 @@ class PFAutomationService {
     if (settings.notificationsEnabled) {
       await notificationGateway.show(notification);
     }
-  }
-
-  static StoredSalary? _salaryFor(YearMonth month, List<StoredSalary> history) {
-    StoredSalary? selected;
-    for (final salary in history) {
-      if (!salary.effectiveFrom.isAfter(month.lastDay) &&
-          (selected == null ||
-              salary.effectiveFrom.isAfter(selected.effectiveFrom))) {
-        selected = salary;
-      }
-    }
-    return selected;
-  }
-
-  static StoredPFRule? _ruleFor(YearMonth month, List<StoredPFRule> history) {
-    StoredPFRule? selected;
-    for (final rule in history) {
-      if (!rule.rule.effectiveFrom.isAfter(month.lastDay) &&
-          (selected == null ||
-              rule.rule.effectiveFrom.isAfter(selected.rule.effectiveFrom))) {
-        selected = rule;
-      }
-    }
-    return selected;
   }
 
   static String _defaultId(String employmentId, YearMonth month) {
