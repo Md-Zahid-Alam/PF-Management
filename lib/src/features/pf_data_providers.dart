@@ -45,6 +45,13 @@ final actualPFStatementsProvider =
           .getForEmployment(DriftInitialSetupRepository.employmentId);
     });
 
+final statementYearDefinitionsProvider =
+    FutureProvider<List<StoredStatementYearDefinition>>((ref) {
+      return ref
+          .watch(statementYearDefinitionRepositoryProvider)
+          .getForOrganization(DriftInitialSetupRepository.organizationId);
+    });
+
 final automationSettingsProvider = FutureProvider<AutomationSettings>((ref) {
   return ref.watch(automationSettingsRepositoryProvider).get();
 });

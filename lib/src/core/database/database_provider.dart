@@ -30,6 +30,13 @@ final actualPFStatementRepositoryProvider =
       return DriftActualPFStatementRepository(ref.watch(appDatabaseProvider));
     });
 
+final statementYearDefinitionRepositoryProvider =
+    Provider<StatementYearDefinitionRepository>((ref) {
+      return DriftStatementYearDefinitionRepository(
+        ref.watch(appDatabaseProvider),
+      );
+    });
+
 final automationSettingsRepositoryProvider =
     Provider<AutomationSettingsRepository>((ref) {
       return DriftAutomationSettingsRepository(ref.watch(appDatabaseProvider));

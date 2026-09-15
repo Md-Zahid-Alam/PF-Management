@@ -381,6 +381,32 @@ void main() {
     expect(statement.snapshot.profit, isNull);
   });
 
+  test(
+    'statement year definitions persist as effective-dated history',
+    () async {
+      final repository = DriftStatementYearDefinitionRepository(database);
+      await repository.save(
+        StoredStatementYearDefinition(
+          id: 'statement-year-1',
+          organizationId: 'organization-1',
+          effectiveFrom: DateTime(2025, 7),
+          configuration: const StatementYearConfiguration(
+            startMonth: DateTime.july,
+            startDay: 1,
+          ),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+
+      final definition = (await repository.getForOrganization('organization-1'))
+          .single;
+      expect(definition.effectiveFrom, DateTime(2025, 7));
+      expect(definition.configuration.startMonth, DateTime.july);
+      expect(definition.configuration.startDay, 1);
+    },
+  );
+
   test('invalid backup is rejected without deleting current data', () async {
     final service = DatabaseBackupService(database);
 

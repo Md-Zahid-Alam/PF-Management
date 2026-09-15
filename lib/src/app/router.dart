@@ -9,8 +9,10 @@ import 'package:pf_tracker/src/features/monthly_records/presentation/monthly_rec
 import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_form_screen.dart';
 import 'package:pf_tracker/src/features/profit_history/presentation/profit_history_screen.dart';
-import 'package:pf_tracker/src/features/reports/presentation/pf_reports_screen.dart';
 import 'package:pf_tracker/src/features/reports/presentation/actual_statement_form_screen.dart';
+import 'package:pf_tracker/src/features/reports/presentation/exit_estimate_screen.dart';
+import 'package:pf_tracker/src/features/reports/presentation/pf_reports_screen.dart';
+import 'package:pf_tracker/src/features/reports/presentation/statement_year_screen.dart';
 import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_form_screen.dart';
 import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_history_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
@@ -64,6 +66,14 @@ final GoRouter appRouter = GoRouter(
       path: '/reports',
       builder: (context, state) => const PFReportsScreen(),
       routes: <RouteBase>[
+        GoRoute(
+          path: 'exit-estimate',
+          builder: (context, state) => const ExitEstimateScreen(),
+        ),
+        GoRoute(
+          path: 'statement-year',
+          builder: (context, state) => const StatementYearScreen(),
+        ),
         GoRoute(
           path: ':startYear/actual',
           builder: (context, state) => ActualStatementFormScreen(

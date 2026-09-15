@@ -45,6 +45,13 @@ abstract interface class ActualPFStatementRepository {
   Future<void> delete(String id);
 }
 
+abstract interface class StatementYearDefinitionRepository {
+  Future<List<StoredStatementYearDefinition>> getForOrganization(
+    String organizationId,
+  );
+  Future<void> save(StoredStatementYearDefinition definition);
+}
+
 abstract interface class AutomationSettingsRepository {
   Future<AutomationSettings> get();
   Future<void> save(AutomationSettings settings);

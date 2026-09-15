@@ -27,13 +27,12 @@ final pfStatementReportsProvider = FutureProvider<List<PFStatementReportView>>((
   final records = await ref.watch(monthlyPFRecordsProvider.future);
   final profits = await ref.watch(profitHistoryProvider.future);
   final actualStatements = await ref.watch(actualPFStatementsProvider.future);
+  final definitions = await ref.watch(statementYearDefinitionsProvider.future);
+  final configuration = _currentConfiguration(definitions, DateTime.now());
   final summaries = const PFReportService().statementSummaries(
     records: records,
     profits: profits,
-    configuration: const StatementYearConfiguration(
-      startMonth: DateTime.july,
-      startDay: 1,
-    ),
+    configuration: configuration,
   );
   const engine = PFCalculationEngine();
   return <PFStatementReportView>[
@@ -61,7 +60,21 @@ class PFReportsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final reports = ref.watch(pfStatementReportsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Reports')),
+      appBar: AppBar(
+        title: const Text('PF Reports'),
+        actions: <Widget>[
+          IconButton(
+            tooltip: 'Exit estimate',
+            onPressed: () => context.push('/reports/exit-estimate'),
+            icon: const Icon(Icons.directions_walk_outlined),
+          ),
+          IconButton(
+            tooltip: 'Statement year settings',
+            onPressed: () => context.push('/reports/statement-year'),
+            icon: const Icon(Icons.date_range_outlined),
+          ),
+        ],
+      ),
       body: reports.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
@@ -253,4 +266,19 @@ StoredActualPFStatement? _actualFor(
     if (statement.statementStartYear == startYear) return statement;
   }
   return null;
+}
+
+StatementYearConfiguration _currentConfiguration(
+  List<StoredStatementYearDefinition> definitions,
+  DateTime today,
+) {
+  for (final definition in definitions.reversed) {
+    if (!definition.effectiveFrom.isAfter(today)) {
+      return definition.configuration;
+    }
+  }
+  return const StatementYearConfiguration(
+    startMonth: DateTime.july,
+    startDay: 1,
+  );
 }

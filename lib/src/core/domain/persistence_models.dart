@@ -158,3 +158,21 @@ class StoredActualPFStatement {
   final DateTime createdAt;
   final DateTime updatedAt;
 }
+
+class StoredStatementYearDefinition {
+  const StoredStatementYearDefinition({
+    required this.id,
+    required this.organizationId,
+    required this.effectiveFrom,
+    required this.configuration,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String organizationId;
+  final DateTime effectiveFrom;
+  final StatementYearConfiguration configuration;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}

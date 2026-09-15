@@ -695,6 +695,66 @@ class DriftActualPFStatementRepository implements ActualPFStatementRepository {
   }
 }
 
+class DriftStatementYearDefinitionRepository
+    implements StatementYearDefinitionRepository {
+  DriftStatementYearDefinitionRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<List<StoredStatementYearDefinition>> getForOrganization(
+    String organizationId,
+  ) async {
+    final query = database.select(database.statementYearDefinitions)
+      ..where((row) => row.organizationId.equals(organizationId))
+      ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)]);
+    return (await query.get()).map(_fromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> save(StoredStatementYearDefinition definition) async {
+    final configuration = definition.configuration;
+    final normalized = DateTime(
+      2000,
+      configuration.startMonth,
+      configuration.startDay,
+    );
+    if (normalized.month != configuration.startMonth ||
+        normalized.day != configuration.startDay) {
+      throw ArgumentError('Statement-year start must be a valid date.');
+    }
+    await database
+        .into(database.statementYearDefinitions)
+        .insertOnConflictUpdate(
+          db.StatementYearDefinitionsCompanion.insert(
+            id: definition.id,
+            organizationId: definition.organizationId,
+            effectiveFrom: _dateOnly(definition.effectiveFrom),
+            startMonth: configuration.startMonth,
+            startDay: configuration.startDay,
+            createdAt: definition.createdAt,
+            updatedAt: definition.updatedAt,
+          ),
+        );
+  }
+
+  static StoredStatementYearDefinition _fromRow(
+    db.StatementYearDefinition row,
+  ) {
+    return StoredStatementYearDefinition(
+      id: row.id,
+      organizationId: row.organizationId,
+      effectiveFrom: row.effectiveFrom,
+      configuration: StatementYearConfiguration(
+        startMonth: row.startMonth,
+        startDay: row.startDay,
+      ),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    );
+  }
+}
+
 class DriftInitialSetupRepository implements InitialSetupRepository {
   DriftInitialSetupRepository(this.database);
 
