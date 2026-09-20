@@ -39,9 +39,11 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.calendar_month_outlined),
             title: const Text('Salary Schedule'),
-            subtitle: const Text('Payment window and PF generation date'),
+            subtitle: const Text(
+              'Effective-dated payment windows and generation dates',
+            ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/setup/edit'),
+            onTap: () => context.push('/salary-schedule-history'),
           ),
           ListTile(
             leading: const Icon(Icons.payments_outlined),

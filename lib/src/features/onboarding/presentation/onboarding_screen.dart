@@ -316,6 +316,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    if (widget.editExisting) ...<Widget>[
+                      const Text(
+                        'Existing schedule versions are read-only here. Use Salary Schedule History in Settings to add a new effective-dated version.',
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     DropdownButtonFormField<int>(
                       key: ValueKey('start-$_paymentWindowStartMonthOffset'),
                       initialValue: _paymentWindowStartMonthOffset,
@@ -332,9 +338,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: Text('Following month'),
                         ),
                       ],
-                      onChanged: (value) => setState(() {
-                        _paymentWindowStartMonthOffset = value ?? 1;
-                      }),
+                      onChanged: widget.editExisting
+                          ? null
+                          : (value) => setState(() {
+                              _paymentWindowStartMonthOffset = value ?? 1;
+                            }),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<int>(
@@ -353,9 +361,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: Text('Following month'),
                         ),
                       ],
-                      onChanged: (value) => setState(() {
-                        _paymentMonthOffset = value ?? 1;
-                      }),
+                      onChanged: widget.editExisting
+                          ? null
+                          : (value) => setState(() {
+                              _paymentMonthOffset = value ?? 1;
+                            }),
                     ),
                     const SizedBox(height: 12),
                     const Text(
@@ -364,9 +374,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: <Widget>[
-                        Expanded(child: _dayField(_windowStart, 'Start day')),
+                        Expanded(
+                          child: _dayField(
+                            _windowStart,
+                            'Start day',
+                            enabled: !widget.editExisting,
+                          ),
+                        ),
                         const SizedBox(width: 12),
-                        Expanded(child: _dayField(_windowEnd, 'End day')),
+                        Expanded(
+                          child: _dayField(
+                            _windowEnd,
+                            'End day',
+                            enabled: !widget.editExisting,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -435,9 +457,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  TextFormField _dayField(TextEditingController controller, String label) {
+  TextFormField _dayField(
+    TextEditingController controller,
+    String label, {
+    bool enabled = true,
+  }) {
     return TextFormField(
       controller: controller,
+      enabled: enabled,
       decoration: InputDecoration(labelText: label),
       keyboardType: TextInputType.number,
       validator: (value) {

@@ -15,6 +15,13 @@ abstract interface class SalaryScheduleRepository {
   Future<List<EffectiveSalarySchedule>> getForOrganization(
     String organizationId,
   );
+  Future<void> save({
+    required String organizationId,
+    required EffectiveSalarySchedule schedule,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  });
+  Future<void> deleteUnused(String id, String organizationId);
 }
 
 abstract interface class PFRuleRepository {

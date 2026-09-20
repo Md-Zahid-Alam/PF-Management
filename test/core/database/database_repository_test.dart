@@ -198,6 +198,53 @@ void main() {
     );
   });
 
+  test(
+    'salary schedule history saves versions and protects the last one',
+    () async {
+      final repository = DriftSalaryScheduleRepository(database);
+      await repository.save(
+        organizationId: 'organization-1',
+        schedule: EffectiveSalarySchedule(
+          id: 'schedule-1',
+          effectiveFrom: DateTime(2026),
+          schedule: const SalarySchedule(
+            paymentMonthOffset: 1,
+            paymentWindowStartDay: 1,
+            paymentWindowEndDay: 5,
+          ),
+        ),
+        createdAt: now,
+        updatedAt: now,
+      );
+      await repository.save(
+        organizationId: 'organization-1',
+        schedule: EffectiveSalarySchedule(
+          id: 'schedule-2',
+          effectiveFrom: DateTime(2026, 7),
+          schedule: const SalarySchedule(
+            paymentMonthOffset: 0,
+            paymentWindowStartDay: 28,
+            paymentWindowEndDay: 31,
+          ),
+        ),
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final history = await repository.getForOrganization('organization-1');
+      expect(history.map((schedule) => schedule.id), <String>[
+        'schedule-1',
+        'schedule-2',
+      ]);
+
+      await repository.deleteUnused('schedule-2', 'organization-1');
+      await expectLater(
+        repository.deleteUnused('schedule-1', 'organization-1'),
+        throwsStateError,
+      );
+    },
+  );
+
   test('database prevents duplicate employment and PF month records', () async {
     final repository = DriftMonthlyPFRepository(database);
     final record = _monthlyRecord(now: now);

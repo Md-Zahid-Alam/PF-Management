@@ -20,6 +20,8 @@ import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_form_s
 import 'package:pf_tracker/src/features/rule_history/presentation/pf_rule_history_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_form_screen.dart';
 import 'package:pf_tracker/src/features/salary_history/presentation/salary_history_screen.dart';
+import 'package:pf_tracker/src/features/salary_schedule/presentation/salary_schedule_form_screen.dart';
+import 'package:pf_tracker/src/features/salary_schedule/presentation/salary_schedule_history_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/backup_restore_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/about_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/settings_screen.dart';
@@ -68,6 +70,16 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) {
             return SalaryFormScreen(salaryId: state.pathParameters['salaryId']);
           },
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/salary-schedule-history',
+      builder: (context, state) => const SalaryScheduleHistoryScreen(),
+      routes: <RouteBase>[
+        GoRoute(
+          path: 'add',
+          builder: (context, state) => const SalaryScheduleFormScreen(),
         ),
       ],
     ),

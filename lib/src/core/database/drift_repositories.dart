@@ -111,6 +111,79 @@ class DriftSalaryScheduleRepository implements SalaryScheduleRepository {
         )
         .toList(growable: false);
   }
+
+  @override
+  Future<void> save({
+    required String organizationId,
+    required EffectiveSalarySchedule schedule,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) async {
+    await database
+        .into(database.salarySchedules)
+        .insert(
+          db.SalarySchedulesCompanion.insert(
+            id: schedule.id,
+            organizationId: organizationId,
+            effectiveFrom: _dateOnly(schedule.effectiveFrom),
+            paymentMonthOffset: schedule.schedule.paymentMonthOffset,
+            paymentWindowStartMonthOffset: Value(
+              schedule.schedule.paymentWindowStartMonthOffset,
+            ),
+            paymentWindowStartDay: schedule.schedule.paymentWindowStartDay,
+            paymentWindowEndDay: schedule.schedule.paymentWindowEndDay,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+        );
+  }
+
+  @override
+  Future<void> deleteUnused(String id, String organizationId) async {
+    final schedules = await getForOrganization(organizationId);
+    if (schedules.length <= 1) {
+      throw StateError('At least one salary schedule is required.');
+    }
+    final targetIndex = schedules.indexWhere((schedule) => schedule.id == id);
+    if (targetIndex < 0) {
+      return;
+    }
+    final target = schedules[targetIndex];
+    final nextEffectiveFrom = targetIndex + 1 < schedules.length
+        ? schedules[targetIndex + 1].effectiveFrom
+        : null;
+    final employments = await (database.select(
+      database.employments,
+    )..where((row) => row.organizationId.equals(organizationId))).get();
+    final employmentIds = employments
+        .map((employment) => employment.id)
+        .toList(growable: false);
+    if (employmentIds.isNotEmpty) {
+      final used =
+          await (database.select(database.monthlyPfRecords)
+                ..where((row) {
+                  var predicate =
+                      row.employmentId.isIn(employmentIds) &
+                      row.pfMonth.isBiggerOrEqualValue(target.effectiveFrom);
+                  if (nextEffectiveFrom != null) {
+                    predicate &= row.pfMonth.isSmallerThanValue(
+                      nextEffectiveFrom,
+                    );
+                  }
+                  return predicate;
+                })
+                ..limit(1))
+              .getSingleOrNull();
+      if (used != null) {
+        throw StateError(
+          'Salary schedules cannot be deleted after PF records exist.',
+        );
+      }
+    }
+    await (database.delete(
+      database.salarySchedules,
+    )..where((row) => row.id.equals(id))).go();
+  }
 }
 
 class DriftPFRuleRepository implements PFRuleRepository {
