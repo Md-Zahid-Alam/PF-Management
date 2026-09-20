@@ -410,6 +410,10 @@ void main() {
       exportedAt: now,
     );
 
+    expect(backup['formatVersion'], 4);
+    expect(backup['checksumAlgorithm'], 'sha256');
+    expect(backup['checksum'], matches(RegExp(r'^[0-9a-f]{64}$')));
+
     await DriftMonthlyPFRepository(database).delete('monthly-1');
     await DriftProfitRepository(database).delete('profit-backup');
     await DriftActualPFStatementRepository(database).delete('actual-backup');
@@ -516,6 +520,32 @@ void main() {
     expect(await database.select(database.employments).get(), hasLength(1));
   });
 
+  test('modified backup fails checksum before changing current data', () async {
+    final service = DatabaseBackupService(database);
+    final backup = await service.exportAll(
+      appVersion: '0.1.0',
+      exportedAt: now,
+    );
+    final data = backup['data']! as Map<String, Object?>;
+    final profiles = data['userProfiles']! as List<Object?>;
+    final profile = profiles.single! as Map<String, Object?>;
+    profile['employeeName'] = 'Modified Name';
+
+    await expectLater(
+      service.restoreAll(backup),
+      throwsA(
+        isA<InvalidBackup>().having(
+          (error) => error.message,
+          'message',
+          contains('checksum'),
+        ),
+      ),
+    );
+
+    final preserved = await database.select(database.userProfiles).getSingle();
+    expect(preserved.employeeName, 'Test Employee');
+  });
+
   test('version 1 backup migrates before atomic restore', () async {
     final service = DatabaseBackupService(database);
     final backup = await service.exportAll(
@@ -575,6 +605,10 @@ void main() {
       appVersion: '0.1.0',
       exportedAt: now,
     );
+    backup
+      ..['formatVersion'] = 3
+      ..remove('checksumAlgorithm')
+      ..remove('checksum');
     final data = backup['data']! as Map<String, Object?>;
     final employments = data['employments']! as List<Object?>;
     final employment = employments.single! as Map<String, Object?>;

@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:pf_tracker/src/core/database/app_database.dart' as db;
 
@@ -13,7 +16,7 @@ class InvalidBackup implements Exception {
 class DatabaseBackupService {
   DatabaseBackupService(this.database);
 
-  static const int currentFormatVersion = 3;
+  static const int currentFormatVersion = 4;
   static const int oldestSupportedFormatVersion = 1;
 
   final db.AppDatabase database;
@@ -22,7 +25,7 @@ class DatabaseBackupService {
     required String appVersion,
     required DateTime exportedAt,
   }) async {
-    return <String, Object?>{
+    final backup = <String, Object?>{
       'formatVersion': currentFormatVersion,
       'appVersion': appVersion,
       'exportedAt': exportedAt.toUtc().toIso8601String(),
@@ -61,10 +64,13 @@ class DatabaseBackupService {
         ),
       },
     };
+    return _withChecksum(backup);
   }
 
   Future<void> restoreAll(Map<String, Object?> backup) async {
-    final data = _validatedData(_migrateToCurrentFormat(backup));
+    final migrated = _migrateToCurrentFormat(backup);
+    _verifyChecksum(migrated);
+    final data = _validatedData(migrated);
     await database.transaction(() async {
       await _deleteAllInDependencyOrder();
       await database.batch((batch) {
@@ -169,6 +175,7 @@ class DatabaseBackupService {
       migrated = switch (migratedVersion) {
         1 => _migrateVersion1To2(migrated),
         2 => _migrateVersion2To3(migrated),
+        3 => _migrateVersion3To4(migrated),
         _ => throw const InvalidBackup('Unsupported backup migration path.'),
       };
       migratedVersion++;
@@ -206,6 +213,60 @@ class DatabaseBackupService {
     migrated['formatVersion'] = 3;
     migrated['data'] = data;
     return migrated;
+  }
+
+  Map<String, Object?> _migrateVersion3To4(Map<String, Object?> backup) {
+    return _withChecksum(<String, Object?>{...backup, 'formatVersion': 4});
+  }
+
+  void _verifyChecksum(Map<String, Object?> backup) {
+    if (backup['checksumAlgorithm'] != 'sha256') {
+      throw const InvalidBackup('Backup checksum algorithm is unsupported.');
+    }
+    final supplied = backup['checksum'];
+    if (supplied is! String || supplied.isEmpty) {
+      throw const InvalidBackup('Backup checksum is missing.');
+    }
+    final payload = Map<String, Object?>.from(backup)..remove('checksum');
+    final expected = _checksumFor(payload);
+    if (supplied != expected) {
+      throw const InvalidBackup('Backup checksum does not match its data.');
+    }
+  }
+
+  static Map<String, Object?> _withChecksum(Map<String, Object?> backup) {
+    final payload = <String, Object?>{...backup, 'checksumAlgorithm': 'sha256'}
+      ..remove('checksum');
+    return <String, Object?>{...payload, 'checksum': _checksumFor(payload)};
+  }
+
+  static String _checksumFor(Map<String, Object?> payload) {
+    return sha256.convert(utf8.encode(_canonicalJson(payload))).toString();
+  }
+
+  static String _canonicalJson(Object? value) {
+    return jsonEncode(_canonicalize(value));
+  }
+
+  static Object? _canonicalize(Object? value) {
+    if (value is Map<Object?, Object?>) {
+      final mapped = <String, Object?>{};
+      for (final entry in value.entries) {
+        final key = entry.key;
+        if (key is! String) {
+          throw const InvalidBackup('Backup object key is malformed.');
+        }
+        mapped[key] = entry.value;
+      }
+      final keys = mapped.keys.toList()..sort();
+      return <String, Object?>{
+        for (final key in keys) key: _canonicalize(mapped[key]),
+      };
+    }
+    if (value is List<Object?>) {
+      return <Object?>[for (final item in value) _canonicalize(item)];
+    }
+    return value;
   }
 
   Future<void> _deleteAllInDependencyOrder() async {
