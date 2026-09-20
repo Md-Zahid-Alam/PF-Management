@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
+import 'package:pf_tracker/src/core/domain/effective_history_selector.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/domain/year_month.dart';
+import 'package:pf_tracker/src/core/presentation/formatters.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryHistoryScreen extends ConsumerWidget {
@@ -13,29 +16,38 @@ class SalaryHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(salaryHistoryProvider);
+    final rules = ref.watch(pfRuleHistoryProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Salary History')),
       body: history.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) =>
-            _ErrorState(onRetry: () => ref.invalidate(salaryHistoryProvider)),
-        data: (items) => items.isEmpty
-            ? const _EmptyState()
-            : ListView.separated(
-                padding: const EdgeInsets.all(20),
-                itemCount: items.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final salary = items[items.length - 1 - index];
-                  return _SalaryCard(
-                    salary: salary,
-                    onEdit: () =>
-                        context.push('/salary-history/${salary.id}/edit'),
-                    onDelete: () => _confirmDelete(context, ref, salary),
-                  );
-                },
-              ),
+        error: (error, stackTrace) => _ErrorState(onRetry: () => _retry(ref)),
+        data: (items) => rules.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => _ErrorState(onRetry: () => _retry(ref)),
+          data: (ruleHistory) => items.isEmpty
+              ? const _EmptyState()
+              : ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: items.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final salary = items[items.length - 1 - index];
+                    final rule = EffectiveHistorySelector.ruleFor(
+                      YearMonth.fromDate(salary.effectiveFrom),
+                      ruleHistory,
+                    );
+                    return _SalaryCard(
+                      salary: salary,
+                      applicableRule: rule,
+                      onEdit: () =>
+                          context.push('/salary-history/${salary.id}/edit'),
+                      onDelete: () => _confirmDelete(context, ref, salary),
+                    );
+                  },
+                ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -48,6 +60,12 @@ class SalaryHistoryScreen extends ConsumerWidget {
         label: const Text('Add salary'),
       ),
     );
+  }
+
+  void _retry(WidgetRef ref) {
+    ref
+      ..invalidate(salaryHistoryProvider)
+      ..invalidate(pfRuleHistoryProvider);
   }
 
   Future<void> _confirmDelete(
@@ -97,39 +115,72 @@ class SalaryHistoryScreen extends ConsumerWidget {
 class _SalaryCard extends StatelessWidget {
   const _SalaryCard({
     required this.salary,
+    required this.applicableRule,
     required this.onEdit,
     required this.onDelete,
   });
 
   final StoredSalary salary;
+  final StoredPFRule? applicableRule;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
+    final rule = applicableRule?.rule;
     return Card(
-      child: ListTile(
-        contentPadding: const EdgeInsets.fromLTRB(18, 10, 8, 10),
-        leading: const CircleAvatar(child: Icon(Icons.payments_outlined)),
-        title: Text(
-          _formatMoney(salary.grossSalary),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        subtitle: Text(
-          'Effective ${DateFormat.yMMMd().format(salary.effectiveFrom)}'
-          '${salary.notes == null ? '' : '\n${salary.notes}'}',
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'edit') {
-              onEdit();
-            } else {
-              onDelete();
-            }
-          },
-          itemBuilder: (context) => const <PopupMenuEntry<String>>[
-            PopupMenuItem(value: 'edit', child: Text('Edit')),
-            PopupMenuItem(value: 'delete', child: Text('Delete')),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 14, 8, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const CircleAvatar(child: Icon(Icons.payments_outlined)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    formatMoney(salary.grossSalary),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Effective ${DateFormat.yMMMd().format(salary.effectiveFrom)}',
+                  ),
+                  const SizedBox(height: 8),
+                  if (rule == null)
+                    const Text('No applicable PF rule for this period')
+                  else ...<Widget>[
+                    Text('Basic salary: ${_percent(rule.basicSalaryRate)}'),
+                    Text(
+                      'Employee PF: ${_percent(rule.employeePFRate)} · '
+                      'Employer PF: ${_percent(rule.employerPFRate)}',
+                    ),
+                    Text(
+                      'Rule effective ${DateFormat.yMMMd().format(rule.effectiveFrom)}',
+                    ),
+                  ],
+                  if (salary.notes != null) ...<Widget>[
+                    const SizedBox(height: 8),
+                    Text(salary.notes!),
+                  ],
+                ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  onEdit();
+                } else {
+                  onDelete();
+                }
+              },
+              itemBuilder: (context) => const <PopupMenuEntry<String>>[
+                PopupMenuItem(value: 'edit', child: Text('Edit')),
+                PopupMenuItem(value: 'delete', child: Text('Delete')),
+              ],
+            ),
           ],
         ),
       ),
@@ -171,10 +222,7 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
-String _formatMoney(Money money) {
-  return NumberFormat.currency(
-    locale: 'en_US',
-    symbol: '৳',
-    decimalDigits: money.decimalPlaces,
-  ).format(money.minorUnits);
+String _percent(Rate rate) {
+  final value = rate.partsPerMillion / 10000;
+  return '${value.toStringAsFixed(value == value.roundToDouble() ? 0 : 2)}%';
 }
