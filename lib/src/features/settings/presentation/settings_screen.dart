@@ -76,12 +76,18 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/profit-history'),
           ),
           const Divider(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text('Tools', style: Theme.of(context).textTheme.titleSmall),
+          ),
           ListTile(
-            leading: const Icon(Icons.assessment_outlined),
-            title: const Text('PF Reports'),
-            subtitle: const Text('Statement-year balances and contributions'),
+            leading: const Icon(Icons.calculate_outlined),
+            title: const Text('PF Calculator'),
+            subtitle: const Text(
+              'Estimate contributions without saving a PF record',
+            ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/reports'),
+            onTap: () => context.push('/calculator'),
           ),
           ListTile(
             leading: const Icon(Icons.flag_outlined),

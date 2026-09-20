@@ -4,9 +4,9 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 
 ## Implemented slices
 
-- Responsive phone bottom navigation and large-screen navigation rail
+- Responsive Dashboard, Records, Reports, and Settings navigation on phones and large screens
 - Dashboard empty state with clearly separated employee and company values
-- PF calculator with whole-BDT half-up results and input validation
+- Occasional-use PF calculator under Settings → Tools, with whole-BDT half-up results and input validation
 - Guided initial setup for profile and employment dates
 - Organization PF rates, maturity period/basis, and employer entitlement policy
 - Initial salary and following-month salary payment window

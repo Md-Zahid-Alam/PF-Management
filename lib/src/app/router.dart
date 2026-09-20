@@ -40,6 +40,10 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(path: '/about', builder: (context, state) => const AboutScreen()),
     GoRoute(
+      path: '/calculator',
+      builder: (context, state) => const PFCalculatorScreen(),
+    ),
+    GoRoute(
       path: '/maturity',
       builder: (context, state) => const PFMaturityScreen(),
     ),
@@ -98,27 +102,6 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) {
             return ProfitFormScreen(profitId: state.pathParameters['profitId']);
           },
-        ),
-      ],
-    ),
-    GoRoute(
-      path: '/reports',
-      builder: (context, state) => const PFReportsScreen(),
-      routes: <RouteBase>[
-        GoRoute(
-          path: 'exit-estimate',
-          builder: (context, state) => const ExitEstimateScreen(),
-        ),
-        GoRoute(
-          path: 'statement-year',
-          builder: (context, state) => const StatementYearScreen(),
-        ),
-        GoRoute(
-          path: ':startYear/actual',
-          builder: (context, state) => ActualStatementFormScreen(
-            startYear: int.parse(state.pathParameters['startYear']!),
-            currencyCode: state.uri.queryParameters['currency'] ?? 'BDT',
-          ),
         ),
       ],
     ),
@@ -184,16 +167,34 @@ final GoRouter appRouter = GoRouter(
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
-              path: '/calculator',
-              builder: (context, state) => const PFCalculatorScreen(),
+              path: '/records',
+              builder: (context, state) => const MonthlyRecordsScreen(),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: <RouteBase>[
             GoRoute(
-              path: '/records',
-              builder: (context, state) => const MonthlyRecordsScreen(),
+              path: '/reports',
+              builder: (context, state) => const PFReportsScreen(),
+              routes: <RouteBase>[
+                GoRoute(
+                  path: 'exit-estimate',
+                  builder: (context, state) => const ExitEstimateScreen(),
+                ),
+                GoRoute(
+                  path: 'statement-year',
+                  builder: (context, state) => const StatementYearScreen(),
+                ),
+                GoRoute(
+                  path: ':startYear/actual',
+                  builder: (context, state) => ActualStatementFormScreen(
+                    startYear: int.parse(state.pathParameters['startYear']!),
+                    currencyCode:
+                        state.uri.queryParameters['currency'] ?? 'BDT',
+                  ),
+                ),
+              ],
             ),
           ],
         ),

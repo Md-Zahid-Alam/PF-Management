@@ -13,14 +13,14 @@ class AppShell extends StatelessWidget {
       label: 'Dashboard',
     ),
     NavigationDestination(
-      icon: Icon(Icons.calculate_outlined),
-      selectedIcon: Icon(Icons.calculate),
-      label: 'Calculator',
-    ),
-    NavigationDestination(
       icon: Icon(Icons.receipt_long_outlined),
       selectedIcon: Icon(Icons.receipt_long),
       label: 'Records',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.assessment_outlined),
+      selectedIcon: Icon(Icons.assessment),
+      label: 'Reports',
     ),
     NavigationDestination(
       icon: Icon(Icons.settings_outlined),
