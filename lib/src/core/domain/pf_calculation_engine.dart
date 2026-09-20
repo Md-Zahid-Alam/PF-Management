@@ -103,6 +103,31 @@ class PFCalculationEngine {
         ));
   }
 
+  PFRuleVersion selectMaturityRuleForDate({
+    required EmploymentDates employment,
+    required DateTime asOfDate,
+    required Iterable<PFRuleVersion> ruleHistory,
+  }) {
+    PFRuleVersion? ruleAtDate;
+    for (final rule in ruleHistory) {
+      if (!rule.effectiveFrom.isAfter(asOfDate) &&
+          (ruleAtDate == null ||
+              rule.effectiveFrom.isAfter(ruleAtDate.effectiveFrom))) {
+        ruleAtDate = rule;
+      }
+    }
+    if (ruleAtDate == null) {
+      throw const MissingCalculationInput(
+        'No PF rule applies on the requested date.',
+      );
+    }
+    return selectMaturityRule(
+      employment: employment,
+      basis: ruleAtDate.maturityBasis,
+      ruleHistory: ruleHistory,
+    );
+  }
+
   MaturityStatus maturityStatus(DateTime exitDate, DateTime maturityDate) {
     return _dateOnly(exitDate).isBefore(_dateOnly(maturityDate))
         ? MaturityStatus.beforeMaturity

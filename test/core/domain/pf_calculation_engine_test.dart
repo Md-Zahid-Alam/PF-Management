@@ -339,6 +339,44 @@ void main() {
       },
     );
 
+    test('as-of selection honors a rule effective before permanent date', () {
+      final permanentEmployment = EmploymentDates(
+        joiningDate: DateTime(2026),
+        pfStartDate: DateTime(2026, 7),
+        permanentDate: DateTime(2026, 7),
+      );
+      final initialRule = PFRuleVersion(
+        id: 'initial',
+        effectiveFrom: DateTime(2026),
+        basicSalaryRate: Rate.fromPercent('60'),
+        employeePFRate: Rate.fromPercent('10'),
+        employerPFRate: Rate.fromPercent('10'),
+        maturityMonths: 24,
+        maturityBasis: MaturityBasis.permanentDate,
+      );
+      final revisedRule = PFRuleVersion(
+        id: 'revised',
+        effectiveFrom: DateTime(2026, 6),
+        basicSalaryRate: Rate.fromPercent('60'),
+        employeePFRate: Rate.fromPercent('10'),
+        employerPFRate: Rate.fromPercent('10'),
+        maturityMonths: 36,
+        maturityBasis: MaturityBasis.permanentDate,
+      );
+
+      final selected = engine.selectMaturityRuleForDate(
+        employment: permanentEmployment,
+        asOfDate: DateTime(2026, 8),
+        ruleHistory: <PFRuleVersion>[initialRule, revisedRule],
+      );
+
+      expect(selected.id, 'revised');
+      expect(
+        engine.calculateMaturityDate(permanentEmployment, selected),
+        DateTime(2029, 7),
+      );
+    });
+
     test('assigns June and July to the correct July-June statement years', () {
       const configuration = StatementYearConfiguration(
         startMonth: 7,

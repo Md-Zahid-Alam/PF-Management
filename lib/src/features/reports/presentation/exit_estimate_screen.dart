@@ -26,20 +26,9 @@ final exitEstimateProvider = FutureProvider.family<ExitEstimateView, DateTime>((
   final storedRules = await ref.watch(pfRuleHistoryProvider.future);
   const engine = PFCalculationEngine();
   final rules = storedRules.map((item) => item.rule).toList(growable: false);
-  PFRuleVersion? ruleAtExit;
-  for (final rule in rules) {
-    if (!rule.effectiveFrom.isAfter(exitDate) &&
-        (ruleAtExit == null ||
-            rule.effectiveFrom.isAfter(ruleAtExit.effectiveFrom))) {
-      ruleAtExit = rule;
-    }
-  }
-  if (ruleAtExit == null) {
-    throw const MissingCalculationInput('No PF rule applies on the exit date.');
-  }
-  final maturityRule = engine.selectMaturityRule(
+  final maturityRule = engine.selectMaturityRuleForDate(
     employment: setup.employmentDates,
-    basis: ruleAtExit.maturityBasis,
+    asOfDate: exitDate,
     ruleHistory: rules,
   );
   final records = <MonthlyPFCalculation>[

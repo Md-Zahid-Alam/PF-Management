@@ -24,12 +24,14 @@ class DashboardScreen extends ConsumerWidget {
     final profits = ref.watch(profitHistoryProvider);
     final actualStatements = ref.watch(actualPFStatementsProvider);
     final statementDefinitions = ref.watch(statementYearDefinitionsProvider);
+    final rules = ref.watch(pfRuleHistoryProvider);
     if (setup.isLoading ||
         records.isLoading ||
         settings.isLoading ||
         profits.isLoading ||
         actualStatements.isLoading ||
-        statementDefinitions.isLoading) {
+        statementDefinitions.isLoading ||
+        rules.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (setup.hasError ||
@@ -37,7 +39,8 @@ class DashboardScreen extends ConsumerWidget {
         settings.hasError ||
         profits.hasError ||
         actualStatements.hasError ||
-        statementDefinitions.hasError) {
+        statementDefinitions.hasError ||
+        rules.hasError) {
       return Scaffold(
         appBar: AppBar(title: const Text('PF Dashboard')),
         body: Center(
@@ -49,6 +52,7 @@ class DashboardScreen extends ConsumerWidget {
               ref.invalidate(profitHistoryProvider);
               ref.invalidate(actualPFStatementsProvider);
               ref.invalidate(statementYearDefinitionsProvider);
+              ref.invalidate(pfRuleHistoryProvider);
             },
             icon: const Icon(Icons.refresh),
             label: const Text('Retry dashboard'),
@@ -66,6 +70,7 @@ class DashboardScreen extends ConsumerWidget {
       profits: profits.requireValue,
       actualStatements: actualStatements.requireValue,
       statementDefinitions: statementDefinitions.requireValue,
+      rules: rules.requireValue,
       settings: settings.requireValue,
       today: DateTime.now(),
     );
@@ -79,6 +84,7 @@ class DashboardScreen extends ConsumerWidget {
           ref.invalidate(profitHistoryProvider);
           ref.invalidate(actualPFStatementsProvider);
           ref.invalidate(statementYearDefinitionsProvider);
+          ref.invalidate(pfRuleHistoryProvider);
           ref.invalidate(pfAutomationRunProvider);
           await ref.read(monthlyPFRecordsProvider.future);
         },
@@ -447,6 +453,7 @@ class _DashboardSummary {
     required List<StoredProfitRecord> profits,
     required List<StoredActualPFStatement> actualStatements,
     required List<StoredStatementYearDefinition> statementDefinitions,
+    required List<StoredPFRule> rules,
     required AutomationSettings settings,
     required DateTime today,
   }) {
@@ -464,7 +471,11 @@ class _DashboardSummary {
       profit += item.amount;
     }
     const engine = PFCalculationEngine();
-    final rule = setup.rule.rule;
+    final rule = engine.selectMaturityRuleForDate(
+      employment: setup.employmentDates,
+      asOfDate: today,
+      ruleHistory: rules.map((item) => item.rule),
+    );
     final maturityDate = engine.calculateMaturityDate(
       setup.employmentDates,
       rule,
