@@ -83,6 +83,36 @@ class DriftSalaryRepository implements SalaryRepository {
   }
 }
 
+class DriftSalaryScheduleRepository implements SalaryScheduleRepository {
+  DriftSalaryScheduleRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<List<EffectiveSalarySchedule>> getForOrganization(
+    String organizationId,
+  ) async {
+    final query = database.select(database.salarySchedules)
+      ..where((row) => row.organizationId.equals(organizationId))
+      ..orderBy([(row) => OrderingTerm.asc(row.effectiveFrom)]);
+    return (await query.get())
+        .map(
+          (row) => EffectiveSalarySchedule(
+            id: row.id,
+            effectiveFrom: row.effectiveFrom,
+            schedule: SalarySchedule(
+              paymentMonthOffset: row.paymentMonthOffset,
+              paymentWindowStartMonthOffset:
+                  row.paymentWindowStartMonthOffset ?? row.paymentMonthOffset,
+              paymentWindowStartDay: row.paymentWindowStartDay,
+              paymentWindowEndDay: row.paymentWindowEndDay,
+            ),
+          ),
+        )
+        .toList(growable: false);
+  }
+}
+
 class DriftPFRuleRepository implements PFRuleRepository {
   DriftPFRuleRepository(this.database);
 

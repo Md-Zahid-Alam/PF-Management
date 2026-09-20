@@ -95,6 +95,9 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
       final rules = await ref
           .read(pfRuleRepositoryProvider)
           .getForOrganization(DriftInitialSetupRepository.organizationId);
+      final schedules = await ref
+          .read(salaryScheduleRepositoryProvider)
+          .getForOrganization(DriftInitialSetupRepository.organizationId);
       final service = PFAutomationService(
         engine: const PFCalculationEngine(),
         monthlyRepository: ref.read(monthlyPFRepositoryProvider),
@@ -108,7 +111,7 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
         month: _month,
         salaryHistory: salaries,
         ruleHistory: rules,
-        schedules: <EffectiveSalarySchedule>[setup.salarySchedule],
+        schedules: schedules,
       );
       ref.invalidate(monthlyPFRecordsProvider);
       ref.invalidate(pfAutomationRunProvider);

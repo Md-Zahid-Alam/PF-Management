@@ -13,6 +13,12 @@ final salaryRepositoryProvider = Provider<SalaryRepository>((ref) {
   return DriftSalaryRepository(ref.watch(appDatabaseProvider));
 });
 
+final salaryScheduleRepositoryProvider = Provider<SalaryScheduleRepository>((
+  ref,
+) {
+  return DriftSalaryScheduleRepository(ref.watch(appDatabaseProvider));
+});
+
 final pfRuleRepositoryProvider = Provider<PFRuleRepository>((ref) {
   return DriftPFRuleRepository(ref.watch(appDatabaseProvider));
 });

@@ -125,7 +125,9 @@ class _HistoricalReconstructionScreenState
     final records = await ref
         .read(monthlyPFRepositoryProvider)
         .getForEmployment(DriftInitialSetupRepository.employmentId);
-    final schedules = <EffectiveSalarySchedule>[setup.salarySchedule];
+    final schedules = await ref
+        .read(salaryScheduleRepositoryProvider)
+        .getForOrganization(DriftInitialSetupRepository.organizationId);
     final due = DuePeriodDetector(const PFCalculationEngine()).findDuePeriods(
       today: DateTime.now(),
       employment: setup.employmentDates,

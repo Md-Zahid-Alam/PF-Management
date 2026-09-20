@@ -19,6 +19,13 @@ final salaryHistoryProvider = FutureProvider<List<StoredSalary>>((ref) {
       .getForEmployment(DriftInitialSetupRepository.employmentId);
 });
 
+final salaryScheduleHistoryProvider =
+    FutureProvider<List<EffectiveSalarySchedule>>((ref) {
+      return ref
+          .watch(salaryScheduleRepositoryProvider)
+          .getForOrganization(DriftInitialSetupRepository.organizationId);
+    });
+
 final pfRuleHistoryProvider = FutureProvider<List<StoredPFRule>>((ref) {
   return ref
       .watch(pfRuleRepositoryProvider)
@@ -66,6 +73,7 @@ final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
 ) async {
   final setupRepository = ref.watch(initialSetupRepositoryProvider);
   final salaryRepository = ref.watch(salaryRepositoryProvider);
+  final scheduleRepository = ref.watch(salaryScheduleRepositoryProvider);
   final ruleRepository = ref.watch(pfRuleRepositoryProvider);
   final monthlyRepository = ref.watch(monthlyPFRepositoryProvider);
   final settingsRepository = ref.watch(automationSettingsRepositoryProvider);
@@ -84,6 +92,9 @@ final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
   final ruleHistory = await ruleRepository.getForOrganization(
     DriftInitialSetupRepository.organizationId,
   );
+  final scheduleHistory = await scheduleRepository.getForOrganization(
+    DriftInitialSetupRepository.organizationId,
+  );
   final service = PFAutomationService(
     engine: const PFCalculationEngine(),
     monthlyRepository: monthlyRepository,
@@ -96,7 +107,7 @@ final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
     employment: setup.employmentDates,
     salaryHistory: salaryHistory,
     ruleHistory: ruleHistory,
-    schedules: <EffectiveSalarySchedule>[setup.salarySchedule],
+    schedules: scheduleHistory,
   );
   if (results.any(
     (result) => result.status == AutomationPeriodStatus.automaticallyCalculated,

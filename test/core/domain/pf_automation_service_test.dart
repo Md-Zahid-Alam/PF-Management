@@ -66,6 +66,33 @@ void main() {
     expect(records.items, hasLength(2));
   });
 
+  test('automation applies the schedule effective for each PF month', () async {
+    final revisedSchedule = EffectiveSalarySchedule(
+      id: 'schedule-2',
+      effectiveFrom: DateTime(2026, 2),
+      schedule: const SalarySchedule(
+        paymentMonthOffset: 0,
+        paymentWindowStartDay: 25,
+        paymentWindowEndDay: 28,
+      ),
+    );
+
+    await service.processDuePeriods(
+      today: DateTime(2026, 3, 12),
+      employmentId: 'employment-1',
+      employment: _employment,
+      salaryHistory: <StoredSalary>[_salary()],
+      ruleHistory: <StoredPFRule>[_rule()],
+      schedules: <EffectiveSalarySchedule>[_schedule, revisedSchedule],
+    );
+
+    expect(records.items, hasLength(2));
+    expect(records.items.first.month, const YearMonth(2026, 1));
+    expect(records.items.first.scheduledGenerationDate, DateTime(2026, 2, 10));
+    expect(records.items.last.month, const YearMonth(2026, 2));
+    expect(records.items.last.scheduledGenerationDate, DateTime(2026, 2, 28));
+  });
+
   test(
     'Auto Calculate off leaves due periods ready for manual action',
     () async {

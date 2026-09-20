@@ -11,6 +11,12 @@ abstract interface class SalaryRepository {
   Future<void> delete(String id);
 }
 
+abstract interface class SalaryScheduleRepository {
+  Future<List<EffectiveSalarySchedule>> getForOrganization(
+    String organizationId,
+  );
+}
+
 abstract interface class PFRuleRepository {
   Future<List<StoredPFRule>> getForOrganization(String organizationId);
   Future<StoredPFRule?> findApplicable(String organizationId, DateTime onDate);

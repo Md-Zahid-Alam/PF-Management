@@ -316,6 +316,11 @@ void main() {
     expect(loaded.salarySchedule.schedule.paymentWindowStartMonthOffset, 0);
     expect(loaded.salarySchedule.schedule.paymentWindowStartDay, 28);
     expect(loaded.salarySchedule.schedule.paymentWindowEndDay, 5);
+    final schedules = await DriftSalaryScheduleRepository(database)
+        .getForOrganization(DriftInitialSetupRepository.organizationId);
+    expect(schedules, hasLength(1));
+    expect(schedules.single.id, 'initial-schedule');
+    expect(schedules.single.schedule.paymentWindowStartMonthOffset, 0);
   });
 
   test(
