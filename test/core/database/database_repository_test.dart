@@ -543,7 +543,6 @@ void main() {
             organizationId: 'organization-1',
             effectiveFrom: DateTime(2026),
             paymentMonthOffset: 1,
-            paymentWindowStartMonthOffset: const Value(1),
             paymentWindowStartDay: 1,
             paymentWindowEndDay: 5,
             createdAt: now,
