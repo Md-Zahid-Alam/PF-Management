@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_automation_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
@@ -54,6 +55,10 @@ final statementYearDefinitionsProvider =
 
 final automationSettingsProvider = FutureProvider<AutomationSettings>((ref) {
   return ref.watch(automationSettingsRepositoryProvider).get();
+});
+
+final appThemePreferenceProvider = FutureProvider<AppThemePreference>((ref) {
+  return ref.watch(themePreferenceRepositoryProvider).get();
 });
 
 final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((

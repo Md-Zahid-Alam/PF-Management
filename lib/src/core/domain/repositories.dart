@@ -1,4 +1,5 @@
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
@@ -55,6 +56,11 @@ abstract interface class StatementYearDefinitionRepository {
 abstract interface class AutomationSettingsRepository {
   Future<AutomationSettings> get();
   Future<void> save(AutomationSettings settings);
+}
+
+abstract interface class ThemePreferenceRepository {
+  Future<AppThemePreference> get();
+  Future<void> save(AppThemePreference preference);
 }
 
 abstract interface class AutomationNotificationGateway {

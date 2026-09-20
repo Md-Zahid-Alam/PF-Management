@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:pf_tracker/src/core/database/app_database.dart' as db;
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
@@ -530,6 +531,35 @@ class DriftAutomationSettingsRepository
             id: const Value(1),
             autoCalculate: Value(settings.autoCalculate),
             notificationsEnabled: Value(settings.notificationsEnabled),
+          ),
+        );
+  }
+}
+
+class DriftThemePreferenceRepository implements ThemePreferenceRepository {
+  DriftThemePreferenceRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<AppThemePreference> get() async {
+    final row = await (database.select(
+      database.appSettingsRows,
+    )..where((row) => row.id.equals(1))).getSingleOrNull();
+    return AppThemePreference.values.firstWhere(
+      (value) => value.name == row?.themeMode,
+      orElse: () => AppThemePreference.system,
+    );
+  }
+
+  @override
+  Future<void> save(AppThemePreference preference) async {
+    await database
+        .into(database.appSettingsRows)
+        .insertOnConflictUpdate(
+          db.AppSettingsRowsCompanion.insert(
+            id: const Value(1),
+            themeMode: Value(preference.name),
           ),
         );
   }

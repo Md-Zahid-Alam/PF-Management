@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/notifications/notification_provider.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
@@ -16,6 +17,8 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         children: <Widget>[
           const _AutomationSettingsSection(),
+          const Divider(),
+          const _AppearanceSettingsSection(),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.person_outline),
@@ -100,6 +103,64 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/about'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AppearanceSettingsSection extends ConsumerWidget {
+  const _AppearanceSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final preference = ref.watch(appThemePreferenceProvider);
+    return preference.when(
+      loading: () => const ListTile(
+        leading: Icon(Icons.palette_outlined),
+        title: Text('Appearance'),
+        trailing: SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (error, stackTrace) => ListTile(
+        leading: const Icon(Icons.error_outline),
+        title: const Text('Appearance setting unavailable'),
+        trailing: IconButton(
+          tooltip: 'Retry appearance setting',
+          onPressed: () => ref.invalidate(appThemePreferenceProvider),
+          icon: const Icon(Icons.refresh),
+        ),
+      ),
+      data: (value) => ListTile(
+        leading: const Icon(Icons.palette_outlined),
+        title: const Text('Appearance'),
+        subtitle: const Text('Choose light, dark, or device theme'),
+        trailing: DropdownButton<AppThemePreference>(
+          key: const Key('themePreferenceDropdown'),
+          value: value,
+          items: const <DropdownMenuItem<AppThemePreference>>[
+            DropdownMenuItem(
+              value: AppThemePreference.system,
+              child: Text('System'),
+            ),
+            DropdownMenuItem(
+              value: AppThemePreference.light,
+              child: Text('Light'),
+            ),
+            DropdownMenuItem(
+              value: AppThemePreference.dark,
+              child: Text('Dark'),
+            ),
+          ],
+          onChanged: (selected) async {
+            if (selected == null) {
+              return;
+            }
+            await ref.read(themePreferenceRepositoryProvider).save(selected);
+            ref.invalidate(appThemePreferenceProvider);
+          },
+        ),
       ),
     );
   }

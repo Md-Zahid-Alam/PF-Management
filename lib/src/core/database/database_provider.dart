@@ -42,6 +42,12 @@ final automationSettingsRepositoryProvider =
       return DriftAutomationSettingsRepository(ref.watch(appDatabaseProvider));
     });
 
+final themePreferenceRepositoryProvider = Provider<ThemePreferenceRepository>((
+  ref,
+) {
+  return DriftThemePreferenceRepository(ref.watch(appDatabaseProvider));
+});
+
 final initialSetupRepositoryProvider = Provider<InitialSetupRepository>((ref) {
   return DriftInitialSetupRepository(ref.watch(appDatabaseProvider));
 });

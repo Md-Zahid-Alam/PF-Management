@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/src/app/router.dart';
+import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/theme/app_theme.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
@@ -35,12 +36,23 @@ class _PFTrackerAppState extends ConsumerState<PFTrackerApp>
   @override
   Widget build(BuildContext context) {
     ref.watch(pfAutomationRunProvider);
+    final themeMode = ref
+        .watch(appThemePreferenceProvider)
+        .when(
+          data: (preference) => switch (preference) {
+            AppThemePreference.system => ThemeMode.system,
+            AppThemePreference.light => ThemeMode.light,
+            AppThemePreference.dark => ThemeMode.dark,
+          },
+          loading: () => ThemeMode.system,
+          error: (error, stackTrace) => ThemeMode.system,
+        );
     return MaterialApp.router(
       title: 'PF Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: appRouter,
     );
   }

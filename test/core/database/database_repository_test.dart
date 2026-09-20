@@ -4,6 +4,7 @@ import 'package:pf_tracker/src/core/database/app_database.dart' as db;
 import 'package:pf_tracker/src/core/database/database_backup_service.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
@@ -99,6 +100,28 @@ void main() {
       final stored = await repository.get();
       expect(stored.autoCalculate, isFalse);
       expect(stored.notificationsEnabled, isFalse);
+    },
+  );
+
+  test(
+    'theme preference persists independently of automation settings',
+    () async {
+      final themes = DriftThemePreferenceRepository(database);
+      final automation = DriftAutomationSettingsRepository(database);
+
+      expect(await themes.get(), AppThemePreference.system);
+      await automation.save(
+        const AutomationSettings(
+          autoCalculate: false,
+          notificationsEnabled: false,
+        ),
+      );
+      await themes.save(AppThemePreference.dark);
+
+      expect(await themes.get(), AppThemePreference.dark);
+      final storedAutomation = await automation.get();
+      expect(storedAutomation.autoCalculate, isFalse);
+      expect(storedAutomation.notificationsEnabled, isFalse);
     },
   );
 
@@ -376,6 +399,8 @@ void main() {
     );
     await DriftAutomationSettingsRepository(database)
         .save(const AutomationSettings(autoCalculate: false));
+    await DriftThemePreferenceRepository(database)
+        .save(AppThemePreference.dark);
     final service = DatabaseBackupService(database);
     final backup = await service.exportAll(
       appVersion: '0.1.0',
@@ -416,6 +441,10 @@ void main() {
     expect(
       (await DriftAutomationSettingsRepository(database).get()).autoCalculate,
       isFalse,
+    );
+    expect(
+      await DriftThemePreferenceRepository(database).get(),
+      AppThemePreference.dark,
     );
   });
 
