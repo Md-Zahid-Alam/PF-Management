@@ -1,6 +1,7 @@
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/effective_history_selector.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
+import 'package:pf_tracker/src/core/domain/partial_month_policy.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
@@ -116,6 +117,20 @@ class PFAutomationService {
         results.add(result);
         continue;
       }
+      if (!includesPFMonth(
+        employment: employment,
+        month: month,
+        policy: rule.partialMonthPolicy,
+      )) {
+        results.add(
+          AutomationPeriodResult(
+            month: month,
+            scheduledGenerationDate: scheduledDate,
+            status: AutomationPeriodStatus.excludedByPolicy,
+          ),
+        );
+        continue;
+      }
       final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
         month,
         ruleHistory,
@@ -212,6 +227,15 @@ class PFAutomationService {
         (throw MissingCalculationInput(
           'PF rule information is required for $month.',
         ));
+    if (!includesPFMonth(
+      employment: employment,
+      month: month,
+      policy: rule.partialMonthPolicy,
+    )) {
+      throw MissingCalculationInput(
+        '$month is excluded by the partial PF-month policy.',
+      );
+    }
     final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
       month,
       ruleHistory,

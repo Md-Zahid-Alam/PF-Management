@@ -137,10 +137,26 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                const ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Partial PF-start month'),
-                  subtitle: Text('Full contribution'),
+                DropdownButtonFormField<PartialMonthPolicy>(
+                  initialValue: _partialMonthPolicy,
+                  decoration: const InputDecoration(
+                    labelText: 'Partial PF-start month',
+                  ),
+                  items: const <DropdownMenuItem<PartialMonthPolicy>>[
+                    DropdownMenuItem(
+                      value: PartialMonthPolicy.fullContribution,
+                      child: Text('Full contribution'),
+                    ),
+                    DropdownMenuItem(
+                      value: PartialMonthPolicy.none,
+                      child: Text('No contribution'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _partialMonthPolicy = value);
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<EffectiveVersionPolicy>(
@@ -210,7 +226,7 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
           _employerRate.text = _rateInput(stored.rule.employerPFRate);
           _maturityMonths.text = stored.rule.maturityMonths.toString();
           _maturityBasis = stored.rule.maturityBasis;
-          _partialMonthPolicy = PartialMonthPolicy.fullContribution;
+          _partialMonthPolicy = stored.partialMonthPolicy;
           _effectiveVersionPolicy = stored.effectiveVersionPolicy;
           _beforeMaturity = stored.rule.employerEntitledBeforeMaturity;
           _afterMaturity = stored.rule.employerEntitledAfterMaturity;

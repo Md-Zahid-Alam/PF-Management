@@ -1,6 +1,7 @@
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/effective_history_selector.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
+import 'package:pf_tracker/src/core/domain/partial_month_policy.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_automation_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
@@ -116,6 +117,13 @@ class HistoricalPFService {
         throw MissingCalculationInput(
           'PF rule information is required for historical month $month.',
         );
+      }
+      if (!includesPFMonth(
+        employment: employment,
+        month: month,
+        policy: rule.partialMonthPolicy,
+      )) {
+        continue;
       }
       final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
         month,

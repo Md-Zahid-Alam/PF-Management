@@ -34,7 +34,22 @@ class PFCalculationEngine {
     final overlapsExit =
         employment.exitDate == null ||
         !employment.exitDate!.isBefore(month.firstDay);
-    return overlapsPFStart && overlapsExit;
+    if (!overlapsPFStart || !overlapsExit) {
+      return false;
+    }
+    final isPartialStartMonth =
+        YearMonth.fromDate(employment.pfStartDate) == month &&
+        employment.pfStartDate.day > 1;
+    if (!isPartialStartMonth) {
+      return true;
+    }
+    return switch (policy.partialMonthPolicy) {
+      PartialMonthPolicy.fullContribution => true,
+      PartialMonthPolicy.none => false,
+      PartialMonthPolicy.proratedCalendarDays => throw UnsupportedError(
+        'Prorated partial-month PF requires an organization-approved formula.',
+      ),
+    };
   }
 
   T? selectEffectiveVersion<T>(

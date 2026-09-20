@@ -85,6 +85,31 @@ void main() {
       );
     });
 
+    test('no-contribution policy excludes a mid-month PF start', () {
+      const noPartialMonthEngine = PFCalculationEngine(
+        policy: CalculationPolicy(partialMonthPolicy: PartialMonthPolicy.none),
+      );
+      final midMonth = EmploymentDates(
+        joiningDate: DateTime(2026),
+        pfStartDate: DateTime(2026, 4, 20),
+      );
+
+      expect(
+        noPartialMonthEngine.isEligibleForMonth(
+          midMonth,
+          const YearMonth(2026, 4),
+        ),
+        isFalse,
+      );
+      expect(
+        noPartialMonthEngine.isEligibleForMonth(
+          midMonth,
+          const YearMonth(2026, 5),
+        ),
+        isTrue,
+      );
+    });
+
     test('end-of-month policy selects a mid-month salary change', () {
       final salary = engine.selectEffectiveVersion(
         const YearMonth(2026, 7),

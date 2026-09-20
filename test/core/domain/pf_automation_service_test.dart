@@ -109,6 +109,28 @@ void main() {
     );
   });
 
+  test('partial PF-start month can be excluded by policy', () async {
+    final employment = EmploymentDates(
+      joiningDate: DateTime(2025, 12, 15),
+      pfStartDate: DateTime(2026, 1, 15),
+    );
+    final rule = _rule(partialMonthPolicy: PartialMonthPolicy.none);
+
+    final results = await service.processDuePeriods(
+      today: DateTime(2026, 3, 12),
+      employmentId: 'employment-1',
+      employment: employment,
+      salaryHistory: <StoredSalary>[_salary()],
+      ruleHistory: <StoredPFRule>[rule],
+      schedules: <EffectiveSalarySchedule>[_schedule],
+    );
+
+    expect(results.first.status, AutomationPeriodStatus.excludedByPolicy);
+    expect(results.last.status, AutomationPeriodStatus.automaticallyCalculated);
+    expect(records.items, hasLength(1));
+    expect(records.items.single.month, const YearMonth(2026, 2));
+  });
+
   test('manual calculation uses the same deterministic engine', () async {
     final record = await service.calculateManually(
       now: DateTime(2026, 2, 12),
@@ -212,7 +234,9 @@ StoredSalary _salary({String gross = '30000'}) {
   );
 }
 
-StoredPFRule _rule() {
+StoredPFRule _rule({
+  PartialMonthPolicy partialMonthPolicy = PartialMonthPolicy.fullContribution,
+}) {
   final now = DateTime(2026);
   return StoredPFRule(
     rule: PFRuleVersion(
@@ -225,7 +249,7 @@ StoredPFRule _rule() {
       maturityBasis: MaturityBasis.pfStartDate,
     ),
     organizationId: 'organization-1',
-    partialMonthPolicy: PartialMonthPolicy.fullContribution,
+    partialMonthPolicy: partialMonthPolicy,
     effectiveVersionPolicy: EffectiveVersionPolicy.monthEnd,
     createdAt: now,
     updatedAt: now,
