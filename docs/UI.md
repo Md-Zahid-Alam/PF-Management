@@ -27,6 +27,12 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Official actual PF statement entry with nullable fields and calculated-versus-actual closing-balance comparison
 - Effective-dated statement-year configuration and policy-aware exit estimates with explicit unknown-profit warning
 - Native backup export and confirmed, validated restore through the platform file picker
+- Startup routing to setup or dashboard with a recoverable database-error state
+- Historical PF reconstruction preview and protected recalculation
+- Actionable dashboard states for missing salary/rules and manual calculations
+- Dedicated maturity, About, report filtering, profit totals, and calculated-versus-actual views
+- Persistent Light, Dark, and System appearance selection
+- Partial PF-start-month and month-start/month-end effective-version controls
 
 ## Validation and safety
 

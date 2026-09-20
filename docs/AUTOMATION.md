@@ -9,9 +9,11 @@ Phase 5 implements offline, app-triggered PF automation. It performs no server w
 3. Calculate the scheduled generation date from the end of that schedule's payment window. Invalid dates clamp to the last calendar day.
 4. On or after that date, inspect every missed month through the current month.
 5. Leave an existing month unchanged, preventing duplicates.
-6. If salary or rule information is unavailable, return a pending status and never create a zero-valued record.
-7. If **Auto Calculate PF** is off, return `readyForManualCalculation` without creating a record.
-8. If it is on, calculate with the deterministic domain engine and store both scheduled and actual generation dates.
+6. Apply the effective PF rule's partial-start-month policy. A deliberately excluded start month produces no financial record.
+7. Select salary and rule history at the configured month-start or month-end boundary.
+8. If salary or rule information is unavailable, return a pending status and never create a zero-valued record.
+9. If **Auto Calculate PF** is off, return `readyForManualCalculation` without creating a record.
+10. If it is on, calculate with the deterministic domain engine and store both scheduled and actual generation dates.
 
 The Auto Calculate and notification switches are stored in SQLite and remain unchanged until the user changes them.
 
@@ -27,4 +29,4 @@ The Android adapter uses local device notifications for due calculations, automa
 
 ## Application integration
 
-The UI startup phase should initialize the notification gateway and invoke `PFAutomationService.processDuePeriods` after the active employment, effective schedules, salary history, and PF rules are loaded. Android does not perform hidden server-side or continuous background processing.
+The application initializes the notification gateway and invokes `PFAutomationService.processDuePeriods` after the active employment, effective schedules, salary history, and PF rules are loaded. It repeats this check when the app resumes so missed periods are caught after a device restart or time away. Android does not perform hidden server-side or continuous background processing.

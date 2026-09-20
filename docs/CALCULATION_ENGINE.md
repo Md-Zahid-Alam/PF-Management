@@ -11,8 +11,8 @@ The Phase 3 engine is platform-independent Dart under `lib/src/core/domain`. It 
 
 ## Approved defaults
 
-- Partial eligible months receive a full contribution.
-- Salary and PF rule versions are selected at PF-month end.
+- Partial PF-start months default to a full contribution and can instead be excluded by organization policy. Calendar-day prorating remains unavailable until an organization-approved formula is supplied.
+- Salary and PF rule versions default to PF-month end and can instead use PF-month start.
 - Currency decimal places are configurable; BDT defaults to zero.
 - Zero-decimal calculations use half-up rounding.
 - Invalid salary payment days clamp to the calendar month's last day.
@@ -31,4 +31,4 @@ The Phase 3 engine is platform-independent Dart under `lib/src/core/domain`. It 
 
 ## Tests
 
-`test/core/domain/pf_calculation_engine_test.dart` covers money precision, rounding, contribution rates, eligibility, effective dating, salary/rule changes, historical reconstruction, missing salary, salary schedule clamping, maturity boundaries, leap dates, statement years, cutoff balances, employer forfeiture/entitlement, unknown profit, adjustments, and calculated-versus-actual reconciliation.
+`test/core/domain/pf_calculation_engine_test.dart` and the policy/service tests cover money precision, rounding, contribution rates, partial-month eligibility, month-start/month-end effective dating, salary/rule changes, historical reconstruction, missing salary, salary schedule clamping, maturity boundaries, leap dates, statement years, cutoff balances, employer forfeiture/entitlement, unknown profit, adjustments, and calculated-versus-actual reconciliation.

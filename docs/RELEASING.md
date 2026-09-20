@@ -34,6 +34,7 @@ Add the four values under **GitHub repository → Settings → Secrets and varia
 3. Open **Actions → Android Release → Run workflow** on `main`.
 4. Download the `pf-tracker-signed-release` artifact after the workflow succeeds.
 5. Use the `.aab` for Google Play submission. The `.apk` is available for controlled direct installation and testing.
+6. Install the release APK on a physical device and complete every item in `docs/QA.md` before distributing the build.
 
 The workflow creates the Android host and temporary keystore only on the runner, runs formatting, fatal analysis, and all tests again, then produces signed release artifacts. It does not publish automatically.
 
@@ -43,3 +44,4 @@ The workflow creates the Android host and temporary keystore only on the runner,
 - Verify onboarding, calculations, history, statements, backup export/restore, deletion confirmation, and notifications.
 - Verify dark mode, large text, phone/tablet layouts, and system back navigation.
 - Confirm the application ID and store-listing details before the first public upload.
+- Confirm the version displayed in the release artifact matches `pubspec.yaml` and archive the workflow run, APK/AAB checksums, upload keystore, and release notes.
