@@ -116,15 +116,7 @@ class PFAutomationService {
         results.add(result);
         continue;
       }
-      final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
-        month,
-        ruleHistory,
-      )!;
-      final salary = EffectiveHistorySelector.salaryFor(
-        month,
-        salaryHistory,
-        effectiveVersionPolicy,
-      );
+      final salary = EffectiveHistorySelector.salaryFor(month, salaryHistory);
       if (salary == null) {
         final result = AutomationPeriodResult(
           month: month,
@@ -212,16 +204,8 @@ class PFAutomationService {
         (throw MissingCalculationInput(
           'PF rule information is required for $month.',
         ));
-    final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
-      month,
-      ruleHistory,
-    )!;
     final salary =
-        EffectiveHistorySelector.salaryFor(
-          month,
-          salaryHistory,
-          effectiveVersionPolicy,
-        ) ??
+        EffectiveHistorySelector.salaryFor(month, salaryHistory) ??
         (throw MissingCalculationInput(
           'Salary information is required for $month.',
         ));

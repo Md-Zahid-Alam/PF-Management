@@ -117,15 +117,7 @@ class HistoricalPFService {
           'PF rule information is required for historical month $month.',
         );
       }
-      final effectiveVersionPolicy = EffectiveHistorySelector.policyFor(
-        month,
-        ruleHistory,
-      )!;
-      final salary = EffectiveHistorySelector.salaryFor(
-        month,
-        salaryHistory,
-        effectiveVersionPolicy,
-      );
+      final salary = EffectiveHistorySelector.salaryFor(month, salaryHistory);
       if (salary == null) {
         throw MissingCalculationInput(
           'Salary information is required for historical month $month.',

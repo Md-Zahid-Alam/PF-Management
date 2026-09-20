@@ -29,7 +29,6 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
   final _notes = TextEditingController();
   var _effectiveFrom = DateTime.now();
   var _maturityBasis = MaturityBasis.joiningDate;
-  var _effectiveVersionPolicy = EffectiveVersionPolicy.monthEnd;
   var _beforeMaturity = false;
   var _afterMaturity = true;
   var _saving = false;
@@ -142,26 +141,10 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
                   subtitle: Text('Full contribution (approved V1 policy)'),
                 ),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<EffectiveVersionPolicy>(
-                  initialValue: _effectiveVersionPolicy,
-                  decoration: const InputDecoration(
-                    labelText: 'Mid-month rule selection',
-                  ),
-                  items: const <DropdownMenuItem<EffectiveVersionPolicy>>[
-                    DropdownMenuItem(
-                      value: EffectiveVersionPolicy.monthEnd,
-                      child: Text('Rule active at month end'),
-                    ),
-                    DropdownMenuItem(
-                      value: EffectiveVersionPolicy.monthStart,
-                      child: Text('Rule active at month start'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _effectiveVersionPolicy = value);
-                    }
-                  },
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('Mid-month salary and rule changes'),
+                  subtitle: Text('Use the version active at month end'),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -209,7 +192,6 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
           _employerRate.text = _rateInput(stored.rule.employerPFRate);
           _maturityMonths.text = stored.rule.maturityMonths.toString();
           _maturityBasis = stored.rule.maturityBasis;
-          _effectiveVersionPolicy = stored.effectiveVersionPolicy;
           _beforeMaturity = stored.rule.employerEntitledBeforeMaturity;
           _afterMaturity = stored.rule.employerEntitledAfterMaturity;
           _notes.text = stored.notes ?? '';
@@ -255,7 +237,7 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
       ),
       organizationId: DriftInitialSetupRepository.organizationId,
       partialMonthPolicy: PartialMonthPolicy.fullContribution,
-      effectiveVersionPolicy: _effectiveVersionPolicy,
+      effectiveVersionPolicy: EffectiveVersionPolicy.monthEnd,
       createdAt: original?.createdAt ?? now,
       updatedAt: now,
       notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),

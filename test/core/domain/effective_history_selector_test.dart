@@ -7,7 +7,7 @@ import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
 
 void main() {
-  test('month-start policy keeps mid-month rule and salary for next month', () {
+  test('legacy month-start policy cannot override approved month end', () {
     final rules = <StoredPFRule>[
       _rule('old-rule', DateTime(2025), EffectiveVersionPolicy.monthEnd),
       _rule(
@@ -28,7 +28,6 @@ void main() {
     final januarySalary = EffectiveHistorySelector.salaryFor(
       const YearMonth(2026, 1),
       salaries,
-      EffectiveHistorySelector.policyFor(const YearMonth(2026, 1), rules)!,
     );
     final februaryRule = EffectiveHistorySelector.ruleFor(
       const YearMonth(2026, 2),
@@ -37,11 +36,10 @@ void main() {
     final februarySalary = EffectiveHistorySelector.salaryFor(
       const YearMonth(2026, 2),
       salaries,
-      EffectiveHistorySelector.policyFor(const YearMonth(2026, 2), rules)!,
     );
 
-    expect(januaryRule!.rule.id, 'old-rule');
-    expect(januarySalary!.id, 'old-salary');
+    expect(januaryRule!.rule.id, 'new-rule');
+    expect(januarySalary!.id, 'new-salary');
     expect(februaryRule!.rule.id, 'new-rule');
     expect(februarySalary!.id, 'new-salary');
   });
@@ -63,7 +61,6 @@ void main() {
     final salary = EffectiveHistorySelector.salaryFor(
       const YearMonth(2026, 1),
       salaries,
-      EffectiveHistorySelector.policyFor(const YearMonth(2026, 1), rules)!,
     );
 
     expect(rule!.rule.id, 'new-rule');

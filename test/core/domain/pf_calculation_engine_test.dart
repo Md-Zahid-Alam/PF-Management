@@ -129,6 +129,30 @@ void main() {
       expect(salary!.grossSalary, Money.parse('35000'));
     });
 
+    test('legacy month-start setting cannot override approved month end', () {
+      const legacyPolicyEngine = PFCalculationEngine(
+        policy: CalculationPolicy(
+          effectiveVersionPolicy: EffectiveVersionPolicy.monthStart,
+        ),
+      );
+      final salary = legacyPolicyEngine.selectEffectiveVersion(
+        const YearMonth(2026, 7),
+        <SalaryHistoryEntry>[
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026),
+            grossSalary: Money.parse('30000'),
+          ),
+          SalaryHistoryEntry(
+            effectiveFrom: DateTime(2026, 7, 15),
+            grossSalary: Money.parse('35000'),
+          ),
+        ],
+        (entry) => entry.effectiveFrom,
+      );
+
+      expect(salary!.grossSalary, Money.parse('35000'));
+    });
+
     test('old months retain their historical rule version', () {
       final rules = <PFRuleVersion>[
         defaultRule,

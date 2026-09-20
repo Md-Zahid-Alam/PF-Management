@@ -45,13 +45,7 @@ class PFCalculationEngine {
     Iterable<T> versions,
     DateTime Function(T version) effectiveFrom,
   ) {
-    final selectionDate = switch (policy.effectiveVersionPolicy) {
-      EffectiveVersionPolicy.monthEnd => month.lastDay,
-      EffectiveVersionPolicy.monthStart => month.firstDay,
-      EffectiveVersionPolicy.prorated => throw UnsupportedError(
-        'Prorated effective-version selection requires an organization-specific policy.',
-      ),
-    };
+    final selectionDate = month.lastDay;
     T? selected;
     DateTime? selectedDate;
     for (final version in versions) {
