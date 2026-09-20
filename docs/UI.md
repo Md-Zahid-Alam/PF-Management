@@ -32,7 +32,9 @@ Phase 6 is delivered in CI-verified slices. Widgets depend on domain contracts a
 - Actionable dashboard states for missing salary/rules and manual calculations
 - Dedicated maturity, About, report filtering, profit totals, and calculated-versus-actual views
 - Persistent Light, Dark, and System appearance selection
-- Partial PF-start-month and month-start/month-end effective-version controls
+- Approved full partial PF-start-month handling and enforced final-day effective-version selection
+- Effective-dated salary-schedule history with same-month, following-month, and cross-month payment windows
+- Per-month historical recalculation impact details and selective manual-adjustment replacement
 
 ## Validation and safety
 

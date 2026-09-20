@@ -24,11 +24,11 @@ Phase 4 uses Drift over SQLite behind platform-neutral repository interfaces.
 
 ## Migrations
 
-Schema version 2 expands the Phase 2 settings-only database. Fresh databases create the full schema atomically; upgrades retain settings, add locale, and create the normalized financial tables.
+Schema version 3 is current. Version 1 upgrades retain settings, add locale, and create the normalized financial tables. Version 2 upgrades add and backfill the salary-payment-window start-month offset, preserving the former same-month window meaning. Automated tests open real on-disk v1 and v2 SQLite files and run the production migrations.
 
 ## Backup and restore
 
-`DatabaseBackupService` exports every table with a format version and timestamp. Restore validates the complete table envelope before mutation, deletes/inserts in dependency order inside one transaction, and rolls back on malformed values, constraint failures, or foreign-key failures. The UI uses the platform file picker, confirms destructive restore, and requires typing `DELETE` before erasing all local data.
+`DatabaseBackupService` exports every table in backup format version 4 with a timestamp, a canonical SHA-256 checksum, and its algorithm identifier. Restore verifies current-format checksums before mutation, migrates legacy backup formats 1–3, validates the complete table envelope, and then deletes/inserts in dependency order inside one transaction. Malformed values, checksum mismatches, constraint failures, or foreign-key failures leave current data unchanged. The UI uses the platform file picker, confirms destructive restore, and requires typing `DELETE` before erasing all local data.
 
 ## Boundary
 

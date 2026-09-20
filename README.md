@@ -4,7 +4,7 @@ Offline-first Provident Fund tracker for Android, built with Flutter and a layer
 
 ## Current status
 
-Implementation and automated QA phases are complete. The app includes startup recovery, onboarding and historical reconstruction, effective-dated salary and PF rules, configurable partial-month and effective-version policies, monthly calculations and automation, audited adjustments, profit history, statement reconciliation, reports, maturity and exit estimates, persistent Light/Dark/System themes, and native backup/restore. Release signing remains an operator-controlled GitHub Actions step, and final acceptance requires the physical-device checks in [the QA matrix](docs/QA.md).
+Implementation and automated QA phases are complete. The app includes startup recovery, onboarding and historical reconstruction, effective-dated salary, salary-schedule, and PF-rule histories, monthly calculations and automation, audited adjustments, profit history, statement reconciliation, reports, maturity and exit estimates, persistent Light/Dark/System themes, and checksum-protected native backup/restore. Approved V1 calculations always include an eligible partial PF-start month and select salary/rule versions on the PF month's final day. Release signing remains an operator-controlled GitHub Actions step, and final acceptance requires the physical-device checks in [the QA matrix](docs/QA.md).
 
 ## Command-line bootstrap and verification
 

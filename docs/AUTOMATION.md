@@ -9,8 +9,8 @@ Phase 5 implements offline, app-triggered PF automation. It performs no server w
 3. Calculate the scheduled generation date from the end of that schedule's payment window. Invalid dates clamp to the last calendar day.
 4. On or after that date, inspect every missed month through the current month.
 5. Leave an existing month unchanged, preventing duplicates.
-6. Apply the effective PF rule's partial-start-month policy. A deliberately excluded start month produces no financial record.
-7. Select salary and rule history at the configured month-start or month-end boundary.
+6. Include an eligible partial PF-start month with the approved full contribution.
+7. Select salary and PF-rule history on the PF month's final calendar day.
 8. If salary or rule information is unavailable, return a pending status and never create a zero-valued record.
 9. If **Auto Calculate PF** is off, return `readyForManualCalculation` without creating a record.
 10. If it is on, calculate with the deterministic domain engine and store both scheduled and actual generation dates.
@@ -21,7 +21,7 @@ The Auto Calculate and notification switches are stored in SQLite and remain unc
 
 Historical preview begins at the configured PF start date. It reports employee and employer contributions separately and marks profit as unknown; it never invents profit.
 
-Historical generation uses the salary, PF rule, and salary schedule effective for every individual month. Recalculation replaces ordinary calculated records. A `manuallyAdjusted` month is preserved unless that exact month is included in `replaceManualMonths`. Actual statement records are stored separately and are not modified by recalculation.
+Historical generation uses the salary, PF rule, and salary schedule effective for every individual month. Schedule versions may begin in any month, so permanent changes and one-month exceptions are supported; a one-month exception is followed by another version restoring the normal schedule. Recalculation preview enumerates each affected month and the salary/rule versions used. Recalculation replaces ordinary calculated records. A `manuallyAdjusted` month is preserved unless the user explicitly selects that exact month for replacement. Actual statement records are stored separately and are not modified by recalculation.
 
 ## Notifications
 
