@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pf_tracker/src/core/database/app_database.dart' as db;
@@ -6,8 +8,10 @@ import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
+import 'package:pf_tracker/src/core/domain/historical_pf_service.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
@@ -30,6 +34,129 @@ void main() {
         .customSelect('PRAGMA foreign_keys')
         .getSingle();
     expect(result.read<int>('foreign_keys'), 1);
+  });
+
+  test('real version 1 database upgrades without losing settings', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'pf-tracker-v1-upgrade-',
+    );
+    final file = File('${directory.path}${Platform.pathSeparator}legacy.db');
+    final upgraded = db.AppDatabase(
+      NativeDatabase(
+        file,
+        setup: (rawDatabase) {
+          rawDatabase
+            ..execute('''
+              CREATE TABLE app_settings_rows (
+                id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,
+                auto_calculate INTEGER NOT NULL DEFAULT 1,
+                theme_mode TEXT NOT NULL DEFAULT 'system',
+                decimal_places INTEGER NOT NULL DEFAULT 0,
+                notifications_enabled INTEGER NOT NULL DEFAULT 1
+              )
+            ''')
+            ..execute('''
+              INSERT INTO app_settings_rows (
+                id,
+                auto_calculate,
+                theme_mode,
+                decimal_places,
+                notifications_enabled
+              ) VALUES (1, 0, 'dark', 2, 0)
+            ''')
+            ..execute('PRAGMA user_version = 1');
+        },
+      ),
+    );
+
+    try {
+      final version = await upgraded
+          .customSelect('PRAGMA user_version')
+          .getSingle();
+      final settings = await upgraded
+          .customSelect(
+            'SELECT auto_calculate, theme_mode, decimal_places, '
+            'notifications_enabled, locale FROM app_settings_rows',
+          )
+          .getSingle();
+      final scheduleColumns = await upgraded
+          .customSelect('PRAGMA table_info(salary_schedules)')
+          .get();
+
+      expect(version.read<int>('user_version'), 3);
+      expect(settings.read<int>('auto_calculate'), 0);
+      expect(settings.read<String>('theme_mode'), 'dark');
+      expect(settings.read<int>('decimal_places'), 2);
+      expect(settings.read<int>('notifications_enabled'), 0);
+      expect(settings.read<String>('locale'), 'en');
+      expect(
+        scheduleColumns.map((column) => column.read<String>('name')),
+        contains('payment_window_start_month_offset'),
+      );
+    } finally {
+      await upgraded.close();
+      await directory.delete(recursive: true);
+    }
+  });
+
+  test('real version 2 database backfills salary window start month', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'pf-tracker-v2-upgrade-',
+    );
+    final file = File('${directory.path}${Platform.pathSeparator}legacy.db');
+    final upgraded = db.AppDatabase(
+      NativeDatabase(
+        file,
+        setup: (rawDatabase) {
+          rawDatabase
+            ..execute('''
+              CREATE TABLE salary_schedules (
+                id TEXT NOT NULL PRIMARY KEY,
+                organization_id TEXT NOT NULL,
+                effective_from INTEGER NOT NULL,
+                payment_month_offset INTEGER NOT NULL,
+                payment_window_start_day INTEGER NOT NULL,
+                payment_window_end_day INTEGER NOT NULL,
+                invalid_day_policy TEXT NOT NULL DEFAULT 'clampToLastDay',
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+              )
+            ''')
+            ..execute('''
+              INSERT INTO salary_schedules (
+                id,
+                organization_id,
+                effective_from,
+                payment_month_offset,
+                payment_window_start_day,
+                payment_window_end_day,
+                created_at,
+                updated_at
+              ) VALUES ('legacy', 'organization-1', 0, 1, 1, 5, 0, 0)
+            ''')
+            ..execute('PRAGMA user_version = 2');
+        },
+      ),
+    );
+
+    try {
+      final version = await upgraded
+          .customSelect('PRAGMA user_version')
+          .getSingle();
+      final schedule = await upgraded
+          .customSelect(
+            'SELECT payment_month_offset, '
+            'payment_window_start_month_offset FROM salary_schedules',
+          )
+          .getSingle();
+
+      expect(version.read<int>('user_version'), 3);
+      expect(schedule.read<int>('payment_month_offset'), 1);
+      expect(schedule.read<int>('payment_window_start_month_offset'), 1);
+    } finally {
+      await upgraded.close();
+      await directory.delete(recursive: true);
+    }
   });
 
   test('salary repository selects the latest applicable history', () async {
@@ -481,6 +608,66 @@ void main() {
     expect(statement.statementStartYear, 2025);
     expect(statement.snapshot.closingBalance, Money.parse('128500'));
     expect(statement.snapshot.profit, isNull);
+  });
+
+  test('historical recalculation leaves actual statements untouched', () async {
+    final actualRepository = DriftActualPFStatementRepository(database);
+    final salaryRepository = DriftSalaryRepository(database);
+    await actualRepository.save(
+      StoredActualPFStatement(
+        id: 'official-statement',
+        employmentId: 'employment-1',
+        statementStartYear: 2025,
+        statementDate: DateTime(2026, 6, 30),
+        snapshot: StatementSnapshot(closingBalance: Money.parse('128500')),
+        decimalPlaces: 0,
+        currencyCode: 'BDT',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    await salaryRepository.save(
+      StoredSalary(
+        id: 'historical-salary',
+        employmentId: 'employment-1',
+        effectiveFrom: DateTime(2026),
+        grossSalary: Money.parse('30000'),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    await HistoricalPFService(
+      engine: const PFCalculationEngine(),
+      monthlyRepository: DriftMonthlyPFRepository(database),
+    ).generate(
+      generatedAt: now,
+      employmentId: 'employment-1',
+      employment: EmploymentDates(
+        joiningDate: DateTime(2026),
+        pfStartDate: DateTime(2026, 4),
+      ),
+      calculationThrough: const YearMonth(2026, 4),
+      salaryHistory: await salaryRepository.getForEmployment('employment-1'),
+      ruleHistory: await DriftPFRuleRepository(database)
+          .getForOrganization('organization-1'),
+      schedules: <EffectiveSalarySchedule>[
+        EffectiveSalarySchedule(
+          id: 'schedule',
+          effectiveFrom: DateTime(2026),
+          schedule: const SalarySchedule(
+            paymentMonthOffset: 1,
+            paymentWindowStartDay: 1,
+            paymentWindowEndDay: 5,
+          ),
+        ),
+      ],
+    );
+
+    final preserved = (await actualRepository.getForEmployment('employment-1'))
+        .single;
+    expect(preserved.id, 'official-statement');
+    expect(preserved.snapshot.closingBalance, Money.parse('128500'));
   });
 
   test(

@@ -60,6 +60,17 @@ void main() {
       );
     });
 
+    test('rounds explicit .49, .50, and .51 boundaries', () {
+      final onePercent = Rate.fromPercent('1');
+
+      expect(Money.parse('49').multiply(onePercent), Money.zero());
+      expect(Money.parse('50').multiply(onePercent), Money.parse('1'));
+      expect(Money.parse('51').multiply(onePercent), Money.parse('1'));
+      expect(Money.parse('-49').multiply(onePercent), Money.zero());
+      expect(Money.parse('-50').multiply(onePercent), Money.parse('-1'));
+      expect(Money.parse('-51').multiply(onePercent), Money.parse('-1'));
+    });
+
     test('rejects incompatible currency precision', () {
       expect(
         () => Money.parse('1') + Money.parse('1.00', decimalPlaces: 2),
