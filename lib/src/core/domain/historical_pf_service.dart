@@ -48,6 +48,18 @@ class HistoricalPFService {
       employerContribution: employer,
       calculatedPF: employee + employer,
       profitKnown: false,
+      periods: <HistoricalPFPreviewPeriod>[
+        for (final item in calculations)
+          HistoricalPFPreviewPeriod(
+            month: item.calculation.month,
+            salaryHistoryId: item.salary.id,
+            salaryEffectiveFrom: item.salary.effectiveFrom,
+            ruleVersionId: item.rule.rule.id,
+            ruleEffectiveFrom: item.rule.rule.effectiveFrom,
+            employeeContribution: item.calculation.employeeContribution,
+            employerContribution: item.calculation.employerContribution,
+          ),
+      ],
     );
   }
 

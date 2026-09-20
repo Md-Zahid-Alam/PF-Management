@@ -243,6 +243,18 @@ class _PreviewCard extends StatelessWidget {
             ),
             if (data.existingRecordCount > 0)
               _Row('Existing records', '${data.existingRecordCount}'),
+            const SizedBox(height: 8),
+            const Divider(),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Affected months and versions',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            const SizedBox(height: 4),
+            for (final period in preview.periods)
+              _AffectedPeriodTile(period: period),
           ],
         ),
       ),
@@ -265,9 +277,37 @@ class _Row extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(child: Text(label, style: style)),
-          Text(value, style: style),
+          Expanded(
+            child: Text(value, style: style, textAlign: TextAlign.end),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _AffectedPeriodTile extends StatelessWidget {
+  const _AffectedPeriodTile({required this.period});
+
+  final HistoricalPFPreviewPeriod period;
+
+  @override
+  Widget build(BuildContext context) {
+    final month = DateFormat.yMMMM().format(period.month.firstDay);
+    final ruleDate = DateFormat.yMMMd().format(period.ruleEffectiveFrom);
+    final salaryDate = DateFormat.yMMMd().format(period.salaryEffectiveFrom);
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(bottom: 8),
+      title: Text(month),
+      subtitle: Text('Rule effective $ruleDate'),
+      children: <Widget>[
+        _Row('Rule version', period.ruleVersionId),
+        _Row('Salary effective', salaryDate),
+        _Row('Salary version', period.salaryHistoryId),
+        _Row('Employee contribution', formatMoney(period.employeeContribution)),
+        _Row('Employer contribution', formatMoney(period.employerContribution)),
+      ],
     );
   }
 }

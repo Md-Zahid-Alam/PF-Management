@@ -66,6 +66,7 @@ class HistoricalPFPreview {
     required this.employerContribution,
     required this.calculatedPF,
     required this.profitKnown,
+    required this.periods,
   });
 
   final YearMonth pfStart;
@@ -75,6 +76,27 @@ class HistoricalPFPreview {
   final Money employerContribution;
   final Money calculatedPF;
   final bool profitKnown;
+  final List<HistoricalPFPreviewPeriod> periods;
+}
+
+class HistoricalPFPreviewPeriod {
+  const HistoricalPFPreviewPeriod({
+    required this.month,
+    required this.salaryHistoryId,
+    required this.salaryEffectiveFrom,
+    required this.ruleVersionId,
+    required this.ruleEffectiveFrom,
+    required this.employeeContribution,
+    required this.employerContribution,
+  });
+
+  final YearMonth month;
+  final String salaryHistoryId;
+  final DateTime salaryEffectiveFrom;
+  final String ruleVersionId;
+  final DateTime ruleEffectiveFrom;
+  final Money employeeContribution;
+  final Money employerContribution;
 }
 
 enum AutomationNotificationType {

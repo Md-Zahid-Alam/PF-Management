@@ -206,6 +206,37 @@ void main() {
     expect(preview.monthCount, 2);
     expect(preview.calculatedPF, Money.parse('7200'));
     expect(preview.profitKnown, isFalse);
+    expect(preview.periods.map((period) => period.month), <YearMonth>[
+      const YearMonth(2026, 1),
+      const YearMonth(2026, 2),
+    ]);
+    expect(
+      preview.periods.map((period) => period.ruleVersionId),
+      everyElement('rule-1'),
+    );
+    expect(
+      preview.periods.map((period) => period.salaryHistoryId),
+      everyElement('salary-1'),
+    );
+  });
+
+  test('historical preview identifies the rule used for every month', () {
+    final preview =
+        HistoricalPFService(engine: engine, monthlyRepository: records).preview(
+          employment: _employment,
+          calculationThrough: const YearMonth(2026, 2),
+          salaryHistory: <StoredSalary>[_salary()],
+          ruleHistory: <StoredPFRule>[
+            _rule(),
+            _rule(id: 'rule-2', effectiveFrom: DateTime(2026, 2)),
+          ],
+          schedules: <EffectiveSalarySchedule>[_schedule],
+        );
+
+    expect(preview.periods.map((period) => period.ruleVersionId), <String>[
+      'rule-1',
+      'rule-2',
+    ]);
   });
 }
 
@@ -237,13 +268,15 @@ StoredSalary _salary({String gross = '30000'}) {
 }
 
 StoredPFRule _rule({
+  String id = 'rule-1',
+  DateTime? effectiveFrom,
   PartialMonthPolicy partialMonthPolicy = PartialMonthPolicy.fullContribution,
 }) {
   final now = DateTime(2026);
   return StoredPFRule(
     rule: PFRuleVersion(
-      id: 'rule-1',
-      effectiveFrom: DateTime(2025),
+      id: id,
+      effectiveFrom: effectiveFrom ?? DateTime(2025),
       basicSalaryRate: Rate.fromPercent('60'),
       employeePFRate: Rate.fromPercent('10'),
       employerPFRate: Rate.fromPercent('10'),
