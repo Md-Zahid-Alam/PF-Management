@@ -857,6 +857,9 @@ class DriftInitialSetupRepository implements InitialSetupRepository {
         effectiveFrom: schedule.effectiveFrom,
         schedule: SalarySchedule(
           paymentMonthOffset: schedule.paymentMonthOffset,
+          paymentWindowStartMonthOffset:
+              schedule.paymentWindowStartMonthOffset ??
+              schedule.paymentMonthOffset,
           paymentWindowStartDay: schedule.paymentWindowStartDay,
           paymentWindowEndDay: schedule.paymentWindowEndDay,
         ),
@@ -930,6 +933,9 @@ class DriftInitialSetupRepository implements InitialSetupRepository {
               organizationId: organizationId,
               effectiveFrom: _dateOnly(schedule.effectiveFrom),
               paymentMonthOffset: schedule.schedule.paymentMonthOffset,
+              paymentWindowStartMonthOffset: Value(
+                schedule.schedule.paymentWindowStartMonthOffset,
+              ),
               paymentWindowStartDay: schedule.schedule.paymentWindowStartDay,
               paymentWindowEndDay: schedule.schedule.paymentWindowEndDay,
               createdAt: setup.salary.createdAt,

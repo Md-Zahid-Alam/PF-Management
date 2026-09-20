@@ -135,6 +135,21 @@ class PFCalculationEngine {
   }
 
   DateTime scheduledGenerationDate(YearMonth pfMonth, SalarySchedule schedule) {
+    return paymentWindowEndDate(pfMonth, schedule);
+  }
+
+  DateTime paymentWindowStartDate(YearMonth pfMonth, SalarySchedule schedule) {
+    final paymentMonth = pfMonth.addMonths(
+      schedule.paymentWindowStartMonthOffset,
+    );
+    return _clampedDate(
+      paymentMonth.year,
+      paymentMonth.month,
+      schedule.paymentWindowStartDay,
+    );
+  }
+
+  DateTime paymentWindowEndDate(YearMonth pfMonth, SalarySchedule schedule) {
     final paymentMonth = pfMonth.addMonths(schedule.paymentMonthOffset);
     return _clampedDate(
       paymentMonth.year,

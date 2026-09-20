@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -58,6 +58,17 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(actualPfStatements);
         await migrator.createTable(backupMetadataRows);
         await migrator.addColumn(appSettingsRows, appSettingsRows.locale);
+      }
+      if (from == 2) {
+        await migrator.addColumn(
+          salarySchedules,
+          salarySchedules.paymentWindowStartMonthOffset,
+        );
+        await customStatement(
+          'UPDATE salary_schedules '
+          'SET payment_window_start_month_offset = payment_month_offset '
+          'WHERE payment_window_start_month_offset IS NULL',
+        );
       }
     },
     beforeOpen: (details) async {

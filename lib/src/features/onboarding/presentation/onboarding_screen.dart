@@ -42,6 +42,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   var _pfStartDate = DateTime.now();
   DateTime? _exitDate;
   var _employmentStatus = 'active';
+  var _paymentWindowStartMonthOffset = 1;
   var _paymentMonthOffset = 1;
   var _maturityBasis = MaturityBasis.joiningDate;
   var _entitledBeforeMaturity = false;
@@ -316,10 +317,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     DropdownButtonFormField<int>(
-                      key: ValueKey(_paymentMonthOffset),
+                      key: ValueKey('start-$_paymentWindowStartMonthOffset'),
+                      initialValue: _paymentWindowStartMonthOffset,
+                      decoration: const InputDecoration(
+                        labelText: 'Payment window starts',
+                      ),
+                      items: const <DropdownMenuItem<int>>[
+                        DropdownMenuItem(
+                          value: 0,
+                          child: Text('Same month as salary period'),
+                        ),
+                        DropdownMenuItem(
+                          value: 1,
+                          child: Text('Following month'),
+                        ),
+                      ],
+                      onChanged: (value) => setState(() {
+                        _paymentWindowStartMonthOffset = value ?? 1;
+                      }),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<int>(
+                      key: ValueKey('end-$_paymentMonthOffset'),
                       initialValue: _paymentMonthOffset,
                       decoration: const InputDecoration(
-                        labelText: 'Salary payment month',
+                        labelText: 'Payment window ends',
                       ),
                       items: const <DropdownMenuItem<int>>[
                         DropdownMenuItem(
@@ -461,8 +483,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     final windowStart = int.parse(_windowStart.text);
     final windowEnd = int.parse(_windowEnd.text);
-    if (windowEnd < windowStart) {
-      _showMessage('End day must be on or after start day.');
+    if (_paymentMonthOffset < _paymentWindowStartMonthOffset ||
+        (_paymentMonthOffset == _paymentWindowStartMonthOffset &&
+            windowEnd < windowStart)) {
+      _showMessage('Payment window end must be after its start.');
       return;
     }
     setState(() => _saving = true);
@@ -514,6 +538,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         effectiveFrom: _pfStartDate,
         schedule: SalarySchedule(
           paymentMonthOffset: _paymentMonthOffset,
+          paymentWindowStartMonthOffset: _paymentWindowStartMonthOffset,
           paymentWindowStartDay: windowStart,
           paymentWindowEndDay: windowEnd,
         ),
@@ -579,6 +604,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             .toString();
         _paymentMonthOffset =
             existing.salarySchedule.schedule.paymentMonthOffset;
+        _paymentWindowStartMonthOffset =
+            existing.salarySchedule.schedule.paymentWindowStartMonthOffset;
       });
     } on Object {
       // A setup read failure leaves the recoverable setup form visible.

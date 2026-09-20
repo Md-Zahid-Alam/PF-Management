@@ -13,7 +13,7 @@ class InvalidBackup implements Exception {
 class DatabaseBackupService {
   DatabaseBackupService(this.database);
 
-  static const int currentFormatVersion = 2;
+  static const int currentFormatVersion = 3;
   static const int oldestSupportedFormatVersion = 1;
 
   final db.AppDatabase database;
@@ -168,6 +168,7 @@ class DatabaseBackupService {
     while (migratedVersion < currentFormatVersion) {
       migrated = switch (migratedVersion) {
         1 => _migrateVersion1To2(migrated),
+        2 => _migrateVersion2To3(migrated),
         _ => throw const InvalidBackup('Unsupported backup migration path.'),
       };
       migratedVersion++;
@@ -177,6 +178,34 @@ class DatabaseBackupService {
 
   Map<String, Object?> _migrateVersion1To2(Map<String, Object?> backup) {
     return <String, Object?>{...backup, 'formatVersion': 2};
+  }
+
+  Map<String, Object?> _migrateVersion2To3(Map<String, Object?> backup) {
+    final migrated = Map<String, Object?>.from(backup);
+    final sourceData = backup['data'];
+    if (sourceData is! Map<Object?, Object?>) {
+      throw const InvalidBackup('Backup data is missing or malformed.');
+    }
+    final data = Map<String, Object?>.from(sourceData);
+    final sourceSchedules = data['salarySchedules'];
+    if (sourceSchedules is! List<Object?>) {
+      throw const InvalidBackup('Salary schedules are missing or malformed.');
+    }
+    data['salarySchedules'] = <Object?>[
+      for (final sourceRow in sourceSchedules)
+        if (sourceRow is Map<Object?, Object?>)
+          <String, Object?>{
+            ...Map<String, Object?>.from(sourceRow),
+            'paymentWindowStartMonthOffset':
+                sourceRow['paymentWindowStartMonthOffset'] ??
+                sourceRow['paymentMonthOffset'],
+          }
+        else
+          throw const InvalidBackup('Salary schedule row is malformed.'),
+    ];
+    migrated['formatVersion'] = 3;
+    migrated['data'] = data;
+    return migrated;
   }
 
   Future<void> _deleteAllInDependencyOrder() async {

@@ -61,6 +61,7 @@ class SalarySchedules extends AuditedTable {
   TextColumn get organizationId => text().references(Organizations, #id)();
   DateTimeColumn get effectiveFrom => dateTime()();
   IntColumn get paymentMonthOffset => integer()();
+  IntColumn get paymentWindowStartMonthOffset => integer().nullable()();
   IntColumn get paymentWindowStartDay => integer()();
   IntColumn get paymentWindowEndDay => integer()();
   TextColumn get invalidDayPolicy =>

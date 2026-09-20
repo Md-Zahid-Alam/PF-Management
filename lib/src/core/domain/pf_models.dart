@@ -55,13 +55,27 @@ class SalarySchedule {
     required this.paymentMonthOffset,
     required this.paymentWindowStartDay,
     required this.paymentWindowEndDay,
+    int? paymentWindowStartMonthOffset,
   }) : assert(paymentMonthOffset >= 0),
-       assert(paymentWindowStartDay >= 1 && paymentWindowStartDay <= 31),
+       paymentWindowStartMonthOffset =
+           paymentWindowStartMonthOffset ?? paymentMonthOffset,
        assert(
-         paymentWindowEndDay >= paymentWindowStartDay &&
-             paymentWindowEndDay <= 31,
+         paymentWindowStartMonthOffset == null ||
+             paymentWindowStartMonthOffset >= 0,
+       ),
+       assert(
+         paymentWindowStartMonthOffset == null ||
+             paymentWindowStartMonthOffset <= paymentMonthOffset,
+       ),
+       assert(paymentWindowStartDay >= 1 && paymentWindowStartDay <= 31),
+       assert(paymentWindowEndDay >= 1 && paymentWindowEndDay <= 31),
+       assert(
+         paymentWindowStartMonthOffset == null ||
+             paymentWindowStartMonthOffset < paymentMonthOffset ||
+             paymentWindowEndDay >= paymentWindowStartDay,
        );
 
+  final int paymentWindowStartMonthOffset;
   final int paymentMonthOffset;
   final int paymentWindowStartDay;
   final int paymentWindowEndDay;

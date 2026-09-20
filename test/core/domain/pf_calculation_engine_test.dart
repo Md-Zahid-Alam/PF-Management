@@ -277,6 +277,34 @@ void main() {
         DateTime(2027, 2, 28),
       );
     });
+
+    test('payment window can cross into the following month', () {
+      const crossingSchedule = SalarySchedule(
+        paymentMonthOffset: 1,
+        paymentWindowStartMonthOffset: 0,
+        paymentWindowStartDay: 28,
+        paymentWindowEndDay: 5,
+      );
+
+      expect(
+        engine.paymentWindowStartDate(
+          const YearMonth(2026, 1),
+          crossingSchedule,
+        ),
+        DateTime(2026, 1, 28),
+      );
+      expect(
+        engine.paymentWindowEndDate(const YearMonth(2026, 1), crossingSchedule),
+        DateTime(2026, 2, 5),
+      );
+      expect(
+        engine.scheduledGenerationDate(
+          const YearMonth(2026, 1),
+          crossingSchedule,
+        ),
+        DateTime(2026, 2, 5),
+      );
+    });
   });
 
   group('maturity and statement years', () {

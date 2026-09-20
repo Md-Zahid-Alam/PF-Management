@@ -25,7 +25,7 @@ void main() {
   tearDown(() => database.close());
 
   test('schema version and foreign keys are enabled', () async {
-    expect(database.schemaVersion, 2);
+    expect(database.schemaVersion, 3);
     final result = await database
         .customSelect('PRAGMA foreign_keys')
         .getSingle();
@@ -167,7 +167,8 @@ void main() {
         effectiveFrom: DateTime(2025),
         schedule: const SalarySchedule(
           paymentMonthOffset: 1,
-          paymentWindowStartDay: 1,
+          paymentWindowStartMonthOffset: 0,
+          paymentWindowStartDay: 28,
           paymentWindowEndDay: 5,
         ),
       ),
@@ -185,6 +186,8 @@ void main() {
     expect(loaded.exitDate, DateTime(2026));
     expect(loaded.salary.grossSalary, Money.parse('30000'));
     expect(loaded.rule.rule.maturityMonths, 24);
+    expect(loaded.salarySchedule.schedule.paymentWindowStartMonthOffset, 0);
+    expect(loaded.salarySchedule.schedule.paymentWindowStartDay, 28);
     expect(loaded.salarySchedule.schedule.paymentWindowEndDay, 5);
   });
 
@@ -529,6 +532,42 @@ void main() {
     expect(restoredProfile.id, 'profile-1');
     expect(restoredProfile.employeeName, 'Test Employee');
     expect(await database.select(database.employments).get(), hasLength(1));
+  });
+
+  test('version 2 backup restores a same-month payment window', () async {
+    await database
+        .into(database.salarySchedules)
+        .insert(
+          db.SalarySchedulesCompanion.insert(
+            id: 'legacy-schedule',
+            organizationId: 'organization-1',
+            effectiveFrom: DateTime(2026),
+            paymentMonthOffset: 1,
+            paymentWindowStartMonthOffset: const Value(1),
+            paymentWindowStartDay: 1,
+            paymentWindowEndDay: 5,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    final service = DatabaseBackupService(database);
+    final backup = await service.exportAll(
+      appVersion: '0.1.0',
+      exportedAt: now,
+    );
+    backup['formatVersion'] = 2;
+    final data = backup['data']! as Map<String, Object?>;
+    final schedules = data['salarySchedules']! as List<Object?>;
+    final schedule = schedules.single! as Map<String, Object?>;
+    schedule.remove('paymentWindowStartMonthOffset');
+
+    await service.restoreAll(backup);
+
+    final restored = await database
+        .select(database.salarySchedules)
+        .getSingle();
+    expect(restored.paymentMonthOffset, 1);
+    expect(restored.paymentWindowStartMonthOffset, 1);
   });
 
   test('foreign-key failure rolls back an in-progress restore', () async {
