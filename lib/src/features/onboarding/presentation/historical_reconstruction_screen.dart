@@ -10,6 +10,7 @@ import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_automation_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
@@ -24,6 +25,7 @@ class HistoricalReconstructionScreen extends ConsumerStatefulWidget {
 class _HistoricalReconstructionScreenState
     extends ConsumerState<HistoricalReconstructionScreen> {
   late Future<_HistoricalViewData> _data;
+  final Set<YearMonth> _manualMonthsToReplace = <YearMonth>{};
   var _generating = false;
 
   @override
@@ -68,7 +70,19 @@ class _HistoricalReconstructionScreenState
                   ),
                 )
               else
-                _PreviewCard(data: data),
+                _PreviewCard(
+                  data: data,
+                  manualMonthsToReplace: _manualMonthsToReplace,
+                  onManualMonthChanged: (month, replace) {
+                    setState(() {
+                      if (replace) {
+                        _manualMonthsToReplace.add(month);
+                      } else {
+                        _manualMonthsToReplace.remove(month);
+                      }
+                    });
+                  },
+                ),
               const SizedBox(height: 16),
               if (data.preview != null)
                 FilledButton.icon(
@@ -130,6 +144,13 @@ class _HistoricalReconstructionScreenState
             ruleHistory: rules,
             schedules: schedules,
           );
+    final manualAdjustedMonths = records
+        .where((record) => record.status == 'manuallyAdjusted')
+        .map((record) => record.month)
+        .toSet();
+    _manualMonthsToReplace.removeWhere(
+      (month) => !manualAdjustedMonths.contains(month),
+    );
     return _HistoricalViewData(
       setup: setup,
       salaries: salaries,
@@ -137,6 +158,7 @@ class _HistoricalReconstructionScreenState
       schedules: schedules,
       preview: preview,
       existingRecordCount: records.length,
+      manualAdjustedMonths: manualAdjustedMonths,
     );
   }
 
@@ -152,7 +174,9 @@ class _HistoricalReconstructionScreenState
         content: Text(
           data.existingRecordCount == 0
               ? 'This creates ${data.preview!.monthCount} calculated monthly records. Review your salary and rule histories first.'
-              : 'Calculated records will use the current effective histories. Manually adjusted records and official statements will remain unchanged.',
+              : _manualMonthsToReplace.isEmpty
+              ? 'Calculated records will use the current effective histories. All manually adjusted records and official statements will remain unchanged.'
+              : 'Calculated records will use the current effective histories. ${_manualMonthsToReplace.length} selected manually adjusted month(s) will be replaced. Other manual records and official statements will remain unchanged.',
         ),
         actions: <Widget>[
           TextButton(
@@ -181,6 +205,9 @@ class _HistoricalReconstructionScreenState
         salaryHistory: data.salaries,
         ruleHistory: data.rules,
         schedules: data.schedules,
+        replaceManualMonths: Set<YearMonth>.unmodifiable(
+          _manualMonthsToReplace,
+        ),
       );
       ref.invalidate(monthlyPFRecordsProvider);
       ref.invalidate(pfAutomationRunProvider);
@@ -205,9 +232,15 @@ class _HistoricalReconstructionScreenState
 }
 
 class _PreviewCard extends StatelessWidget {
-  const _PreviewCard({required this.data});
+  const _PreviewCard({
+    required this.data,
+    required this.manualMonthsToReplace,
+    required this.onManualMonthChanged,
+  });
 
   final _HistoricalViewData data;
+  final Set<YearMonth> manualMonthsToReplace;
+  final void Function(YearMonth month, bool replace) onManualMonthChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +287,17 @@ class _PreviewCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             for (final period in preview.periods)
-              _AffectedPeriodTile(period: period),
+              _AffectedPeriodTile(
+                period: period,
+                isManuallyAdjusted: data.manualAdjustedMonths.contains(
+                  period.month,
+                ),
+                replaceManualAdjustment: manualMonthsToReplace.contains(
+                  period.month,
+                ),
+                onReplaceChanged: (replace) =>
+                    onManualMonthChanged(period.month, replace),
+              ),
           ],
         ),
       ),
@@ -287,9 +330,17 @@ class _Row extends StatelessWidget {
 }
 
 class _AffectedPeriodTile extends StatelessWidget {
-  const _AffectedPeriodTile({required this.period});
+  const _AffectedPeriodTile({
+    required this.period,
+    required this.isManuallyAdjusted,
+    required this.replaceManualAdjustment,
+    required this.onReplaceChanged,
+  });
 
   final HistoricalPFPreviewPeriod period;
+  final bool isManuallyAdjusted;
+  final bool replaceManualAdjustment;
+  final ValueChanged<bool> onReplaceChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +353,17 @@ class _AffectedPeriodTile extends StatelessWidget {
       title: Text(month),
       subtitle: Text('Rule effective $ruleDate'),
       children: <Widget>[
+        if (isManuallyAdjusted)
+          CheckboxListTile(
+            key: ValueKey('replaceManual-${period.month}'),
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Replace manual adjustment'),
+            subtitle: const Text(
+              'Leave unchecked to preserve this manually adjusted month.',
+            ),
+            value: replaceManualAdjustment,
+            onChanged: (value) => onReplaceChanged(value ?? false),
+          ),
         _Row('Rule version', period.ruleVersionId),
         _Row('Salary effective', salaryDate),
         _Row('Salary version', period.salaryHistoryId),
@@ -337,6 +399,7 @@ class _HistoricalViewData {
     required this.schedules,
     required this.preview,
     required this.existingRecordCount,
+    required this.manualAdjustedMonths,
   });
 
   final InitialPFSetup setup;
@@ -345,4 +408,5 @@ class _HistoricalViewData {
   final List<EffectiveSalarySchedule> schedules;
   final HistoricalPFPreview? preview;
   final int existingRecordCount;
+  final Set<YearMonth> manualAdjustedMonths;
 }
