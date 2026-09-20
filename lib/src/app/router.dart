@@ -23,10 +23,15 @@ import 'package:pf_tracker/src/features/salary_history/presentation/salary_histo
 import 'package:pf_tracker/src/features/settings/presentation/backup_restore_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/about_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/settings_screen.dart';
+import 'package:pf_tracker/src/features/startup/presentation/startup_screen.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/setup',
+  initialLocation: '/startup',
   routes: <RouteBase>[
+    GoRoute(
+      path: '/startup',
+      builder: (context, state) => const StartupScreen(),
+    ),
     GoRoute(
       path: '/backup-restore',
       builder: (context, state) => const BackupRestoreScreen(),
