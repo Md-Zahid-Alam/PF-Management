@@ -16,7 +16,6 @@ class EffectiveSalarySchedule {
 
 enum AutomationPeriodStatus {
   alreadyExists,
-  excludedByPolicy,
   pendingSalaryInformation,
   pendingRuleInformation,
   readyForManualCalculation,

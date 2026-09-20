@@ -109,7 +109,7 @@ void main() {
     );
   });
 
-  test('partial PF-start month can be excluded by policy', () async {
+  test('legacy policy cannot exclude an approved partial PF month', () async {
     final employment = EmploymentDates(
       joiningDate: DateTime(2025, 12, 15),
       pfStartDate: DateTime(2026, 1, 15),
@@ -125,10 +125,12 @@ void main() {
       schedules: <EffectiveSalarySchedule>[_schedule],
     );
 
-    expect(results.first.status, AutomationPeriodStatus.excludedByPolicy);
-    expect(results.last.status, AutomationPeriodStatus.automaticallyCalculated);
-    expect(records.items, hasLength(1));
-    expect(records.items.single.month, const YearMonth(2026, 2));
+    expect(
+      results.map((result) => result.status),
+      everyElement(AutomationPeriodStatus.automaticallyCalculated),
+    );
+    expect(records.items, hasLength(2));
+    expect(records.items.first.month, const YearMonth(2026, 1));
   });
 
   test('manual calculation uses the same deterministic engine', () async {

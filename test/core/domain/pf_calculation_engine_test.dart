@@ -85,8 +85,8 @@ void main() {
       );
     });
 
-    test('no-contribution policy excludes a mid-month PF start', () {
-      const noPartialMonthEngine = PFCalculationEngine(
+    test('approved V1 rule includes a partial month despite legacy policy', () {
+      const legacyPolicyEngine = PFCalculationEngine(
         policy: CalculationPolicy(partialMonthPolicy: PartialMonthPolicy.none),
       );
       final midMonth = EmploymentDates(
@@ -95,14 +95,14 @@ void main() {
       );
 
       expect(
-        noPartialMonthEngine.isEligibleForMonth(
+        legacyPolicyEngine.isEligibleForMonth(
           midMonth,
           const YearMonth(2026, 4),
         ),
-        isFalse,
+        isTrue,
       );
       expect(
-        noPartialMonthEngine.isEligibleForMonth(
+        legacyPolicyEngine.isEligibleForMonth(
           midMonth,
           const YearMonth(2026, 5),
         ),
