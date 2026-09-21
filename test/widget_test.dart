@@ -21,8 +21,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Set up PF Ledger'), findsOneWidget);
-    expect(find.text('Profile & employment'), findsOneWidget);
+    expect(find.text('PF Ledger সেটআপ করুন'), findsOneWidget);
+    expect(find.text('প্রোফাইল ও চাকরি'), findsOneWidget);
     expect(
       Localizations.localeOf(tester.element(find.byType(OnboardingScreen))),
       const Locale('bn'),

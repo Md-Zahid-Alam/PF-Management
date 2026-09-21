@@ -20,10 +20,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Set up PF Ledger'), findsOneWidget);
-    expect(find.text('Profile & employment'), findsOneWidget);
+    expect(find.text('PF Ledger সেটআপ করুন'), findsOneWidget);
+    expect(find.text('প্রোফাইল ও চাকরি'), findsOneWidget);
     expect(find.byKey(const Key('employeeNameField')), findsOneWidget);
-    expect(find.text('Continue'), findsWidgets);
+    expect(find.text('এগিয়ে যান'), findsWidgets);
   });
 }
 

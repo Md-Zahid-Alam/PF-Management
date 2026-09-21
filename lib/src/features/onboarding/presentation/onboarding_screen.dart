@@ -10,6 +10,7 @@ import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({this.editExisting = false, super.key});
@@ -78,9 +79,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.editExisting ? 'Edit PF setup' : 'Set up PF Ledger'),
+        title: Text(
+          widget.editExisting ? l10n.editPFSetup : l10n.setUpPFLedger,
+        ),
       ),
       body: SafeArea(
         child: Form(
@@ -101,17 +105,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       onPressed: details.onStepContinue,
                       child: Text(
                         _saving
-                            ? 'Saving…'
+                            ? l10n.saving
                             : last
-                            ? 'Save setup'
-                            : 'Continue',
+                            ? l10n.saveSetup
+                            : l10n.continueAction,
                       ),
                     ),
                     if (details.onStepCancel != null) ...<Widget>[
                       const SizedBox(width: 8),
                       TextButton(
                         onPressed: details.onStepCancel,
-                        child: const Text('Back'),
+                        child: Text(l10n.back),
                       ),
                     ],
                   ],
@@ -120,7 +124,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             },
             steps: <Step>[
               Step(
-                title: const Text('Profile & employment'),
+                title: Text(l10n.profileAndEmployment),
                 isActive: _step >= 0,
                 content: Column(
                   children: <Widget>[
@@ -128,18 +132,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _requiredTextField(
                       key: const Key('employeeNameField'),
                       controller: _employeeName,
-                      label: 'Employee name',
+                      label: l10n.employeeName,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _employeeCode,
-                      decoration: const InputDecoration(
-                        labelText: 'Employee ID (optional)',
+                      decoration: InputDecoration(
+                        labelText: l10n.employeeIdOptional,
                       ),
                     ),
                     const SizedBox(height: 12),
                     _DateField(
-                      label: 'Joining date',
+                      label: l10n.joiningDate,
                       value: _joiningDate,
                       onChanged: (value) => setState(() {
                         _joiningDate = value!;
@@ -147,7 +151,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: 12),
                     _DateField(
-                      label: 'Probation start date (optional)',
+                      label: l10n.probationStartOptional,
                       value: _probationStartDate,
                       optional: true,
                       onChanged: (value) => setState(() {
@@ -157,9 +161,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _probationMonths,
-                      decoration: const InputDecoration(
-                        labelText: 'Probation period (optional)',
-                        suffixText: 'months',
+                      decoration: InputDecoration(
+                        labelText: l10n.probationPeriodOptional,
+                        suffixText: l10n.months,
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -168,13 +172,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         }
                         final months = int.tryParse(value);
                         return months == null || months < 0
-                            ? 'Enter zero or more months'
+                            ? l10n.zeroOrMoreMonthsError
                             : null;
                       },
                     ),
                     const SizedBox(height: 12),
                     _DateField(
-                      label: 'Permanent date (optional)',
+                      label: l10n.permanentDateOptional,
                       value: _permanentDate,
                       optional: true,
                       onChanged: (value) => setState(() {
@@ -183,7 +187,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: 12),
                     _DateField(
-                      label: 'PF start date',
+                      label: l10n.pfStartDate,
                       value: _pfStartDate,
                       onChanged: (value) => setState(() {
                         _pfStartDate = value!;
@@ -193,17 +197,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     DropdownButtonFormField<String>(
                       key: ValueKey(_employmentStatus),
                       initialValue: _employmentStatus,
-                      decoration: const InputDecoration(
-                        labelText: 'Employment status',
+                      decoration: InputDecoration(
+                        labelText: l10n.employmentStatus,
                       ),
-                      items: const <DropdownMenuItem<String>>[
+                      items: <DropdownMenuItem<String>>[
                         DropdownMenuItem(
                           value: 'active',
-                          child: Text('Active'),
+                          child: Text(l10n.active),
                         ),
                         DropdownMenuItem(
                           value: 'left',
-                          child: Text('Left organization'),
+                          child: Text(l10n.leftOrganization),
                         ),
                       ],
                       onChanged: (value) => setState(() {
@@ -216,7 +220,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     if (_employmentStatus == 'left') ...<Widget>[
                       const SizedBox(height: 12),
                       _DateField(
-                        label: 'Exit / leaving date',
+                        label: l10n.exitDate,
                         value: _exitDate,
                         onChanged: (value) => setState(() {
                           _exitDate = value;
@@ -227,64 +231,64 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               Step(
-                title: const Text('Organization & PF rules'),
+                title: Text(l10n.organizationAndPFRules),
                 isActive: _step >= 1,
                 content: Column(
                   children: <Widget>[
                     const SizedBox(height: 8),
                     _requiredTextField(
                       controller: _organizationName,
-                      label: 'Organization name',
+                      label: l10n.organizationName,
                     ),
                     const SizedBox(height: 12),
                     _positiveNumberField(
                       controller: _grossSalary,
-                      label: 'Joining gross salary',
+                      label: l10n.joiningGrossSalary,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _currencyCode,
-                      decoration: const InputDecoration(
-                        labelText: 'Currency code',
-                        helperText: 'Use a three-letter code such as BDT',
+                      decoration: InputDecoration(
+                        labelText: l10n.currencyCode,
+                        helperText: l10n.currencyCodeHelp,
                       ),
                       textCapitalization: TextCapitalization.characters,
                       validator: (value) =>
                           RegExp(r'^[A-Za-z]{3}$').hasMatch(value?.trim() ?? '')
                           ? null
-                          : 'Enter a three-letter currency code',
+                          : l10n.currencyCodeError,
                     ),
                     const SizedBox(height: 12),
-                    _percentageField(_basicRate, 'Basic salary'),
+                    _percentageField(_basicRate, l10n.basicSalary),
                     const SizedBox(height: 12),
-                    _percentageField(_employeeRate, 'Employee PF'),
+                    _percentageField(_employeeRate, l10n.employeePF),
                     const SizedBox(height: 12),
-                    _percentageField(_employerRate, 'Employer PF'),
+                    _percentageField(_employerRate, l10n.employerPF),
                     const SizedBox(height: 12),
                     _positiveNumberField(
                       controller: _maturityYears,
-                      label: 'Maturity period',
-                      suffix: 'years',
+                      label: l10n.maturityPeriodYears,
+                      suffix: l10n.years,
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<MaturityBasis>(
                       key: ValueKey(_maturityBasis),
                       initialValue: _maturityBasis,
-                      decoration: const InputDecoration(
-                        labelText: 'Maturity basis',
+                      decoration: InputDecoration(
+                        labelText: l10n.maturityBasis,
                       ),
-                      items: const <DropdownMenuItem<MaturityBasis>>[
+                      items: <DropdownMenuItem<MaturityBasis>>[
                         DropdownMenuItem(
                           value: MaturityBasis.joiningDate,
-                          child: Text('Joining date'),
+                          child: Text(l10n.joiningDate),
                         ),
                         DropdownMenuItem(
                           value: MaturityBasis.pfStartDate,
-                          child: Text('PF start date'),
+                          child: Text(l10n.pfStartDate),
                         ),
                         DropdownMenuItem(
                           value: MaturityBasis.permanentDate,
-                          child: Text('Permanent date'),
+                          child: Text(l10n.permanentDate),
                         ),
                       ],
                       onChanged: (value) => setState(() {
@@ -293,7 +297,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Company PF entitled before maturity'),
+                      title: Text(l10n.companyEntitledBeforeMaturity),
                       value: _entitledBeforeMaturity,
                       onChanged: (value) => setState(() {
                         _entitledBeforeMaturity = value;
@@ -301,7 +305,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Company PF entitled after maturity'),
+                      title: Text(l10n.companyEntitledAfterMaturity),
                       value: _entitledAfterMaturity,
                       onChanged: (value) => setState(() {
                         _entitledAfterMaturity = value;
@@ -311,32 +315,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               Step(
-                title: const Text('Salary schedule'),
+                title: Text(l10n.salarySchedule),
                 isActive: _step >= 2,
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     const SizedBox(height: 8),
                     if (widget.editExisting) ...<Widget>[
-                      const Text(
-                        'Existing schedule versions are read-only here. Use Salary Schedule History in Settings to add a new effective-dated version.',
-                      ),
+                      Text(l10n.existingScheduleReadOnly),
                       const SizedBox(height: 12),
                     ],
                     DropdownButtonFormField<int>(
                       key: ValueKey('start-$_paymentWindowStartMonthOffset'),
                       initialValue: _paymentWindowStartMonthOffset,
-                      decoration: const InputDecoration(
-                        labelText: 'Payment window starts',
+                      decoration: InputDecoration(
+                        labelText: l10n.paymentWindowStarts,
                       ),
-                      items: const <DropdownMenuItem<int>>[
+                      items: <DropdownMenuItem<int>>[
                         DropdownMenuItem(
                           value: 0,
-                          child: Text('Same month as salary period'),
+                          child: Text(l10n.sameSalaryMonth),
                         ),
                         DropdownMenuItem(
                           value: 1,
-                          child: Text('Following month'),
+                          child: Text(l10n.followingMonth),
                         ),
                       ],
                       onChanged: widget.editExisting
@@ -349,17 +351,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     DropdownButtonFormField<int>(
                       key: ValueKey('end-$_paymentMonthOffset'),
                       initialValue: _paymentMonthOffset,
-                      decoration: const InputDecoration(
-                        labelText: 'Payment window ends',
+                      decoration: InputDecoration(
+                        labelText: l10n.paymentWindowEnds,
                       ),
-                      items: const <DropdownMenuItem<int>>[
+                      items: <DropdownMenuItem<int>>[
                         DropdownMenuItem(
                           value: 0,
-                          child: Text('Same month as salary period'),
+                          child: Text(l10n.sameSalaryMonth),
                         ),
                         DropdownMenuItem(
                           value: 1,
-                          child: Text('Following month'),
+                          child: Text(l10n.followingMonth),
                         ),
                       ],
                       onChanged: widget.editExisting
@@ -369,16 +371,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             }),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'PF generation uses the last day of the configured payment window.',
-                    ),
+                    Text(l10n.generationUsesWindowEnd),
                     const SizedBox(height: 12),
                     Row(
                       children: <Widget>[
                         Expanded(
                           child: _dayField(
                             _windowStart,
-                            'Start day',
+                            l10n.startDay,
                             enabled: !widget.editExisting,
                           ),
                         ),
@@ -386,16 +386,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Expanded(
                           child: _dayField(
                             _windowEnd,
-                            'End day',
+                            l10n.endDay,
                             enabled: !widget.editExisting,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'If a configured day does not exist, the last calendar day is used.',
-                    ),
+                    Text(l10n.invalidDayUsesMonthEnd),
                   ],
                 ),
               ),
@@ -415,8 +413,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       key: key,
       controller: controller,
       decoration: InputDecoration(labelText: label),
-      validator: (value) =>
-          value == null || value.trim().isEmpty ? '$label is required' : null,
+      validator: (value) => value == null || value.trim().isEmpty
+          ? context.l10n.fieldRequired(label)
+          : null,
     );
   }
 
@@ -436,7 +435,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       keyboardType: TextInputType.number,
       validator: (value) {
         final number = int.tryParse(value ?? '');
-        return number == null || number <= 0 ? 'Enter a valid $label' : null;
+        return number == null || number <= 0
+            ? context.l10n.validFieldError(label)
+            : null;
       },
     );
   }
@@ -452,7 +453,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       validator: (value) {
         final number = double.tryParse(value ?? '');
         return number == null || number < 0 || number > 100
-            ? 'Enter a percentage from 0 to 100'
+            ? context.l10n.percentageRangeError
             : null;
       },
     );
@@ -470,7 +471,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       keyboardType: TextInputType.number,
       validator: (value) {
         final day = int.tryParse(value ?? '');
-        return day == null || day < 1 || day > 31 ? 'Use 1–31' : null;
+        return day == null || day < 1 || day > 31
+            ? context.l10n.dayRangeError
+            : null;
       },
     );
   }
@@ -484,29 +487,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
     if (_pfStartDate.isBefore(_joiningDate)) {
-      _showMessage('PF start date cannot be before joining date.');
+      _showMessage(context.l10n.pfStartBeforeJoiningError);
       return;
     }
     if (_permanentDate != null && _permanentDate!.isBefore(_joiningDate)) {
-      _showMessage('Permanent date cannot be before joining date.');
+      _showMessage(context.l10n.permanentBeforeJoiningError);
       return;
     }
     if (_probationStartDate != null &&
         _probationStartDate!.isBefore(_joiningDate)) {
-      _showMessage('Probation start date cannot be before joining date.');
+      _showMessage(context.l10n.probationBeforeJoiningError);
       return;
     }
     if (_employmentStatus == 'left' && _exitDate == null) {
-      _showMessage('Set the exit date for a completed employment.');
+      _showMessage(context.l10n.exitDateRequiredError);
       return;
     }
     if (_exitDate != null && _exitDate!.isBefore(_joiningDate)) {
-      _showMessage('Exit date cannot be before joining date.');
+      _showMessage(context.l10n.exitBeforeJoiningError);
       return;
     }
     if (_maturityBasis == MaturityBasis.permanentDate &&
         _permanentDate == null) {
-      _showMessage('Set a permanent date for the selected maturity basis.');
+      _showMessage(context.l10n.permanentDateRequiredError);
       return;
     }
     final windowStart = int.parse(_windowStart.text);
@@ -514,7 +517,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_paymentMonthOffset < _paymentWindowStartMonthOffset ||
         (_paymentMonthOffset == _paymentWindowStartMonthOffset &&
             windowEnd < windowStart)) {
-      _showMessage('Payment window end must be after its start.');
+      _showMessage(context.l10n.paymentWindowOrderError);
       return;
     }
     setState(() => _saving = true);
@@ -583,7 +586,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save setup. Try again.')),
+          SnackBar(content: Text(context.l10n.setupSaveError)),
         );
       }
     }
@@ -686,14 +689,18 @@ class _DateField extends StatelessWidget {
           labelText: label,
           suffixIcon: optional && value != null
               ? IconButton(
-                  tooltip: 'Clear $label',
+                  tooltip: context.l10n.clearField(label),
                   onPressed: () => onChanged(null),
                   icon: const Icon(Icons.clear),
                 )
               : const Icon(Icons.calendar_today_outlined),
         ),
         child: Text(
-          value == null ? 'Not set' : DateFormat.yMMMd().format(value!),
+          value == null
+              ? context.l10n.notSet
+              : DateFormat.yMMMd(
+                  Localizations.localeOf(context).toLanguageTag(),
+                ).format(value!),
         ),
       ),
     );
