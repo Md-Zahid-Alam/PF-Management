@@ -48,7 +48,7 @@ class _PFTrackerAppState extends ConsumerState<PFTrackerApp>
           error: (error, stackTrace) => ThemeMode.system,
         );
     return MaterialApp.router(
-      title: 'PF Tracker',
+      title: 'PF Ledger',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

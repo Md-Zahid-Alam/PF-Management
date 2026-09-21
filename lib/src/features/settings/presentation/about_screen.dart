@@ -6,14 +6,14 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('About PF Tracker')),
+      appBar: AppBar(title: const Text('About PF Ledger')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: <Widget>[
           const Icon(Icons.account_balance_wallet_outlined, size: 64),
           const SizedBox(height: 16),
           Text(
-            'PF Tracker',
+            'PF Ledger',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium,
           ),

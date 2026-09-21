@@ -20,7 +20,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Set up PF Tracker'), findsOneWidget);
+    expect(find.text('Set up PF Ledger'), findsOneWidget);
     expect(find.text('Profile & employment'), findsOneWidget);
     expect(find.byKey(const Key('employeeNameField')), findsOneWidget);
     expect(find.text('Continue'), findsWidgets);

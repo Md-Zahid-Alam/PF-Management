@@ -58,7 +58,7 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'PF Tracker',
+                    'PF Ledger',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 24),

@@ -77,7 +77,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           .exportAll(appVersion: '0.1.0', exportedAt: DateTime.now());
       final date = DateTime.now().toIso8601String().substring(0, 10);
       final output = await FilePicker.saveFile(
-        dialogTitle: 'Save PF Tracker backup',
+        dialogTitle: 'Save PF Ledger backup',
         fileName: 'pf-tracker-backup-$date.json',
         bytes: Uint8List.fromList(utf8.encode(jsonEncode(backup))),
       );

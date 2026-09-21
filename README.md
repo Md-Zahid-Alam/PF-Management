@@ -1,4 +1,4 @@
-# PF Tracker
+# PF Ledger
 
 Offline-first Provident Fund tracker for Android, built with Flutter and a layered architecture designed for future desktop/iOS and optional synchronization.
 

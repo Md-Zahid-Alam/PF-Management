@@ -75,5 +75,18 @@ $signingMarker''');
   }
 
   gradleFile.writeAsStringSync(source);
+
+  final manifestFile = File('android/app/src/main/AndroidManifest.xml');
+  if (!manifestFile.existsSync()) {
+    stderr.writeln('Generated Android manifest is missing.');
+    exitCode = 1;
+    return;
+  }
+  var manifest = manifestFile.readAsStringSync();
+  manifest = manifest.replaceFirst(
+    RegExp(r'android:label="[^"]*"'),
+    'android:label="PF Ledger"',
+  );
+  manifestFile.writeAsStringSync(manifest);
   stdout.writeln('Configured generated Android host for local notifications.');
 }

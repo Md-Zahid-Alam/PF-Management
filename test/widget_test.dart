@@ -19,7 +19,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Set up PF Tracker'), findsOneWidget);
+    expect(find.text('Set up PF Ledger'), findsOneWidget);
     expect(find.text('Profile & employment'), findsOneWidget);
   });
 }
