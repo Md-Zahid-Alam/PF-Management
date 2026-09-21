@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class ProfitHistoryScreen extends ConsumerWidget {
@@ -16,22 +17,22 @@ class ProfitHistoryScreen extends ConsumerWidget {
     final history = ref.watch(profitHistoryProvider);
     final setup = ref.watch(initialPFSetupProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Profit History')),
+      appBar: AppBar(title: Text(context.l10n.profitHistory)),
       body: history.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: FilledButton.icon(
             onPressed: () => ref.invalidate(profitHistoryProvider),
             icon: const Icon(Icons.refresh),
-            label: const Text('Retry profit history'),
+            label: Text(context.l10n.retryProfitHistory),
           ),
         ),
         data: (items) => items.isEmpty
-            ? const Center(
+            ? Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(32),
                   child: Text(
-                    'No profit entries yet. Add profit when it is credited to your PF account.',
+                    context.l10n.noProfitEntries,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -60,7 +61,7 @@ class ProfitHistoryScreen extends ConsumerWidget {
           context.push('/profit-history/add?currency=$currency');
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add profit'),
+        label: Text(context.l10n.addProfit),
       ),
     );
   }
@@ -73,18 +74,20 @@ class ProfitHistoryScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete profit entry?'),
+        title: Text(context.l10n.deleteProfitEntryTitle),
         content: Text(
-          'Delete the profit credited ${DateFormat.yMMMd().format(profit.creditedDate)}?',
+          context.l10n.deleteProfitEntryMessage(
+            _formatDate(context, profit.creditedDate),
+          ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -129,7 +132,7 @@ class _ProfitSummary extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'TOTAL KNOWN PROFIT',
+              context.l10n.totalKnownProfit,
               style: Theme.of(context).textTheme.labelLarge,
             ),
             const SizedBox(height: 6),
@@ -170,7 +173,12 @@ class _ProfitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final period = profit.periodStart == null || profit.periodEnd == null
         ? null
-        : '${DateFormat.yMMMd().format(profit.periodStart!)} – ${DateFormat.yMMMd().format(profit.periodEnd!)}';
+        : '${_formatDate(context, profit.periodStart!)} – ${_formatDate(context, profit.periodEnd!)}';
+    final details = <String>[
+      context.l10n.creditedOn(_formatDate(context, profit.creditedDate)),
+      if (period != null) context.l10n.profitPeriod(period),
+      if (profit.notes != null) profit.notes!,
+    ];
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(18, 10, 8, 10),
@@ -179,19 +187,19 @@ class _ProfitCard extends StatelessWidget {
           formatMoney(profit.amount),
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        subtitle: Text(
-          'Credited ${DateFormat.yMMMd().format(profit.creditedDate)}'
-          '${period == null ? '' : '\nPeriod: $period'}'
-          '${profit.notes == null ? '' : '\n${profit.notes}'}',
-        ),
+        subtitle: Text(details.join('\n')),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
-          itemBuilder: (context) => const <PopupMenuEntry<String>>[
-            PopupMenuItem(value: 'edit', child: Text('Edit')),
-            PopupMenuItem(value: 'delete', child: Text('Delete')),
+          itemBuilder: (context) => <PopupMenuEntry<String>>[
+            PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
+            PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
           ],
         ),
       ),
     );
   }
 }
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);

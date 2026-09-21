@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class ProfitFormScreen extends ConsumerStatefulWidget {
@@ -53,7 +54,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
   Widget build(BuildContext context) {
     final editing = widget.profitId != null;
     return Scaffold(
-      appBar: AppBar(title: Text(editing ? 'Edit Profit' : 'Add Profit')),
+      appBar: AppBar(
+        title: Text(editing ? context.l10n.editProfit : context.l10n.addProfit),
+      ),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -66,7 +69,7 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                   key: const Key('profitAmountField'),
                   controller: _amount,
                   decoration: InputDecoration(
-                    labelText: 'Profit amount',
+                    labelText: context.l10n.profitAmount,
                     prefixText: '${widget.currencyCode} ',
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -76,7 +79,7 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                 ),
                 const SizedBox(height: 12),
                 _DateTile(
-                  label: 'Credited date',
+                  label: context.l10n.creditedDate,
                   value: _creditedDate,
                   required: true,
                   onTap: () => _pickDate(
@@ -85,7 +88,7 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                   ),
                 ),
                 _DateTile(
-                  label: 'Period start (optional)',
+                  label: context.l10n.periodStartOptional,
                   value: _periodStart,
                   onTap: () => _pickDate(
                     initial: _periodStart ?? _creditedDate,
@@ -94,7 +97,7 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                   onClear: () => setState(() => _periodStart = null),
                 ),
                 _DateTile(
-                  label: 'Period end (optional)',
+                  label: context.l10n.periodEndOptional,
                   value: _periodEnd,
                   onTap: () => _pickDate(
                     initial: _periodEnd ?? _creditedDate,
@@ -105,17 +108,17 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                 if (_periodStart != null &&
                     _periodEnd != null &&
                     _periodEnd!.isBefore(_periodStart!))
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      'Period end must not be before period start.',
-                      style: TextStyle(color: Colors.red),
+                      context.l10n.periodEndBeforeStartError,
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 TextFormField(
                   controller: _rate,
-                  decoration: const InputDecoration(
-                    labelText: 'Profit rate (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.profitRateOptional,
                     suffixText: '%',
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -126,21 +129,21 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _calculationMethod,
-                  decoration: const InputDecoration(
-                    labelText: 'Calculation method (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.calculationMethodOptional,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _sourceReference,
-                  decoration: const InputDecoration(
-                    labelText: 'Statement/reference (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.statementReferenceOptional,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _notes,
-                  decoration: const InputDecoration(labelText: 'Notes'),
+                  decoration: InputDecoration(labelText: context.l10n.notes),
                   minLines: 2,
                   maxLines: 4,
                 ),
@@ -148,7 +151,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
                 FilledButton(
                   key: const Key('saveProfitButton'),
                   onPressed: _saving ? null : _save,
-                  child: Text(_saving ? 'Saving…' : 'Save profit'),
+                  child: Text(
+                    _saving ? context.l10n.saving : context.l10n.saveProfit,
+                  ),
                 ),
               ],
             ),
@@ -167,9 +172,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
               ).minorUnits >=
               0
           ? null
-          : 'Profit amount cannot be negative';
+          : context.l10n.profitAmountNegativeError;
     } on FormatException {
-      return 'Enter a valid profit amount';
+      return context.l10n.validProfitAmountError;
     }
   }
 
@@ -179,9 +184,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
     }
     try {
       final rate = Rate.fromPercent(value);
-      return rate.partsPerMillion < 0 ? 'Rate cannot be negative' : null;
+      return rate.partsPerMillion < 0 ? context.l10n.rateNegativeError : null;
     } on Object {
-      return 'Enter a valid percentage';
+      return context.l10n.validPercentageError;
     }
   }
 
@@ -260,9 +265,9 @@ class _ProfitFormScreenState extends ConsumerState<ProfitFormScreen> {
     } on Object {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save the profit entry.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.profitSaveError)));
       }
     }
   }
@@ -289,11 +294,14 @@ class _DateTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(label),
       subtitle: Text(
-        value == null ? 'Not set' : DateFormat.yMMMd().format(value!),
+        value == null
+            ? context.l10n.notSet
+            : DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+                  .format(value!),
       ),
       trailing: value != null && !required
           ? IconButton(
-              tooltip: 'Clear date',
+              tooltip: context.l10n.clearDate,
               onPressed: onClear,
               icon: const Icon(Icons.clear),
             )
