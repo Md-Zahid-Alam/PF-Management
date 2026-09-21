@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
@@ -46,7 +47,7 @@ void main() {
             (ref) async => <StoredPFRule>[initialRule, midMonthRule],
           ),
         ],
-        child: const MaterialApp(home: SalaryHistoryScreen()),
+        child: _salaryHistoryApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -94,7 +95,7 @@ void main() {
             (ref) async => <StoredPFRule>[firstRule],
           ),
         ],
-        child: const MaterialApp(home: SalaryHistoryScreen()),
+        child: _salaryHistoryApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -104,6 +105,13 @@ void main() {
     expect(find.text('No applicable PF rule for this period'), findsNothing);
   });
 }
+
+Widget _salaryHistoryApp() => MaterialApp(
+  locale: const Locale('en'),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: const SalaryHistoryScreen(),
+);
 
 StoredPFRule _storedRule({
   required String id,
