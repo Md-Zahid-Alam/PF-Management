@@ -110,6 +110,26 @@ void main() {
         setup: (rawDatabase) {
           rawDatabase
             ..execute('''
+              CREATE TABLE app_settings_rows (
+                id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,
+                auto_calculate INTEGER NOT NULL DEFAULT 1,
+                theme_mode TEXT NOT NULL DEFAULT 'system',
+                decimal_places INTEGER NOT NULL DEFAULT 0,
+                notifications_enabled INTEGER NOT NULL DEFAULT 1,
+                locale TEXT NOT NULL DEFAULT 'en'
+              )
+            ''')
+            ..execute('''
+              INSERT INTO app_settings_rows (
+                id,
+                auto_calculate,
+                theme_mode,
+                decimal_places,
+                notifications_enabled,
+                locale
+              ) VALUES (1, 1, 'system', 0, 1, 'en')
+            ''')
+            ..execute('''
               CREATE TABLE salary_schedules (
                 id TEXT NOT NULL PRIMARY KEY,
                 organization_id TEXT NOT NULL,
@@ -153,6 +173,10 @@ void main() {
       expect(version.read<int>('user_version'), 4);
       expect(schedule.read<int>('payment_month_offset'), 1);
       expect(schedule.read<int>('payment_window_start_month_offset'), 1);
+      final settings = await upgraded
+          .customSelect('SELECT locale FROM app_settings_rows')
+          .getSingle();
+      expect(settings.read<String>('locale'), 'bn');
     } finally {
       await upgraded.close();
       await directory.delete(recursive: true);
@@ -862,6 +886,8 @@ void main() {
   });
 
   test('pre-language-selection backup migrates its locale to Bangla', () async {
+    await DriftLocalePreferenceRepository(database)
+        .save(AppLocalePreference.english);
     final service = DatabaseBackupService(database);
     final backup = await service.exportAll(
       appVersion: '0.1.0',
