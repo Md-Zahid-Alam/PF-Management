@@ -64,16 +64,44 @@ class DashboardScreen extends ConsumerWidget {
     if (setupValue == null) {
       return const _SetupRequiredDashboard();
     }
-    final summary = _DashboardSummary.from(
-      setup: setupValue,
-      records: records.requireValue,
-      profits: profits.requireValue,
-      actualStatements: actualStatements.requireValue,
-      statementDefinitions: statementDefinitions.requireValue,
-      rules: rules.requireValue,
-      settings: settings.requireValue,
-      today: DateTime.now(),
-    );
+    late final _DashboardSummary summary;
+    try {
+      summary = _DashboardSummary.from(
+        setup: setupValue,
+        records: records.requireValue,
+        profits: profits.requireValue,
+        actualStatements: actualStatements.requireValue,
+        statementDefinitions: statementDefinitions.requireValue,
+        rules: rules.requireValue,
+        settings: settings.requireValue,
+        today: DateTime.now(),
+      );
+    } on Object {
+      return Scaffold(
+        appBar: AppBar(title: const Text('PF Dashboard')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 12),
+                const Text(
+                  'Dashboard calculation needs attention. Check your PF setup and effective-dated histories.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => context.go('/settings'),
+                  child: const Text('Open settings'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('PF Dashboard')),
       body: RefreshIndicator(

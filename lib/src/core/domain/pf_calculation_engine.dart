@@ -90,14 +90,20 @@ class PFCalculationEngine {
             )),
     };
     PFRuleVersion? selected;
+    PFRuleVersion? earliestAfterBasis;
     for (final rule in ruleHistory) {
       if (!rule.effectiveFrom.isAfter(basisDate) &&
           (selected == null ||
               rule.effectiveFrom.isAfter(selected.effectiveFrom))) {
         selected = rule;
+      } else if (rule.effectiveFrom.isAfter(basisDate) &&
+          (earliestAfterBasis == null ||
+              rule.effectiveFrom.isBefore(earliestAfterBasis.effectiveFrom))) {
+        earliestAfterBasis = rule;
       }
     }
     return selected ??
+        earliestAfterBasis ??
         (throw const MissingCalculationInput(
           'No PF rule applies on the configured maturity-basis date.',
         ));

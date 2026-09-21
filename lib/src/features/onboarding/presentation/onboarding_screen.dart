@@ -126,6 +126,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 isActive: _step >= 0,
                 content: Column(
                   children: <Widget>[
+                    const SizedBox(height: 8),
                     _requiredTextField(
                       key: const Key('employeeNameField'),
                       controller: _employeeName,
@@ -232,6 +233,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 isActive: _step >= 1,
                 content: Column(
                   children: <Widget>[
+                    const SizedBox(height: 8),
                     _requiredTextField(
                       controller: _organizationName,
                       label: 'Organization name',
@@ -316,6 +318,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    const SizedBox(height: 8),
                     if (widget.editExisting) ...<Widget>[
                       const Text(
                         'Existing schedule versions are read-only here. Use Salary Schedule History in Settings to add a new effective-dated version.',

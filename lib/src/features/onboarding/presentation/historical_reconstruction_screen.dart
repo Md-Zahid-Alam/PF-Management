@@ -49,7 +49,12 @@ class _HistoricalReconstructionScreenState
           }
           final data = snapshot.data!;
           return ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              20 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: <Widget>[
               Text(
                 'Review before generating records',

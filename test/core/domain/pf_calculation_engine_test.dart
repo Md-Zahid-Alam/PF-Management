@@ -378,6 +378,34 @@ void main() {
       },
     );
 
+    test('uses the first PF rule when PF starts after the maturity basis', () {
+      final employmentBeforePF = EmploymentDates(
+        joiningDate: DateTime(2024, 5),
+        pfStartDate: DateTime(2024, 11),
+      );
+      final firstPFRule = PFRuleVersion(
+        id: 'first-pf-rule',
+        effectiveFrom: DateTime(2024, 11),
+        basicSalaryRate: Rate.fromPercent('60'),
+        employeePFRate: Rate.fromPercent('10'),
+        employerPFRate: Rate.fromPercent('10'),
+        maturityMonths: 24,
+        maturityBasis: MaturityBasis.joiningDate,
+      );
+
+      final selected = engine.selectMaturityRuleForDate(
+        employment: employmentBeforePF,
+        asOfDate: DateTime(2026, 9),
+        ruleHistory: <PFRuleVersion>[firstPFRule],
+      );
+
+      expect(selected.id, 'first-pf-rule');
+      expect(
+        engine.calculateMaturityDate(employmentBeforePF, selected),
+        DateTime(2026, 5),
+      );
+    });
+
     test('as-of selection honors a rule effective before permanent date', () {
       final permanentEmployment = EmploymentDates(
         joiningDate: DateTime(2026),

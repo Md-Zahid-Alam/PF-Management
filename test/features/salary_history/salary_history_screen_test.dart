@@ -55,6 +55,54 @@ void main() {
     expect(find.text('Employee PF: 12% · Employer PF: 13%'), findsOneWidget);
     expect(find.text('Rule effective Jul 20, 2026'), findsOneWidget);
   });
+
+  testWidgets('joining salary shows the first rule active during its period', (
+    tester,
+  ) async {
+    final now = DateTime(2026);
+    final joiningSalary = StoredSalary(
+      id: 'joining-salary',
+      employmentId: 'employment-1',
+      effectiveFrom: DateTime(2024, 5),
+      grossSalary: Money.parse('17000'),
+      createdAt: now,
+      updatedAt: now,
+    );
+    final nextSalary = StoredSalary(
+      id: 'next-salary',
+      employmentId: 'employment-1',
+      effectiveFrom: DateTime(2025),
+      grossSalary: Money.parse('20000'),
+      createdAt: now,
+      updatedAt: now,
+    );
+    final firstRule = _storedRule(
+      id: 'first-rule',
+      effectiveFrom: DateTime(2024, 11),
+      basicRate: '60',
+      employeeRate: '10',
+      employerRate: '10',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          salaryHistoryProvider.overrideWith(
+            (ref) async => <StoredSalary>[joiningSalary, nextSalary],
+          ),
+          pfRuleHistoryProvider.overrideWith(
+            (ref) async => <StoredPFRule>[firstRule],
+          ),
+        ],
+        child: const MaterialApp(home: SalaryHistoryScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Basic salary: 60%'), findsNWidgets(2));
+    expect(find.text('Rule effective Nov 1, 2024'), findsNWidgets(2));
+    expect(find.text('No applicable PF rule for this period'), findsNothing);
+  });
 }
 
 StoredPFRule _storedRule({

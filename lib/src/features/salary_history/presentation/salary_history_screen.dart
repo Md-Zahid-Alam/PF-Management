@@ -33,10 +33,15 @@ class SalaryHistoryScreen extends ConsumerWidget {
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final salary = items[items.length - 1 - index];
-                    final rule = EffectiveHistorySelector.ruleFor(
-                      YearMonth.fromDate(salary.effectiveFrom),
-                      ruleHistory,
+                    final ascendingIndex = items.length - 1 - index;
+                    final salary = items[ascendingIndex];
+                    final nextSalaryDate = ascendingIndex + 1 < items.length
+                        ? items[ascendingIndex + 1].effectiveFrom
+                        : null;
+                    final rule = _ruleForSalaryPeriod(
+                      salary: salary,
+                      nextSalaryDate: nextSalaryDate,
+                      rules: ruleHistory,
                     );
                     return _SalaryCard(
                       salary: salary,
@@ -110,6 +115,34 @@ class SalaryHistoryScreen extends ConsumerWidget {
       }
     }
   }
+}
+
+StoredPFRule? _ruleForSalaryPeriod({
+  required StoredSalary salary,
+  required DateTime? nextSalaryDate,
+  required List<StoredPFRule> rules,
+}) {
+  final ruleAtSalaryStart = EffectiveHistorySelector.ruleFor(
+    YearMonth.fromDate(salary.effectiveFrom),
+    rules,
+  );
+  if (ruleAtSalaryStart != null) {
+    return ruleAtSalaryStart;
+  }
+
+  StoredPFRule? firstRuleDuringSalary;
+  for (final rule in rules) {
+    final effectiveFrom = rule.rule.effectiveFrom;
+    final startsBeforeNextSalary =
+        nextSalaryDate == null || effectiveFrom.isBefore(nextSalaryDate);
+    if (!effectiveFrom.isBefore(salary.effectiveFrom) &&
+        startsBeforeNextSalary &&
+        (firstRuleDuringSalary == null ||
+            effectiveFrom.isBefore(firstRuleDuringSalary.rule.effectiveFrom))) {
+      firstRuleDuringSalary = rule;
+    }
+  }
+  return firstRuleDuringSalary;
 }
 
 class _SalaryCard extends StatelessWidget {

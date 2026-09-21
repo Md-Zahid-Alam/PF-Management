@@ -96,7 +96,12 @@ class _RecordDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = record.employeeContribution + record.employerContribution;
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        20 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: <Widget>[
         Text(
           DateFormat.yMMMM().format(record.month.firstDay),
