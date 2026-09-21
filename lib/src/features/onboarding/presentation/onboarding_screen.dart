@@ -80,9 +80,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.editExisting ? 'Edit PF setup' : 'Set up PF Ledger',
-        ),
+        title: Text(widget.editExisting ? 'Edit PF setup' : 'Set up PF Ledger'),
       ),
       body: SafeArea(
         child: Form(
