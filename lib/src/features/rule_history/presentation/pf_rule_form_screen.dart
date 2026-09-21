@@ -8,6 +8,7 @@ import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class PFRuleFormScreen extends ConsumerStatefulWidget {
@@ -57,7 +58,9 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
     final editing = widget.ruleId != null;
     return Scaffold(
       appBar: AppBar(
-        title: Text(editing ? 'Edit PF Rule' : 'New PF Rule Version'),
+        title: Text(
+          editing ? context.l10n.editPFRule : context.l10n.newPFRuleVersion,
+        ),
       ),
       body: SafeArea(
         child: Form(
@@ -69,8 +72,12 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
               children: <Widget>[
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Effective from'),
-                  subtitle: Text(DateFormat.yMMMd().format(_effectiveFrom)),
+                  title: Text(context.l10n.effectiveFrom),
+                  subtitle: Text(
+                    DateFormat.yMMMd(
+                      Localizations.localeOf(context).toLanguageTag(),
+                    ).format(_effectiveFrom),
+                  ),
                   trailing: const Icon(Icons.calendar_today_outlined),
                   onTap: _pickDate,
                 ),
@@ -78,54 +85,54 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
                 _PercentageField(
                   fieldKey: const Key('basicRateField'),
                   controller: _basicRate,
-                  label: 'Basic salary percentage',
+                  label: context.l10n.basicSalaryPercentage,
                 ),
                 const SizedBox(height: 12),
                 _PercentageField(
                   fieldKey: const Key('employeeRateField'),
                   controller: _employeeRate,
-                  label: 'Employee PF percentage',
+                  label: context.l10n.employeePFPercentage,
                 ),
                 const SizedBox(height: 12),
                 _PercentageField(
                   fieldKey: const Key('employerRateField'),
                   controller: _employerRate,
-                  label: 'Employer PF percentage',
+                  label: context.l10n.employerPFPercentage,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   key: const Key('maturityMonthsField'),
                   controller: _maturityMonths,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Maturity period',
-                    suffixText: 'months',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.maturityPeriod,
+                    suffixText: context.l10n.months,
                   ),
                   validator: (value) {
                     final months = int.tryParse(value ?? '');
                     return months == null || months < 0
-                        ? 'Enter a valid maturity period'
+                        ? context.l10n.validMaturityPeriodError
                         : null;
                   },
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<MaturityBasis>(
                   initialValue: _maturityBasis,
-                  decoration: const InputDecoration(
-                    labelText: 'Maturity basis',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.maturityBasis,
                   ),
-                  items: const <DropdownMenuItem<MaturityBasis>>[
+                  items: <DropdownMenuItem<MaturityBasis>>[
                     DropdownMenuItem(
                       value: MaturityBasis.joiningDate,
-                      child: Text('Joining date'),
+                      child: Text(context.l10n.joiningDate),
                     ),
                     DropdownMenuItem(
                       value: MaturityBasis.pfStartDate,
-                      child: Text('PF start date'),
+                      child: Text(context.l10n.pfStartDate),
                     ),
                     DropdownMenuItem(
                       value: MaturityBasis.permanentDate,
-                      child: Text('Permanent employee date'),
+                      child: Text(context.l10n.permanentEmployeeDate),
                     ),
                   ],
                   onChanged: (value) {
@@ -135,33 +142,33 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                const ListTile(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Partial PF-start month'),
-                  subtitle: Text('Full contribution (approved V1 policy)'),
+                  title: Text(context.l10n.partialPFStartMonth),
+                  subtitle: Text(context.l10n.fullContributionPolicy),
                 ),
                 const SizedBox(height: 12),
-                const ListTile(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Mid-month salary and rule changes'),
-                  subtitle: Text('Use the version active at month end'),
+                  title: Text(context.l10n.midMonthChanges),
+                  subtitle: Text(context.l10n.monthEndVersionPolicy),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Employer PF entitled before maturity'),
+                  title: Text(context.l10n.employerEntitledBeforeMaturity),
                   value: _beforeMaturity,
                   onChanged: (value) => setState(() => _beforeMaturity = value),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Employer PF entitled after maturity'),
+                  title: Text(context.l10n.employerEntitledAfterMaturity),
                   value: _afterMaturity,
                   onChanged: (value) => setState(() => _afterMaturity = value),
                 ),
                 TextFormField(
                   controller: _notes,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.notesOptional,
                   ),
                   minLines: 2,
                   maxLines: 4,
@@ -170,7 +177,11 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
                 FilledButton(
                   key: const Key('savePFRuleButton'),
                   onPressed: _saving ? null : _save,
-                  child: Text(_saving ? 'Saving…' : 'Save rule version'),
+                  child: Text(
+                    _saving
+                        ? context.l10n.saving
+                        : context.l10n.saveRuleVersion,
+                  ),
                 ),
               ],
             ),
@@ -252,11 +263,8 @@ class _PFRuleFormScreenState extends ConsumerState<PFRuleFormScreen> {
     } on Object {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not save the rule. Check the effective date.'),
-          ),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.ruleSaveError)));
       }
     }
   }
@@ -284,10 +292,10 @@ class _PercentageField extends StatelessWidget {
         try {
           final rate = Rate.fromPercent(value ?? '');
           return rate.partsPerMillion < 0
-              ? 'Percentage cannot be negative'
+              ? context.l10n.percentageNegativeError
               : null;
         } on Object {
-          return 'Enter a valid percentage';
+          return context.l10n.validPercentageError;
         }
       },
     );

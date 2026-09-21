@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
@@ -13,7 +14,7 @@ void main() {
         overrides: [
           pfRuleRepositoryProvider.overrideWithValue(_MemoryPFRuleRepository()),
         ],
-        child: const MaterialApp(home: PFRuleFormScreen()),
+        child: _ruleFormApp(),
       ),
     );
 
@@ -24,7 +25,24 @@ void main() {
 
     expect(find.text('Percentage cannot be negative'), findsOneWidget);
   });
+
+  testWidgets('shows PF rule form labels in Bangla', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(_ruleFormApp(locale: const Locale('bn')));
+
+    expect(find.text('নতুন PF নীতিমালার সংস্করণ'), findsOneWidget);
+    expect(find.text('মূল বেতনের শতাংশ'), findsOneWidget);
+    expect(find.text('নীতিমালার সংস্করণ সংরক্ষণ করুন'), findsOneWidget);
+  });
 }
+
+Widget _ruleFormApp({Locale locale = const Locale('en')}) => MaterialApp(
+  locale: locale,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: const PFRuleFormScreen(),
+);
 
 class _MemoryPFRuleRepository implements PFRuleRepository {
   @override

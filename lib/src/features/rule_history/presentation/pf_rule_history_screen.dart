@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class PFRuleHistoryScreen extends ConsumerWidget {
@@ -14,18 +15,18 @@ class PFRuleHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(pfRuleHistoryProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Rule History')),
+      appBar: AppBar(title: Text(context.l10n.pfRuleHistory)),
       body: history.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: FilledButton.icon(
             onPressed: () => ref.invalidate(pfRuleHistoryProvider),
             icon: const Icon(Icons.refresh),
-            label: const Text('Retry PF rule history'),
+            label: Text(context.l10n.retryPFRuleHistory),
           ),
         ),
         data: (items) => items.isEmpty
-            ? const Center(child: Text('No PF rule versions yet.'))
+            ? Center(child: Text(context.l10n.noPFRuleVersions))
             : ListView.separated(
                 padding: const EdgeInsets.all(20),
                 itemCount: items.length,
@@ -55,7 +56,7 @@ class PFRuleHistoryScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/pf-rule-history/add'),
         icon: const Icon(Icons.add),
-        label: const Text('New rule version'),
+        label: Text(context.l10n.newRuleVersion),
       ),
     );
   }
@@ -77,18 +78,16 @@ class PFRuleHistoryScreen extends ConsumerWidget {
     final createVersion = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Rule already used'),
-        content: const Text(
-          'This PF rule has been used for historical calculations. Create a new effective-dated version instead?',
-        ),
+        title: Text(context.l10n.ruleAlreadyUsed),
+        content: Text(context.l10n.ruleAlreadyUsedMessage),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Create version'),
+            child: Text(context.l10n.createVersion),
           ),
         ],
       ),
@@ -106,18 +105,20 @@ class PFRuleHistoryScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete PF rule?'),
+        title: Text(context.l10n.deletePFRuleTitle),
         content: Text(
-          'Delete the rule effective ${DateFormat.yMMMd().format(rule.rule.effectiveFrom)}? Rules used by monthly records remain protected.',
+          context.l10n.deletePFRuleMessage(
+            _formatDate(context, rule.rule.effectiveFrom),
+          ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -130,13 +131,8 @@ class PFRuleHistoryScreen extends ConsumerWidget {
       ref.invalidate(pfRuleHistoryProvider);
     } on Object {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'This rule is used by a PF record and cannot be deleted.',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.ruleInUseError)));
       }
     }
   }
@@ -163,8 +159,8 @@ class _RuleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final rule = stored.rule;
     final endLabel = effectiveTo == null
-        ? 'Current'
-        : 'to ${DateFormat.yMMMd().format(effectiveTo!)}';
+        ? context.l10n.current
+        : context.l10n.toDate(_formatDate(context, effectiveTo!));
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(18, 12, 8, 12),
@@ -172,11 +168,14 @@ class _RuleCard extends StatelessWidget {
           child: Icon(isCurrent ? Icons.verified_outlined : Icons.history),
         ),
         title: Text(
-          '${_percent(rule.employeePFRate)} employee · ${_percent(rule.employerPFRate)} employer',
+          context.l10n.ruleContributionRates(
+            _percent(rule.employeePFRate),
+            _percent(rule.employerPFRate),
+          ),
         ),
         subtitle: Text(
-          'Effective ${DateFormat.yMMMd().format(rule.effectiveFrom)} $endLabel\n'
-          'Basic ${_percent(rule.basicSalaryRate)} · Maturity ${rule.maturityMonths} months from ${_basisLabel(rule.maturityBasis.name)}',
+          '${context.l10n.ruleEffectiveRange(_formatDate(context, rule.effectiveFrom), endLabel)}\n'
+          '${context.l10n.ruleSummary(_percent(rule.basicSalaryRate), rule.maturityMonths, _basisLabel(context, rule.maturityBasis.name))}',
         ),
         isThreeLine: true,
         trailing: PopupMenuButton<String>(
@@ -193,13 +192,13 @@ class _RuleCard extends StatelessWidget {
                 return;
             }
           },
-          itemBuilder: (context) => const <PopupMenuEntry<String>>[
-            PopupMenuItem(value: 'edit', child: Text('Edit')),
+          itemBuilder: (context) => <PopupMenuEntry<String>>[
+            PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
             PopupMenuItem(
               value: 'duplicate',
-              child: Text('Create new version'),
+              child: Text(context.l10n.createNewVersion),
             ),
-            PopupMenuItem(value: 'delete', child: Text('Delete')),
+            PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
           ],
         ),
       ),
@@ -212,8 +211,12 @@ String _percent(Rate rate) {
   return '${value.toStringAsFixed(value == value.roundToDouble() ? 0 : 2)}%';
 }
 
-String _basisLabel(String name) => switch (name) {
-  'pfStartDate' => 'PF start',
-  'permanentDate' => 'permanent date',
-  _ => 'joining date',
+String _basisLabel(BuildContext context, String name) => switch (name) {
+  'pfStartDate' => context.l10n.pfStart,
+  'permanentDate' => context.l10n.permanentDateLower,
+  _ => context.l10n.joiningDateLower,
 };
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
