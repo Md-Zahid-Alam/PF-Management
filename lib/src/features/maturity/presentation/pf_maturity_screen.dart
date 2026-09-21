@@ -142,9 +142,8 @@ class _DetailRow extends StatelessWidget {
     return ListTile(
       title: Text(label),
       trailing: Text(
-        DateFormat.yMMMd(
-          Localizations.localeOf(context).toLanguageTag(),
-        ).format(date),
+        DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+            .format(date),
       ),
     );
   }

@@ -11,9 +11,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          initialPFSetupProvider.overrideWith(
-            (ref) async => null,
-          ),
+          initialPFSetupProvider.overrideWith((ref) async => null),
           pfRuleHistoryProvider.overrideWith(
             (ref) async => const <StoredPFRule>[],
           ),
