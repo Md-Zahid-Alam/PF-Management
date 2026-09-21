@@ -8,6 +8,7 @@ import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryHistoryScreen extends ConsumerWidget {
@@ -18,7 +19,7 @@ class SalaryHistoryScreen extends ConsumerWidget {
     final history = ref.watch(salaryHistoryProvider);
     final rules = ref.watch(pfRuleHistoryProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Salary History')),
+      appBar: AppBar(title: Text(context.l10n.salaryHistory)),
       body: history.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => _ErrorState(onRetry: () => _retry(ref)),
@@ -62,7 +63,7 @@ class SalaryHistoryScreen extends ConsumerWidget {
           context.push('/salary-history/add?currency=$currency');
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add salary'),
+        label: Text(context.l10n.addSalary),
       ),
     );
   }
@@ -81,18 +82,20 @@ class SalaryHistoryScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete salary history?'),
+        title: Text(context.l10n.deleteSalaryTitle),
         content: Text(
-          'Delete the salary effective ${DateFormat.yMMMd().format(salary.effectiveFrom)}? Existing PF records remain unchanged.',
+          context.l10n.deleteSalaryMessage(
+            _formatDate(context, salary.effectiveFrom),
+          ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -105,13 +108,9 @@ class SalaryHistoryScreen extends ConsumerWidget {
       ref.invalidate(salaryHistoryProvider);
     } on Object {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'This salary is used by a PF record and cannot be deleted.',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.salaryInUseError)));
       }
     }
   }
@@ -179,19 +178,29 @@ class _SalaryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Effective ${DateFormat.yMMMd().format(salary.effectiveFrom)}',
+                    context.l10n.effectiveOn(
+                      _formatDate(context, salary.effectiveFrom),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (rule == null)
-                    const Text('No applicable PF rule for this period')
+                    Text(context.l10n.noApplicablePFRule)
                   else ...<Widget>[
-                    Text('Basic salary: ${_percent(rule.basicSalaryRate)}'),
                     Text(
-                      'Employee PF: ${_percent(rule.employeePFRate)} · '
-                      'Employer PF: ${_percent(rule.employerPFRate)}',
+                      context.l10n.basicSalaryRate(
+                        _percent(rule.basicSalaryRate),
+                      ),
                     ),
                     Text(
-                      'Rule effective ${DateFormat.yMMMd().format(rule.effectiveFrom)}',
+                      context.l10n.employeeEmployerPFRates(
+                        _percent(rule.employeePFRate),
+                        _percent(rule.employerPFRate),
+                      ),
+                    ),
+                    Text(
+                      context.l10n.ruleEffectiveOn(
+                        _formatDate(context, rule.effectiveFrom),
+                      ),
                     ),
                   ],
                   if (salary.notes != null) ...<Widget>[
@@ -209,9 +218,12 @@ class _SalaryCard extends StatelessWidget {
                   onDelete();
                 }
               },
-              itemBuilder: (context) => const <PopupMenuEntry<String>>[
-                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                PopupMenuItem(value: 'delete', child: Text('Delete')),
+              itemBuilder: (context) => <PopupMenuEntry<String>>[
+                PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(context.l10n.delete),
+                ),
               ],
             ),
           ],
@@ -226,13 +238,10 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text(
-          'No salary history yet. Add a salary with its effective date.',
-          textAlign: TextAlign.center,
-        ),
+        padding: const EdgeInsets.all(32),
+        child: Text(context.l10n.noSalaryHistory, textAlign: TextAlign.center),
       ),
     );
   }
@@ -249,7 +258,7 @@ class _ErrorState extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: onRetry,
         icon: const Icon(Icons.refresh),
-        label: const Text('Retry salary history'),
+        label: Text(context.l10n.retrySalaryHistory),
       ),
     );
   }
@@ -259,3 +268,7 @@ String _percent(Rate rate) {
   final value = rate.partsPerMillion / 10000;
   return '${value.toStringAsFixed(value == value.roundToDouble() ? 0 : 2)}%';
 }
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);

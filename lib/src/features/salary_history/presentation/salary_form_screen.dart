@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryFormScreen extends ConsumerStatefulWidget {
@@ -45,7 +46,9 @@ class _SalaryFormScreenState extends ConsumerState<SalaryFormScreen> {
   Widget build(BuildContext context) {
     final editing = widget.salaryId != null;
     return Scaffold(
-      appBar: AppBar(title: Text(editing ? 'Edit Salary' : 'Add Salary')),
+      appBar: AppBar(
+        title: Text(editing ? context.l10n.editSalary : context.l10n.addSalary),
+      ),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -56,30 +59,34 @@ class _SalaryFormScreenState extends ConsumerState<SalaryFormScreen> {
                 key: const Key('salaryAmountField'),
                 controller: _grossSalary,
                 decoration: InputDecoration(
-                  labelText: 'Gross salary',
+                  labelText: context.l10n.grossSalary,
                   prefixText: '${widget.currencyCode} ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   final amount = int.tryParse(value ?? '');
                   return amount == null || amount <= 0
-                      ? 'Enter a salary greater than zero'
+                      ? context.l10n.salaryGreaterThanZero
                       : null;
                 },
               ),
               const SizedBox(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Effective date'),
-                subtitle: Text(DateFormat.yMMMd().format(_effectiveFrom)),
+                title: Text(context.l10n.effectiveDate),
+                subtitle: Text(
+                  DateFormat.yMMMd(
+                    Localizations.localeOf(context).toLanguageTag(),
+                  ).format(_effectiveFrom),
+                ),
                 trailing: const Icon(Icons.calendar_today_outlined),
                 onTap: _pickDate,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _notes,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (optional)',
+                decoration: InputDecoration(
+                  labelText: context.l10n.notesOptional,
                 ),
                 minLines: 2,
                 maxLines: 4,
@@ -88,7 +95,9 @@ class _SalaryFormScreenState extends ConsumerState<SalaryFormScreen> {
               FilledButton(
                 key: const Key('saveSalaryButton'),
                 onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'Saving…' : 'Save salary'),
+                child: Text(
+                  _saving ? context.l10n.saving : context.l10n.saveSalary,
+                ),
               ),
             ],
           ),
@@ -152,11 +161,9 @@ class _SalaryFormScreenState extends ConsumerState<SalaryFormScreen> {
     } on Object {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not save salary. Check the effective date.'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.salarySaveError)));
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
@@ -13,7 +14,7 @@ void main() {
         overrides: [
           salaryRepositoryProvider.overrideWithValue(_MemorySalaryRepository()),
         ],
-        child: const MaterialApp(home: SalaryFormScreen()),
+        child: _salaryFormApp(),
       ),
     );
 
@@ -23,7 +24,23 @@ void main() {
 
     expect(find.text('Enter a salary greater than zero'), findsOneWidget);
   });
+
+  testWidgets('shows salary form labels in Bangla', (tester) async {
+    await tester.pumpWidget(_salaryFormApp(locale: const Locale('bn')));
+
+    expect(find.text('বেতন যোগ করুন'), findsOneWidget);
+    expect(find.text('মোট বেতন'), findsOneWidget);
+    expect(find.text('কার্যকর তারিখ'), findsOneWidget);
+    expect(find.text('বেতন সংরক্ষণ করুন'), findsOneWidget);
+  });
 }
+
+Widget _salaryFormApp({Locale locale = const Locale('en')}) => MaterialApp(
+  locale: locale,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: const SalaryFormScreen(),
+);
 
 class _MemorySalaryRepository implements SalaryRepository {
   @override
