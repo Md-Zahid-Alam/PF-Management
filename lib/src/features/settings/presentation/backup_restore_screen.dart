@@ -68,13 +68,14 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
   }
 
   Future<void> _export() async {
+    final dialogTitle = context.l10n.saveBackupDialogTitle;
     setState(() => _busy = true);
     try {
       final backup = await DatabaseBackupService(ref.read(appDatabaseProvider))
           .exportAll(appVersion: '0.1.0', exportedAt: DateTime.now());
       final date = DateTime.now().toIso8601String().substring(0, 10);
       final output = await FilePicker.saveFile(
-        dialogTitle: context.l10n.saveBackupDialogTitle,
+        dialogTitle: dialogTitle,
         fileName: 'pf-ledger-backup-$date.json',
         bytes: Uint8List.fromList(utf8.encode(jsonEncode(backup))),
       );
