@@ -10,7 +10,12 @@ class AboutScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: <Widget>[
-          const Icon(Icons.account_balance_wallet_outlined, size: 64),
+          Image.asset(
+            'assets/branding/pf_ledger_icon.png',
+            key: const Key('pfLedgerLogo'),
+            width: 96,
+            height: 96,
+          ),
           const SizedBox(height: 16),
           Text(
             'PF Ledger',

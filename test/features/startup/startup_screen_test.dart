@@ -38,6 +38,7 @@ void main() {
     await tester.pumpWidget(_app(router, repository));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('pfLedgerLogo')), findsOneWidget);
     expect(find.text('Could not open your PF data.'), findsOneWidget);
     repository.shouldFail = false;
     await tester.tap(find.byKey(const Key('retryStartupButton')));

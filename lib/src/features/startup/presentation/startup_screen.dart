@@ -51,10 +51,11 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(
-                    Icons.account_balance_wallet_rounded,
-                    size: 72,
-                    color: Theme.of(context).colorScheme.primary,
+                  Image.asset(
+                    'assets/branding/pf_ledger_icon.png',
+                    key: const Key('pfLedgerLogo'),
+                    width: 96,
+                    height: 96,
                   ),
                   const SizedBox(height: 20),
                   Text(
