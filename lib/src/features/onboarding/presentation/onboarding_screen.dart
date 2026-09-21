@@ -413,9 +413,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       key: key,
       controller: controller,
       decoration: InputDecoration(labelText: label),
-      validator: (value) => value == null || value.trim().isEmpty
-          ? context.l10n.fieldRequired(label)
-          : null,
+      validator: (value) =>
+          value == null || value.trim().isEmpty
+              ? context.l10n.fieldRequired(label)
+              : null,
     );
   }
 
