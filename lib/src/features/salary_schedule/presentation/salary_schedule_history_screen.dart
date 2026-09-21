@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryScheduleHistoryScreen extends ConsumerWidget {
@@ -14,14 +15,14 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(salaryScheduleHistoryProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Salary Schedule History')),
+      appBar: AppBar(title: Text(context.l10n.salaryScheduleHistory)),
       body: history.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: FilledButton.icon(
             onPressed: () => ref.invalidate(salaryScheduleHistoryProvider),
             icon: const Icon(Icons.refresh),
-            label: const Text('Retry schedule history'),
+            label: Text(context.l10n.retryScheduleHistory),
           ),
         ),
         data: (items) => ListView.separated(
@@ -41,7 +42,7 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/salary-schedule-history/add'),
         icon: const Icon(Icons.add),
-        label: const Text('New schedule'),
+        label: Text(context.l10n.newSchedule),
       ),
     );
   }
@@ -54,18 +55,20 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete salary schedule?'),
+        title: Text(context.l10n.deleteSalaryScheduleTitle),
         content: Text(
-          'Delete the schedule effective ${DateFormat.yMMMd().format(schedule.effectiveFrom)}? Schedules are protected after PF records exist.',
+          context.l10n.deleteSalaryScheduleMessage(
+            _formatDate(context, schedule.effectiveFrom),
+          ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -83,11 +86,7 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
     } on Object {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'This schedule is required or PF records already exist.',
-            ),
-          ),
+          SnackBar(content: Text(context.l10n.scheduleDeleteProtectedError)),
         );
       }
     }
@@ -115,19 +114,24 @@ class _ScheduleCard extends StatelessWidget {
           child: Icon(isCurrent ? Icons.schedule : Icons.history),
         ),
         title: Text(
-          '${_monthLabel(value.paymentWindowStartMonthOffset)} day ${value.paymentWindowStartDay} '
-          'to ${_monthLabel(value.paymentMonthOffset)} day ${value.paymentWindowEndDay}',
+          context.l10n.scheduleWindowDescription(
+            _monthLabel(context, value.paymentWindowStartMonthOffset),
+            value.paymentWindowStartDay,
+            _monthLabel(context, value.paymentMonthOffset),
+            value.paymentWindowEndDay,
+          ),
         ),
         subtitle: Text(
-          'Effective ${DateFormat.yMMMd().format(schedule.effectiveFrom)}'
-          '${isCurrent ? ' · Current' : ''}\n'
-          'PF generation uses the final window day.',
+          context.l10n.scheduleEffectiveDescription(
+            _formatDate(context, schedule.effectiveFrom),
+            isCurrent ? ' · ${context.l10n.current}' : '',
+          ),
         ),
         isThreeLine: true,
         trailing: PopupMenuButton<String>(
           onSelected: (_) => onDelete(),
-          itemBuilder: (context) => const <PopupMenuEntry<String>>[
-            PopupMenuItem(value: 'delete', child: Text('Delete')),
+          itemBuilder: (context) => <PopupMenuEntry<String>>[
+            PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
           ],
         ),
       ),
@@ -135,5 +139,10 @@ class _ScheduleCard extends StatelessWidget {
   }
 }
 
-String _monthLabel(int offset) =>
-    offset == 0 ? 'same month' : 'following month';
+String _monthLabel(BuildContext context, int offset) => offset == 0
+    ? context.l10n.sameMonthLower
+    : context.l10n.followingMonthLower;
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);

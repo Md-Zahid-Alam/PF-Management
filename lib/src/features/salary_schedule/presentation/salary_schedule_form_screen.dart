@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryScheduleFormScreen extends ConsumerStatefulWidget {
@@ -36,7 +37,7 @@ class _SalaryScheduleFormScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New Salary Schedule')),
+      appBar: AppBar(title: Text(context.l10n.newSalarySchedule)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -44,14 +45,18 @@ class _SalaryScheduleFormScreenState
           children: <Widget>[
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Effective from'),
-              subtitle: Text(DateFormat.yMMMM().format(_effectiveFrom)),
+              title: Text(context.l10n.effectiveFrom),
+              subtitle: Text(
+                DateFormat.yMMMM(
+                  Localizations.localeOf(context).toLanguageTag(),
+                ).format(_effectiveFrom),
+              ),
               trailing: const Icon(Icons.calendar_today_outlined),
               onTap: _pickEffectiveMonth,
             ),
             const SizedBox(height: 12),
             _monthDropdown(
-              label: 'Payment window starts',
+              label: context.l10n.paymentWindowStarts,
               value: _startOffset,
               onChanged: (value) => setState(() => _startOffset = value),
             ),
@@ -59,13 +64,13 @@ class _SalaryScheduleFormScreenState
             TextFormField(
               key: const Key('scheduleStartDayField'),
               controller: _startDay,
-              decoration: const InputDecoration(labelText: 'Start day'),
+              decoration: InputDecoration(labelText: context.l10n.startDay),
               keyboardType: TextInputType.number,
               validator: _validateDay,
             ),
             const SizedBox(height: 12),
             _monthDropdown(
-              label: 'Payment window ends',
+              label: context.l10n.paymentWindowEnds,
               value: _endOffset,
               onChanged: (value) => setState(() => _endOffset = value),
             ),
@@ -73,20 +78,22 @@ class _SalaryScheduleFormScreenState
             TextFormField(
               key: const Key('scheduleEndDayField'),
               controller: _endDay,
-              decoration: const InputDecoration(labelText: 'End day'),
+              decoration: InputDecoration(labelText: context.l10n.endDay),
               keyboardType: TextInputType.number,
               validator: _validateDay,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'The final payment-window day becomes the scheduled PF generation date. Existing PF records are never changed automatically.',
-            ),
+            Text(context.l10n.scheduleGenerationNotice),
             const SizedBox(height: 24),
             FilledButton.icon(
               key: const Key('saveSalaryScheduleButton'),
               onPressed: _saving ? null : _save,
               icon: const Icon(Icons.save_outlined),
-              label: Text(_saving ? 'Saving…' : 'Save schedule version'),
+              label: Text(
+                _saving
+                    ? context.l10n.saving
+                    : context.l10n.saveScheduleVersion,
+              ),
             ),
           ],
         ),
@@ -102,9 +109,9 @@ class _SalaryScheduleFormScreenState
     return DropdownButtonFormField<int>(
       initialValue: value,
       decoration: InputDecoration(labelText: label),
-      items: const <DropdownMenuItem<int>>[
-        DropdownMenuItem(value: 0, child: Text('Same month')),
-        DropdownMenuItem(value: 1, child: Text('Following month')),
+      items: <DropdownMenuItem<int>>[
+        DropdownMenuItem(value: 0, child: Text(context.l10n.sameMonth)),
+        DropdownMenuItem(value: 1, child: Text(context.l10n.followingMonth)),
       ],
       onChanged: (selected) => onChanged(selected ?? 1),
     );
@@ -113,7 +120,7 @@ class _SalaryScheduleFormScreenState
   String? _validateDay(String? value) {
     final day = int.tryParse(value ?? '');
     return day == null || day < 1 || day > 31
-        ? 'Enter a day from 1 to 31'
+        ? context.l10n.dayFromOneToThirtyOne
         : null;
   }
 
@@ -123,7 +130,7 @@ class _SalaryScheduleFormScreenState
       initialDate: _effectiveFrom,
       firstDate: DateTime(1950),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
-      helpText: 'Select any day in the effective month',
+      helpText: context.l10n.selectEffectiveMonthHelp,
     );
     if (selected != null && mounted) {
       setState(() => _effectiveFrom = DateTime(selected.year, selected.month));
@@ -137,9 +144,7 @@ class _SalaryScheduleFormScreenState
     if (_endOffset < _startOffset ||
         (_endOffset == _startOffset && endDay < startDay)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment window end must follow its start.'),
-        ),
+        SnackBar(content: Text(context.l10n.paymentWindowMustFollowStart)),
       );
       return;
     }
@@ -169,13 +174,9 @@ class _SalaryScheduleFormScreenState
     } on Object {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Could not save this schedule. Its effective month may already exist.',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.l10n.scheduleSaveError)));
       }
     }
   }
