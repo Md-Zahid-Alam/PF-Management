@@ -27,12 +27,14 @@ void main() {
   });
 
   testWidgets('shows salary schedule form labels in Bangla', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(child: _scheduleApp(locale: const Locale('bn'))),
     );
 
     expect(find.text('নতুন বেতন প্রদানের সময়সূচি'), findsOneWidget);
-    expect(find.text('পেমেন্ট সময় শুরু'), findsOneWidget);
+    expect(find.text('বেতন প্রদানের সময় শুরু'), findsOneWidget);
     expect(find.text('সময়সূচির সংস্করণ সংরক্ষণ করুন'), findsOneWidget);
   });
 }
