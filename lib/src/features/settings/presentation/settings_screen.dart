@@ -263,9 +263,7 @@ class _AutomationSettingsSection extends ConsumerWidget {
             key: const Key('automationNotificationsSwitch'),
             secondary: const Icon(Icons.notifications_outlined),
             title: Text(context.l10n.automationNotifications),
-            subtitle: Text(
-              context.l10n.automationNotificationsDescription,
-            ),
+            subtitle: Text(context.l10n.automationNotificationsDescription),
             value: value.notificationsEnabled,
             onChanged: (enabled) async {
               if (enabled) {

@@ -54,10 +54,11 @@ final themePreferenceRepositoryProvider = Provider<ThemePreferenceRepository>((
   return DriftThemePreferenceRepository(ref.watch(appDatabaseProvider));
 });
 
-final localePreferenceRepositoryProvider =
-    Provider<LocalePreferenceRepository>((ref) {
-      return DriftLocalePreferenceRepository(ref.watch(appDatabaseProvider));
-    });
+final localePreferenceRepositoryProvider = Provider<LocalePreferenceRepository>(
+  (ref) {
+    return DriftLocalePreferenceRepository(ref.watch(appDatabaseProvider));
+  },
+);
 
 final initialSetupRepositoryProvider = Provider<InitialSetupRepository>((ref) {
   return DriftInitialSetupRepository(ref.watch(appDatabaseProvider));

@@ -24,10 +24,7 @@ class AboutScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 8),
-          Text(
-            context.l10n.appSummary,
-            textAlign: TextAlign.center,
-          ),
+          Text(context.l10n.appSummary, textAlign: TextAlign.center),
           const SizedBox(height: 24),
           Card(
             child: Column(
