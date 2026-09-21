@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/src/core/database/database_backup_service.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class BackupRestoreScreen extends ConsumerStatefulWidget {
@@ -22,19 +23,17 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Backup & Restore')),
+      appBar: AppBar(title: Text(context.l10n.backupAndRestore)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: <Widget>[
-          const Text(
-            'A backup contains personal employment and financial information. Store it securely.',
-          ),
+          Text(context.l10n.backupSensitiveWarning),
           const SizedBox(height: 20),
           Card(
             child: ListTile(
               leading: const Icon(Icons.upload_file_outlined),
-              title: const Text('Export backup'),
-              subtitle: const Text('Save all local PF data to a JSON file'),
+              title: Text(context.l10n.exportBackup),
+              subtitle: Text(context.l10n.exportBackupDescription),
               enabled: !_busy,
               onTap: _export,
             ),
@@ -42,10 +41,8 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.settings_backup_restore),
-              title: const Text('Restore backup'),
-              subtitle: const Text(
-                'Replace local data with a validated backup file',
-              ),
+              title: Text(context.l10n.restoreBackup),
+              subtitle: Text(context.l10n.restoreBackupDescription),
               enabled: !_busy,
               onTap: _restore,
             ),
@@ -54,8 +51,8 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.delete_forever_outlined),
-              title: const Text('Delete all data'),
-              subtitle: const Text('Permanently erase all local PF data'),
+              title: Text(context.l10n.deleteAllData),
+              subtitle: Text(context.l10n.deleteAllDataDescription),
               enabled: !_busy,
               onTap: _deleteAll,
             ),
@@ -77,15 +74,15 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           .exportAll(appVersion: '0.1.0', exportedAt: DateTime.now());
       final date = DateTime.now().toIso8601String().substring(0, 10);
       final output = await FilePicker.saveFile(
-        dialogTitle: 'Save PF Ledger backup',
-        fileName: 'pf-tracker-backup-$date.json',
+        dialogTitle: context.l10n.saveBackupDialogTitle,
+        fileName: 'pf-ledger-backup-$date.json',
         bytes: Uint8List.fromList(utf8.encode(jsonEncode(backup))),
       );
       if (output != null && mounted) {
-        _message('Backup exported successfully.');
+        _message(context.l10n.backupExported);
       }
     } on Object {
-      if (mounted) _message('Could not export the backup.');
+      if (mounted) _message(context.l10n.backupExportError);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -100,18 +97,16 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Replace all local data?'),
-        content: const Text(
-          'The selected backup will replace every current PF record and setting. This cannot be undone unless you export the current data first.',
-        ),
+        title: Text(context.l10n.replaceAllDataTitle),
+        content: Text(context.l10n.replaceAllDataWarning),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Restore'),
+            child: Text(context.l10n.restore),
           ),
         ],
       ),
@@ -126,10 +121,10 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       await DatabaseBackupService(ref.read(appDatabaseProvider))
           .restoreAll(Map<String, Object?>.from(decoded));
       _invalidateData();
-      if (mounted) _message('Backup restored successfully.');
+      if (mounted) _message(context.l10n.backupRestored);
     } on Object {
       if (mounted) {
-        _message('Invalid or corrupted backup. No data was changed.');
+        _message(context.l10n.invalidBackupError);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -142,19 +137,17 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Delete all PF data?'),
+          title: Text(context.l10n.deleteAllPFDataTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text(
-                'This permanently deletes every profile, rule, salary, record, statement, and setting. Export a backup first if needed.',
-              ),
+              Text(context.l10n.deleteAllPFDataWarning),
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Type DELETE to confirm',
+                decoration: InputDecoration(
+                  labelText: context.l10n.typeDeleteToConfirm,
                 ),
                 onChanged: (value) => setDialogState(() {}),
               ),
@@ -163,13 +156,13 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               onPressed: controller.text == 'DELETE'
                   ? () => Navigator.pop(context, true)
                   : null,
-              child: const Text('Delete everything'),
+              child: Text(context.l10n.deleteEverything),
             ),
           ],
         ),
@@ -181,9 +174,9 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
     try {
       await DatabaseBackupService(ref.read(appDatabaseProvider)).deleteAll();
       _invalidateData();
-      if (mounted) _message('All local PF data was deleted.');
+      if (mounted) _message(context.l10n.allDataDeleted);
     } on Object {
-      if (mounted) _message('Could not delete local data.');
+      if (mounted) _message(context.l10n.deleteLocalDataError);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
