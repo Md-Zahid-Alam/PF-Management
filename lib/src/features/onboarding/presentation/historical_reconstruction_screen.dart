@@ -12,6 +12,7 @@ import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class HistoricalReconstructionScreen extends ConsumerStatefulWidget {
@@ -37,7 +38,7 @@ class _HistoricalReconstructionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Historical PF Reconstruction')),
+      appBar: AppBar(title: Text(context.l10n.historicalReconstruction)),
       body: FutureBuilder<_HistoricalViewData>(
         future: _data,
         builder: (context, snapshot) {
@@ -57,21 +58,17 @@ class _HistoricalReconstructionScreenState
             ),
             children: <Widget>[
               Text(
-                'Review before generating records',
+                context.l10n.reviewBeforeGenerating,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'The preview uses your effective-dated salary history and PF rules. Official company statements are never changed.',
-              ),
+              Text(context.l10n.historicalPreviewNotice),
               const SizedBox(height: 20),
               if (data.preview == null)
-                const Card(
+                Card(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Text(
-                      'No PF month has reached its scheduled generation date yet.',
-                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Text(context.l10n.noDuePFMonth),
                   ),
                 )
               else
@@ -98,16 +95,20 @@ class _HistoricalReconstructionScreenState
                   icon: const Icon(Icons.history),
                   label: Text(
                     _generating
-                        ? 'Generating…'
+                        ? context.l10n.generating
                         : data.existingRecordCount == 0
-                        ? 'Generate Historical PF Records'
-                        : 'Recalculate Historical PF',
+                        ? context.l10n.generateHistoricalRecords
+                        : context.l10n.recalculateHistoricalPF,
                   ),
                 ),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: _generating ? null : () => context.go('/'),
-                child: Text(data.existingRecordCount == 0 ? 'Not now' : 'Done'),
+                child: Text(
+                  data.existingRecordCount == 0
+                      ? context.l10n.notNow
+                      : context.l10n.done,
+                ),
               ),
             ],
           );
@@ -175,24 +176,26 @@ class _HistoricalReconstructionScreenState
       builder: (context) => AlertDialog(
         title: Text(
           data.existingRecordCount == 0
-              ? 'Generate historical PF records?'
-              : 'Recalculate historical PF?',
+              ? context.l10n.generateHistoricalTitle
+              : context.l10n.recalculateHistoricalTitle,
         ),
         content: Text(
           data.existingRecordCount == 0
-              ? 'This creates ${data.preview!.monthCount} calculated monthly records. Review your salary and rule histories first.'
+              ? context.l10n.generateHistoricalMessage(data.preview!.monthCount)
               : _manualMonthsToReplace.isEmpty
-              ? 'Calculated records will use the current effective histories. All manually adjusted records and official statements will remain unchanged.'
-              : 'Calculated records will use the current effective histories. ${_manualMonthsToReplace.length} selected manually adjusted month(s) will be replaced. Other manual records and official statements will remain unchanged.',
+              ? context.l10n.recalculatePreserveManualMessage
+              : context.l10n.recalculateReplaceManualMessage(
+                  _manualMonthsToReplace.length,
+                ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirm'),
+            child: Text(context.l10n.confirm),
           ),
         ],
       ),
@@ -223,11 +226,7 @@ class _HistoricalReconstructionScreenState
       if (mounted) {
         setState(() => _generating = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Historical PF could not be generated. Check salary and PF rule history.',
-            ),
-          ),
+          SnackBar(content: Text(context.l10n.historicalGenerationError)),
         );
       }
     }
@@ -258,37 +257,37 @@ class _PreviewCard extends StatelessWidget {
         child: Column(
           children: <Widget>[
             _Row(
-              'PF start',
-              DateFormat.yMMMM().format(preview.pfStart.firstDay),
+              context.l10n.pfStart,
+              _formatMonth(context, preview.pfStart.firstDay),
             ),
             _Row(
-              'Calculation through',
-              DateFormat.yMMMM().format(preview.calculationThrough.firstDay),
+              context.l10n.calculationThrough,
+              _formatMonth(context, preview.calculationThrough.firstDay),
             ),
-            _Row('Number of months', '${preview.monthCount}'),
+            _Row(context.l10n.numberOfMonths, '${preview.monthCount}'),
             _Row(
-              'Employee contribution',
+              context.l10n.employeeContribution,
               formatMoney(preview.employeeContribution),
             ),
             _Row(
-              'Employer contribution',
+              context.l10n.employerContribution,
               formatMoney(preview.employerContribution),
             ),
-            _Row('Known profit', 'Not entered'),
+            _Row(context.l10n.knownProfit, context.l10n.notEntered),
             const Divider(),
             _Row(
-              'Calculated PF',
+              context.l10n.calculatedPF,
               formatMoney(preview.calculatedPF),
               strong: true,
             ),
             if (data.existingRecordCount > 0)
-              _Row('Existing records', '${data.existingRecordCount}'),
+              _Row(context.l10n.existingRecords, '${data.existingRecordCount}'),
             const SizedBox(height: 8),
             const Divider(),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Affected months and versions',
+                context.l10n.affectedMonthsAndVersions,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
@@ -351,31 +350,35 @@ class _AffectedPeriodTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final month = DateFormat.yMMMM().format(period.month.firstDay);
-    final ruleDate = DateFormat.yMMMd().format(period.ruleEffectiveFrom);
-    final salaryDate = DateFormat.yMMMd().format(period.salaryEffectiveFrom);
+    final month = _formatMonth(context, period.month.firstDay);
+    final ruleDate = _formatDate(context, period.ruleEffectiveFrom);
+    final salaryDate = _formatDate(context, period.salaryEffectiveFrom);
     return ExpansionTile(
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       title: Text(month),
-      subtitle: Text('Rule effective $ruleDate'),
+      subtitle: Text(context.l10n.ruleEffectiveDate(ruleDate)),
       children: <Widget>[
         if (isManuallyAdjusted)
           CheckboxListTile(
             key: ValueKey('replaceManual-${period.month}'),
             contentPadding: EdgeInsets.zero,
-            title: const Text('Replace manual adjustment'),
-            subtitle: const Text(
-              'Leave unchecked to preserve this manually adjusted month.',
-            ),
+            title: Text(context.l10n.replaceManualAdjustment),
+            subtitle: Text(context.l10n.preserveManualAdjustmentHelp),
             value: replaceManualAdjustment,
             onChanged: (value) => onReplaceChanged(value ?? false),
           ),
-        _Row('Rule version', period.ruleVersionId),
-        _Row('Salary effective', salaryDate),
-        _Row('Salary version', period.salaryHistoryId),
-        _Row('Employee contribution', formatMoney(period.employeeContribution)),
-        _Row('Employer contribution', formatMoney(period.employerContribution)),
+        _Row(context.l10n.ruleVersion, period.ruleVersionId),
+        _Row(context.l10n.salaryEffective, salaryDate),
+        _Row(context.l10n.salaryVersion, period.salaryHistoryId),
+        _Row(
+          context.l10n.employeeContribution,
+          formatMoney(period.employeeContribution),
+        ),
+        _Row(
+          context.l10n.employerContribution,
+          formatMoney(period.employerContribution),
+        ),
       ],
     );
   }
@@ -392,11 +395,19 @@ class _ErrorView extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: onRetry,
         icon: const Icon(Icons.refresh),
-        label: const Text('Retry historical preview'),
+        label: Text(context.l10n.retryHistoricalPreview),
       ),
     );
   }
 }
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
+String _formatMonth(BuildContext context, DateTime date) =>
+    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
 
 class _HistoricalViewData {
   const _HistoricalViewData({
