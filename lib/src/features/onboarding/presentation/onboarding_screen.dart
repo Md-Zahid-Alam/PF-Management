@@ -413,10 +413,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       key: key,
       controller: controller,
       decoration: InputDecoration(labelText: label),
-      validator: (value) =>
-          value == null || value.trim().isEmpty
-              ? context.l10n.fieldRequired(label)
-              : null,
+      validator: (value) => value == null || value.trim().isEmpty
+          ? context.l10n.fieldRequired(label)
+          : null,
     );
   }
 
@@ -586,9 +585,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } on Object {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.setupSaveError)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.setupSaveError)));
       }
     }
   }
