@@ -5,6 +5,7 @@ import 'package:pf_tracker/src/core/domain/calculation_policy.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class PFMaturityScreen extends ConsumerWidget {
@@ -25,11 +26,11 @@ class PFMaturityScreen extends ConsumerWidget {
             ref.invalidate(pfRuleHistoryProvider);
           },
           icon: const Icon(Icons.refresh),
-          label: const Text('Retry maturity details'),
+          label: Text(context.l10n.retryMaturityDetails),
         ),
       );
     } else if (setup.requireValue == null) {
-      body = const Center(child: Text('Complete PF setup first.'));
+      body = Center(child: Text(context.l10n.completePFSetupFirst));
     } else {
       try {
         const engine = PFCalculationEngine();
@@ -40,12 +41,12 @@ class PFMaturityScreen extends ConsumerWidget {
           ruleHistory: rules.requireValue.map((item) => item.rule),
         );
         body = _MaturityDetails(setup: value, rule: rule);
-      } on MissingCalculationInput catch (error) {
-        body = Center(child: Text(error.message));
+      } on MissingCalculationInput {
+        body = Center(child: Text(context.l10n.maturityDataUnavailable));
       }
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Maturity')),
+      appBar: AppBar(title: Text(context.l10n.pfMaturity)),
       body: body,
     );
   }
@@ -59,6 +60,7 @@ class _MaturityDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     const engine = PFCalculationEngine();
     final maturityDate = engine.calculateMaturityDate(
       setup.employmentDates,
@@ -92,8 +94,8 @@ class _MaturityDetails extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   status == MaturityStatus.mature
-                      ? 'PF is mature'
-                      : '${remaining < 0 ? 0 : remaining} days remaining',
+                      ? l10n.pfIsMature
+                      : l10n.daysRemaining(remaining < 0 ? 0 : remaining),
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ],
@@ -104,20 +106,22 @@ class _MaturityDetails extends StatelessWidget {
         Card(
           child: Column(
             children: <Widget>[
-              _DetailRow('Joining date', setup.joiningDate),
-              _DetailRow('PF start date', setup.pfStartDate),
-              _DetailRow('Maturity date', maturityDate),
+              _DetailRow(l10n.joiningDate, setup.joiningDate),
+              _DetailRow(l10n.pfStartDate, setup.pfStartDate),
+              _DetailRow(l10n.maturityDate, maturityDate),
               ListTile(
-                title: const Text('Maturity period'),
-                trailing: Text('${rule.maturityMonths} months'),
+                title: Text(l10n.maturityPeriod),
+                trailing: Text(l10n.monthsCount(rule.maturityMonths)),
               ),
               ListTile(
-                title: const Text('Maturity basis'),
-                trailing: Text(_basis(rule.maturityBasis)),
+                title: Text(l10n.maturityBasis),
+                trailing: Text(_basis(context, rule.maturityBasis)),
               ),
               ListTile(
-                title: const Text('Employer contribution entitlement'),
-                trailing: Text(employerEntitled ? 'Entitled' : 'Not entitled'),
+                title: Text(l10n.employerContributionEntitlement),
+                trailing: Text(
+                  employerEntitled ? l10n.entitled : l10n.notEntitled,
+                ),
               ),
             ],
           ),
@@ -137,13 +141,17 @@ class _DetailRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(label),
-      trailing: Text(DateFormat.yMMMd().format(date)),
+      trailing: Text(
+        DateFormat.yMMMd(
+          Localizations.localeOf(context).toLanguageTag(),
+        ).format(date),
+      ),
     );
   }
 }
 
-String _basis(MaturityBasis value) => switch (value) {
-  MaturityBasis.joiningDate => 'Joining date',
-  MaturityBasis.pfStartDate => 'PF start date',
-  MaturityBasis.permanentDate => 'Permanent date',
+String _basis(BuildContext context, MaturityBasis value) => switch (value) {
+  MaturityBasis.joiningDate => context.l10n.joiningDate,
+  MaturityBasis.pfStartDate => context.l10n.pfStartDate,
+  MaturityBasis.permanentDate => context.l10n.permanentDate,
 };

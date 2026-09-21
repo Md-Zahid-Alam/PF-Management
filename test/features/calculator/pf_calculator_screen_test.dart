@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/features/calculator/presentation/pf_calculator_screen.dart';
 
 void main() {
@@ -8,7 +9,7 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(const MaterialApp(home: PFCalculatorScreen()));
+    await tester.pumpWidget(_calculatorApp());
 
     await tester.ensureVisible(find.byKey(const Key('calculateButton')));
     await tester.tap(find.byKey(const Key('calculateButton')));
@@ -22,7 +23,7 @@ void main() {
   });
 
   testWidgets('rejects a zero gross salary', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: PFCalculatorScreen()));
+    await tester.pumpWidget(_calculatorApp());
     await tester.enterText(find.byKey(const Key('grossSalaryField')), '0');
     await tester.ensureVisible(find.byKey(const Key('calculateButton')));
     await tester.tap(find.byKey(const Key('calculateButton')));
@@ -30,4 +31,27 @@ void main() {
 
     expect(find.text('Enter a gross salary greater than zero'), findsOneWidget);
   });
+
+  testWidgets('shows calculator labels in Bangla', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(_calculatorApp(locale: const Locale('bn')));
+    await tester.ensureVisible(find.byKey(const Key('calculateButton')));
+    await tester.tap(find.byKey(const Key('calculateButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PF ক্যালকুলেটর'), findsOneWidget);
+    expect(find.text('মোট বেতন'), findsOneWidget);
+    expect(find.text('PF হিসাব করুন'), findsOneWidget);
+    expect(find.text('হিসাবের ফলাফল'), findsOneWidget);
+  });
+}
+
+Widget _calculatorApp({Locale locale = const Locale('en')}) {
+  return MaterialApp(
+    locale: locale,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: const PFCalculatorScreen(),
+  );
 }

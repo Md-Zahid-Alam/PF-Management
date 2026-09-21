@@ -58,5 +58,48 @@
   "dataStaysOnDevice": "আপনার তথ্য এই ডিভাইসেই থাকে",
   "dataStaysOnDeviceDescription": "আপনি অনুরোধ করলেই কেবল backup তৈরি বা restore করা হয়।",
   "calculatedValuesAreEstimates": "হিসাব করা পরিমাণগুলো আনুমানিক",
-  "calculatedValuesDescription": "আপনার প্রতিষ্ঠানের official PF statement ও নীতিমালাই চূড়ান্ত হিসেবে গণ্য হবে।"
+  "calculatedValuesDescription": "আপনার প্রতিষ্ঠানের official PF statement ও নীতিমালাই চূড়ান্ত হিসেবে গণ্য হবে।",
+  "calculatorEstimateHeading": "মাসিক ও বার্ষিক অবদানের হিসাব দেখুন",
+  "calculatorEstimateNotice": "হাফ-আপ রাউন্ডিং ব্যবহার করে নিকটতম পূর্ণ BDT-তে হিসাব করা হয়। এই আনুমানিক হিসাব আপনার PF রেকর্ডে সংরক্ষণ করা হবে না।",
+  "grossSalary": "মোট বেতন",
+  "basicSalaryPercentage": "মূল বেতনের শতাংশ",
+  "employeePFPercentage": "কর্মীর PF শতাংশ",
+  "employerPFPercentage": "প্রতিষ্ঠানের PF শতাংশ",
+  "calculatePF": "PF হিসাব করুন",
+  "grossSalaryGreaterThanZero": "শূন্যের চেয়ে বেশি মোট বেতন লিখুন",
+  "percentageRangeError": "০ থেকে ১০০-এর মধ্যে শতাংশ লিখুন",
+  "calculationResult": "হিসাবের ফলাফল",
+  "basicSalary": "মূল বেতন",
+  "employeePF": "কর্মীর PF",
+  "employerPF": "প্রতিষ্ঠানের PF",
+  "totalMonthlyPF": "মোট মাসিক PF",
+  "annualProjection": "বার্ষিক হিসাব",
+  "employeeAnnual": "কর্মীর বার্ষিক অবদান",
+  "employerAnnual": "প্রতিষ্ঠানের বার্ষিক অবদান",
+  "totalAnnualPF": "মোট বার্ষিক PF",
+  "retryMaturityDetails": "মেয়াদপূর্তির তথ্য আবার লোড করুন",
+  "completePFSetupFirst": "প্রথমে PF সেটআপ সম্পন্ন করুন।",
+  "maturityDataUnavailable": "বর্তমান সেটআপ থেকে মেয়াদপূর্তির তথ্য হিসাব করা যাচ্ছে না।",
+  "pfIsMature": "PF-এর মেয়াদ পূর্ণ হয়েছে",
+  "daysRemaining": "{count, plural, other{{count} দিন বাকি}}",
+  "@daysRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "joiningDate": "যোগদানের তারিখ",
+  "pfStartDate": "PF শুরুর তারিখ",
+  "maturityDate": "মেয়াদপূর্তির তারিখ",
+  "maturityPeriod": "মেয়াদপূর্তির সময়কাল",
+  "monthsCount": "{count, plural, other{{count} মাস}}",
+  "@monthsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "maturityBasis": "মেয়াদ গণনার ভিত্তি",
+  "permanentDate": "স্থায়ী হওয়ার তারিখ",
+  "employerContributionEntitlement": "প্রতিষ্ঠানের PF অবদানের প্রাপ্যতা",
+  "entitled": "প্রাপ্য",
+  "notEntitled": "প্রাপ্য নয়"
 }

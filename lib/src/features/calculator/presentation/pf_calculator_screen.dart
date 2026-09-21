@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 
 class PFCalculatorScreen extends StatefulWidget {
   const PFCalculatorScreen({super.key});
@@ -39,20 +40,19 @@ class _PFCalculatorScreenState extends State<PFCalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Calculator')),
+      appBar: AppBar(title: Text(l10n.pfCalculator)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: <Widget>[
             Text(
-              'Estimate monthly and annual contributions',
+              l10n.calculatorEstimateHeading,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Uses nearest whole BDT with half-up rounding. This estimate is not saved to your PF records.',
-            ),
+            Text(l10n.calculatorEstimateNotice),
             const SizedBox(height: 20),
             Card(
               child: Padding(
@@ -64,8 +64,8 @@ class _PFCalculatorScreenState extends State<PFCalculatorScreen> {
                       TextFormField(
                         key: const Key('grossSalaryField'),
                         controller: _grossController,
-                        decoration: const InputDecoration(
-                          labelText: 'Gross salary',
+                        decoration: InputDecoration(
+                          labelText: l10n.grossSalary,
                           prefixText: '৳ ',
                         ),
                         keyboardType: TextInputType.number,
@@ -76,17 +76,17 @@ class _PFCalculatorScreenState extends State<PFCalculatorScreen> {
                       ),
                       const SizedBox(height: 16),
                       _RateField(
-                        label: 'Basic salary percentage',
+                        label: l10n.basicSalaryPercentage,
                         controller: _basicRateController,
                       ),
                       const SizedBox(height: 16),
                       _RateField(
-                        label: 'Employee PF percentage',
+                        label: l10n.employeePFPercentage,
                         controller: _employeeRateController,
                       ),
                       const SizedBox(height: 16),
                       _RateField(
-                        label: 'Employer PF percentage',
+                        label: l10n.employerPFPercentage,
                         controller: _employerRateController,
                       ),
                       const SizedBox(height: 20),
@@ -96,7 +96,7 @@ class _PFCalculatorScreenState extends State<PFCalculatorScreen> {
                           key: const Key('calculateButton'),
                           onPressed: _calculate,
                           icon: const Icon(Icons.calculate_outlined),
-                          label: const Text('Calculate PF'),
+                          label: Text(l10n.calculatePF),
                         ),
                       ),
                     ],
@@ -117,7 +117,7 @@ class _PFCalculatorScreenState extends State<PFCalculatorScreen> {
   String? _validateGrossSalary(String? value) {
     final amount = int.tryParse(value ?? '');
     if (amount == null || amount <= 0) {
-      return 'Enter a gross salary greater than zero';
+      return context.l10n.grossSalaryGreaterThanZero;
     }
     return null;
   }
@@ -171,7 +171,7 @@ class _RateField extends StatelessWidget {
       validator: (value) {
         final rate = double.tryParse(value ?? '');
         if (rate == null || rate < 0 || rate > 100) {
-          return 'Enter a percentage from 0 to 100';
+          return context.l10n.percentageRangeError;
         }
         return null;
       },
@@ -186,6 +186,7 @@ class _ResultsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final monthlyTotal =
         result.employeeContribution + result.employerContribution;
     final annualEmployee = _annual(result.employeeContribution);
@@ -197,35 +198,35 @@ class _ResultsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Calculation result',
+              l10n.calculationResult,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            _ResultRow(label: 'Basic salary', amount: result.basicSalary),
+            _ResultRow(label: l10n.basicSalary, amount: result.basicSalary),
             _ResultRow(
-              label: 'Employee PF',
+              label: l10n.employeePF,
               amount: result.employeeContribution,
             ),
             _ResultRow(
-              label: 'Employer PF',
+              label: l10n.employerPF,
               amount: result.employerContribution,
             ),
             const Divider(height: 28),
             _ResultRow(
-              label: 'Total monthly PF',
+              label: l10n.totalMonthlyPF,
               amount: monthlyTotal,
               emphasized: true,
             ),
             const SizedBox(height: 20),
             Text(
-              'Annual projection',
+              l10n.annualProjection,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            _ResultRow(label: 'Employee annual', amount: annualEmployee),
-            _ResultRow(label: 'Employer annual', amount: annualEmployer),
+            _ResultRow(label: l10n.employeeAnnual, amount: annualEmployee),
+            _ResultRow(label: l10n.employerAnnual, amount: annualEmployer),
             _ResultRow(
-              label: 'Total annual PF',
+              label: l10n.totalAnnualPF,
               amount: annualEmployee + annualEmployer,
               emphasized: true,
             ),
@@ -265,7 +266,7 @@ class _ResultRow extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(child: Text(label, style: style)),
-          Text(_formatMoney(amount), style: style),
+          Text(_formatMoney(context, amount), style: style),
         ],
       ),
     );
@@ -284,9 +285,9 @@ class _CalculatorResult {
   final Money employerContribution;
 }
 
-String _formatMoney(Money money) {
+String _formatMoney(BuildContext context, Money money) {
   return NumberFormat.currency(
-    locale: 'en_US',
+    locale: Localizations.localeOf(context).toLanguageTag(),
     symbol: '৳',
     decimalDigits: money.decimalPlaces,
   ).format(money.minorUnits);
