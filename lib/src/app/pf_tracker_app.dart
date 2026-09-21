@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/app/router.dart';
 import 'package:pf_tracker/src/core/domain/app_preferences.dart';
 import 'package:pf_tracker/src/core/theme/app_theme.dart';
@@ -47,12 +48,22 @@ class _PFTrackerAppState extends ConsumerState<PFTrackerApp>
           loading: () => ThemeMode.system,
           error: (error, stackTrace) => ThemeMode.system,
         );
+    final locale = ref
+        .watch(appLocalePreferenceProvider)
+        .when(
+          data: (preference) => Locale(preference.languageCode),
+          loading: () => const Locale('bn'),
+          error: (error, stackTrace) => const Locale('bn'),
+        );
     return MaterialApp.router(
-      title: 'PF Ledger',
+      onGenerateTitle: (context) => AppLocalizations.of(context).appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: appRouter,
     );
   }

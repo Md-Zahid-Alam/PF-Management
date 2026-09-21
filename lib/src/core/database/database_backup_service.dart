@@ -16,7 +16,7 @@ class InvalidBackup implements Exception {
 class DatabaseBackupService {
   DatabaseBackupService(this.database);
 
-  static const int currentFormatVersion = 4;
+  static const int currentFormatVersion = 5;
   static const int oldestSupportedFormatVersion = 1;
 
   final db.AppDatabase database;
@@ -176,6 +176,7 @@ class DatabaseBackupService {
         1 => _migrateVersion1To2(migrated),
         2 => _migrateVersion2To3(migrated),
         3 => _migrateVersion3To4(migrated),
+        4 => _migrateVersion4To5(migrated),
         _ => throw const InvalidBackup('Unsupported backup migration path.'),
       };
       migratedVersion++;
@@ -217,6 +218,33 @@ class DatabaseBackupService {
 
   Map<String, Object?> _migrateVersion3To4(Map<String, Object?> backup) {
     return _withChecksum(<String, Object?>{...backup, 'formatVersion': 4});
+  }
+
+  Map<String, Object?> _migrateVersion4To5(Map<String, Object?> backup) {
+    _verifyChecksum(backup);
+    final migrated = Map<String, Object?>.from(backup);
+    final sourceData = backup['data'];
+    if (sourceData is! Map<Object?, Object?>) {
+      throw const InvalidBackup('Backup data is missing or malformed.');
+    }
+    final data = Map<String, Object?>.from(sourceData);
+    final sourceSettings = data['appSettings'];
+    if (sourceSettings is! List<Object?>) {
+      throw const InvalidBackup('App settings are missing or malformed.');
+    }
+    data['appSettings'] = <Object?>[
+      for (final sourceRow in sourceSettings)
+        if (sourceRow is Map<Object?, Object?>)
+          <String, Object?>{
+            ...Map<String, Object?>.from(sourceRow),
+            'locale': sourceRow['locale'] == 'en' ? 'bn' : sourceRow['locale'],
+          }
+        else
+          throw const InvalidBackup('App settings row is malformed.'),
+    ];
+    migrated['formatVersion'] = 5;
+    migrated['data'] = data;
+    return _withChecksum(migrated);
   }
 
   void _verifyChecksum(Map<String, Object?> backup) {

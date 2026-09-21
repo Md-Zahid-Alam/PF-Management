@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pf_tracker/src/app/pf_tracker_app.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 
 void main() {
   testWidgets('starts in the guided PF setup flow', (tester) async {
@@ -21,6 +23,10 @@ void main() {
 
     expect(find.text('Set up PF Ledger'), findsOneWidget);
     expect(find.text('Profile & employment'), findsOneWidget);
+    expect(
+      Localizations.localeOf(tester.element(find.byType(OnboardingScreen))),
+      const Locale('bn'),
+    );
   });
 }
 

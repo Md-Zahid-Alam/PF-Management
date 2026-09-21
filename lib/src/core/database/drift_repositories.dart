@@ -668,6 +668,35 @@ class DriftThemePreferenceRepository implements ThemePreferenceRepository {
   }
 }
 
+class DriftLocalePreferenceRepository implements LocalePreferenceRepository {
+  DriftLocalePreferenceRepository(this.database);
+
+  final db.AppDatabase database;
+
+  @override
+  Future<AppLocalePreference> get() async {
+    final row = await (database.select(
+      database.appSettingsRows,
+    )..where((row) => row.id.equals(1))).getSingleOrNull();
+    return AppLocalePreference.values.firstWhere(
+      (value) => value.languageCode == row?.locale,
+      orElse: () => AppLocalePreference.bangla,
+    );
+  }
+
+  @override
+  Future<void> save(AppLocalePreference preference) async {
+    await database
+        .into(database.appSettingsRows)
+        .insertOnConflictUpdate(
+          db.AppSettingsRowsCompanion.insert(
+            id: const Value(1),
+            locale: Value(preference.languageCode),
+          ),
+        );
+  }
+}
+
 class DriftProfitRepository implements ProfitRepository {
   DriftProfitRepository(this.database);
 

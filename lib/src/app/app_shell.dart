@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
-  static const _destinations = <NavigationDestination>[
-    NavigationDestination(
-      icon: Icon(Icons.dashboard_outlined),
-      selectedIcon: Icon(Icons.dashboard),
-      label: 'Dashboard',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.receipt_long_outlined),
-      selectedIcon: Icon(Icons.receipt_long),
-      label: 'Records',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.assessment_outlined),
-      selectedIcon: Icon(Icons.assessment),
-      label: 'Reports',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.settings_outlined),
-      selectedIcon: Icon(Icons.settings),
-      label: 'Settings',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final destinations = <NavigationDestination>[
+      NavigationDestination(
+        icon: const Icon(Icons.dashboard_outlined),
+        selectedIcon: const Icon(Icons.dashboard),
+        label: context.l10n.dashboard,
+      ),
+      NavigationDestination(
+        icon: const Icon(Icons.receipt_long_outlined),
+        selectedIcon: const Icon(Icons.receipt_long),
+        label: context.l10n.records,
+      ),
+      NavigationDestination(
+        icon: const Icon(Icons.assessment_outlined),
+        selectedIcon: const Icon(Icons.assessment),
+        label: context.l10n.reports,
+      ),
+      NavigationDestination(
+        icon: const Icon(Icons.settings_outlined),
+        selectedIcon: const Icon(Icons.settings),
+        label: context.l10n.settings,
+      ),
+    ];
     return LayoutBuilder(
       builder: (context, constraints) {
         final useRail = useNavigationRailForWidth(constraints.maxWidth);
@@ -48,7 +48,7 @@ class AppShell extends StatelessWidget {
                       child: CircleAvatar(child: Icon(Icons.savings_outlined)),
                     ),
                     destinations: <NavigationRailDestination>[
-                      for (final destination in _destinations)
+                      for (final destination in destinations)
                         NavigationRailDestination(
                           icon: destination.icon,
                           selectedIcon: destination.selectedIcon,
@@ -68,7 +68,7 @@ class AppShell extends StatelessWidget {
           bottomNavigationBar: NavigationBar(
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: _selectDestination,
-            destinations: _destinations,
+            destinations: destinations,
           ),
         );
       },

@@ -70,6 +70,9 @@ jobs:
       - name: Generate PF Ledger launcher icons
         run: dart run flutter_launcher_icons
 
+      - name: Generate localized resources
+        run: flutter gen-l10n
+
       - name: Generate typed database sources
         run: dart run build_runner build --delete-conflicting-outputs
 

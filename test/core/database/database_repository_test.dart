@@ -29,7 +29,7 @@ void main() {
   tearDown(() => database.close());
 
   test('schema version and foreign keys are enabled', () async {
-    expect(database.schemaVersion, 3);
+    expect(database.schemaVersion, 4);
     final result = await database
         .customSelect('PRAGMA foreign_keys')
         .getSingle();
@@ -83,12 +83,12 @@ void main() {
           .customSelect('PRAGMA table_info(salary_schedules)')
           .get();
 
-      expect(version.read<int>('user_version'), 3);
+      expect(version.read<int>('user_version'), 4);
       expect(settings.read<int>('auto_calculate'), 0);
       expect(settings.read<String>('theme_mode'), 'dark');
       expect(settings.read<int>('decimal_places'), 2);
       expect(settings.read<int>('notifications_enabled'), 0);
-      expect(settings.read<String>('locale'), 'en');
+      expect(settings.read<String>('locale'), 'bn');
       expect(
         scheduleColumns.map((column) => column.read<String>('name')),
         contains('payment_window_start_month_offset'),
@@ -150,7 +150,7 @@ void main() {
           )
           .getSingle();
 
-      expect(version.read<int>('user_version'), 3);
+      expect(version.read<int>('user_version'), 4);
       expect(schedule.read<int>('payment_month_offset'), 1);
       expect(schedule.read<int>('payment_window_start_month_offset'), 1);
     } finally {
@@ -298,6 +298,23 @@ void main() {
       expect(storedAutomation.notificationsEnabled, isFalse);
     },
   );
+
+  test('language defaults to Bangla and persists English selection', () async {
+    final locales = DriftLocalePreferenceRepository(database);
+    final automation = DriftAutomationSettingsRepository(database);
+
+    expect(await locales.get(), AppLocalePreference.bangla);
+    await automation.save(
+      const AutomationSettings(
+        autoCalculate: false,
+        notificationsEnabled: false,
+      ),
+    );
+    await locales.save(AppLocalePreference.english);
+
+    expect(await locales.get(), AppLocalePreference.english);
+    expect((await automation.get()).autoCalculate, isFalse);
+  });
 
   test('initial setup is saved and loaded atomically', () async {
     final repository = DriftInitialSetupRepository(database);
@@ -583,13 +600,15 @@ void main() {
         .save(const AutomationSettings(autoCalculate: false));
     await DriftThemePreferenceRepository(database)
         .save(AppThemePreference.dark);
+    await DriftLocalePreferenceRepository(database)
+        .save(AppLocalePreference.english);
     final service = DatabaseBackupService(database);
     final backup = await service.exportAll(
       appVersion: '0.1.0',
       exportedAt: now,
     );
 
-    expect(backup['formatVersion'], 4);
+    expect(backup['formatVersion'], 5);
     expect(backup['checksumAlgorithm'], 'sha256');
     expect(backup['checksum'], matches(RegExp(r'^[0-9a-f]{64}$')));
 
@@ -631,6 +650,10 @@ void main() {
     expect(
       await DriftThemePreferenceRepository(database).get(),
       AppThemePreference.dark,
+    );
+    expect(
+      await DriftLocalePreferenceRepository(database).get(),
+      AppLocalePreference.english,
     );
   });
 
@@ -836,6 +859,29 @@ void main() {
         .getSingle();
     expect(restored.paymentMonthOffset, 1);
     expect(restored.paymentWindowStartMonthOffset, 1);
+  });
+
+  test('pre-language-selection backup migrates its locale to Bangla', () async {
+    final service = DatabaseBackupService(database);
+    final backup = await service.exportAll(
+      appVersion: '0.1.0',
+      exportedAt: now,
+    );
+    backup
+      ..['formatVersion'] = 3
+      ..remove('checksumAlgorithm')
+      ..remove('checksum');
+    final data = backup['data']! as Map<String, Object?>;
+    final settings = data['appSettings']! as List<Object?>;
+    final row = settings.single! as Map<String, Object?>;
+    row['locale'] = 'en';
+
+    await service.restoreAll(backup);
+
+    expect(
+      await DriftLocalePreferenceRepository(database).get(),
+      AppLocalePreference.bangla,
+    );
   });
 
   test('foreign-key failure rolls back an in-progress restore', () async {

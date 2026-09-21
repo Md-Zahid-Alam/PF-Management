@@ -68,6 +68,10 @@ final appThemePreferenceProvider = FutureProvider<AppThemePreference>((ref) {
   return ref.watch(themePreferenceRepositoryProvider).get();
 });
 
+final appLocalePreferenceProvider = FutureProvider<AppLocalePreference>((ref) {
+  return ref.watch(localePreferenceRepositoryProvider).get();
+});
+
 final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
   ref,
 ) async {

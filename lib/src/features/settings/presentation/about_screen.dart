@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -6,7 +7,7 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('About PF Ledger')),
+      appBar: AppBar(title: Text(context.l10n.aboutPFApp)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: <Widget>[
@@ -18,41 +19,35 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'PF Ledger',
+            context.l10n.appName,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'An offline-first provident fund tracker for personal financial record keeping.',
+          Text(
+            context.l10n.appSummary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          const Card(
+          Card(
             child: Column(
               children: <Widget>[
                 ListTile(
-                  leading: Icon(Icons.offline_bolt_outlined),
-                  title: Text('Offline by design'),
-                  subtitle: Text(
-                    'Core features do not require an account, server, or internet connection.',
-                  ),
+                  leading: const Icon(Icons.offline_bolt_outlined),
+                  title: Text(context.l10n.offlineByDesign),
+                  subtitle: Text(context.l10n.offlineByDesignDescription),
                 ),
-                Divider(height: 1),
+                const Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.lock_outline),
-                  title: Text('Your data stays on this device'),
-                  subtitle: Text(
-                    'Backups are created or restored only when you explicitly request them.',
-                  ),
+                  leading: const Icon(Icons.lock_outline),
+                  title: Text(context.l10n.dataStaysOnDevice),
+                  subtitle: Text(context.l10n.dataStaysOnDeviceDescription),
                 ),
-                Divider(height: 1),
+                const Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.calculate_outlined),
-                  title: Text('Calculated values are estimates'),
-                  subtitle: Text(
-                    'Your organization’s official PF statement and policies remain authoritative.',
-                  ),
+                  leading: const Icon(Icons.calculate_outlined),
+                  title: Text(context.l10n.calculatedValuesAreEstimates),
+                  subtitle: Text(context.l10n.calculatedValuesDescription),
                 ),
               ],
             ),

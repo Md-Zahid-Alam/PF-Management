@@ -11,7 +11,7 @@ class AppSettingsRows extends Table {
   IntColumn get decimalPlaces => integer().withDefault(const Constant(0))();
   BoolColumn get notificationsEnabled =>
       boolean().withDefault(const Constant(true))();
-  TextColumn get locale => text().withDefault(const Constant('en'))();
+  TextColumn get locale => text().withDefault(const Constant('bn'))();
 
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{id};
@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -68,6 +68,11 @@ class AppDatabase extends _$AppDatabase {
           'UPDATE salary_schedules '
           'SET payment_window_start_month_offset = payment_month_offset '
           'WHERE payment_window_start_month_offset IS NULL',
+        );
+      }
+      if (from < 4) {
+        await customStatement(
+          "UPDATE app_settings_rows SET locale = 'bn' WHERE locale = 'en'",
         );
       }
     },

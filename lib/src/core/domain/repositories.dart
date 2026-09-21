@@ -76,6 +76,11 @@ abstract interface class ThemePreferenceRepository {
   Future<void> save(AppThemePreference preference);
 }
 
+abstract interface class LocalePreferenceRepository {
+  Future<AppLocalePreference> get();
+  Future<void> save(AppLocalePreference preference);
+}
+
 abstract interface class AutomationNotificationGateway {
   Future<void> initialize();
   Future<bool> requestPermission();

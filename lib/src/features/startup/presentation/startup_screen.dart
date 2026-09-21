@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 
 class StartupScreen extends ConsumerStatefulWidget {
   const StartupScreen({super.key});
@@ -59,7 +60,7 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'PF Ledger',
+                    context.l10n.appName,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 24),
@@ -67,13 +68,13 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
                     const CircularProgressIndicator()
                   else ...<Widget>[
                     Text(
-                      'Could not open your PF data.',
+                      context.l10n.couldNotOpenData,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Check the app storage and try again.',
+                    Text(
+                      context.l10n.checkStorageAndRetry,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -81,7 +82,7 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
                       key: const Key('retryStartupButton'),
                       onPressed: _openInitialDestination,
                       icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('Try again'),
+                      label: Text(context.l10n.tryAgain),
                     ),
                   ],
                 ],
