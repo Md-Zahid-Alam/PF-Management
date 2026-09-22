@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class MonthlyRecordDetailScreen extends ConsumerWidget {
@@ -16,15 +17,15 @@ class MonthlyRecordDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final records = ref.watch(monthlyPFRecordsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Record Details')),
+      appBar: AppBar(title: Text(context.l10n.pfRecordDetails)),
       body: records.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) =>
-            const Center(child: Text('Could not load this PF record.')),
+            Center(child: Text(context.l10n.recordLoadError)),
         data: (items) {
           final record = _findRecord(items);
           if (record == null) {
-            return const Center(child: Text('PF record not found.'));
+            return Center(child: Text(context.l10n.recordNotFound));
           }
           return _RecordDetails(
             record: record,
@@ -55,18 +56,16 @@ class MonthlyRecordDetailScreen extends ConsumerWidget {
     final accepted = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm PF record?'),
-        content: const Text(
-          'Confirm that you have reviewed this calculated record. You can still preserve an audited adjustment later.',
-        ),
+        title: Text(context.l10n.confirmPFRecordTitle),
+        content: Text(context.l10n.confirmPFRecordMessage),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirm'),
+            child: Text(context.l10n.confirm),
           ),
         ],
       ),
@@ -104,13 +103,13 @@ class _RecordDetails extends StatelessWidget {
       ),
       children: <Widget>[
         Text(
-          DateFormat.yMMMM().format(record.month.firstDay),
+          _formatMonth(context, record.month.firstDay),
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerLeft,
-          child: Chip(label: Text(formatPFStatus(record.status))),
+          child: Chip(label: Text(_statusLabel(context, record.status))),
         ),
         const SizedBox(height: 16),
         Card(
@@ -119,28 +118,28 @@ class _RecordDetails extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 _DetailRow(
-                  label: 'Gross salary',
+                  label: context.l10n.grossSalary,
                   value: formatMoney(record.grossSalary),
                 ),
                 _DetailRow(
-                  label: 'Basic salary',
+                  label: context.l10n.basicSalary,
                   value: formatMoney(record.basicSalary),
                 ),
                 _DetailRow(
-                  label: 'Employee contribution',
+                  label: context.l10n.employeeContribution,
                   value: formatMoney(record.employeeContribution),
                 ),
                 _DetailRow(
-                  label: 'Company contribution',
+                  label: context.l10n.companyContribution,
                   value: formatMoney(record.employerContribution),
                 ),
                 _DetailRow(
-                  label: 'Other adjustment',
+                  label: context.l10n.otherAdjustment,
                   value: formatMoney(record.adjustment),
                 ),
                 const Divider(),
                 _DetailRow(
-                  label: 'Total contribution',
+                  label: context.l10n.totalContribution,
                   value: formatMoney(total),
                 ),
               ],
@@ -153,18 +152,21 @@ class _RecordDetails extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             child: Column(
               children: <Widget>[
-                _DetailRow(label: 'Source', value: record.source),
                 _DetailRow(
-                  label: 'Scheduled generation',
-                  value: _date(record.scheduledGenerationDate),
+                  label: context.l10n.source,
+                  value: _sourceLabel(context, record.source),
                 ),
                 _DetailRow(
-                  label: 'Actual generation',
-                  value: _date(record.actualGenerationDate),
+                  label: context.l10n.scheduledGeneration,
+                  value: _date(context, record.scheduledGenerationDate),
                 ),
                 _DetailRow(
-                  label: 'Salary credited',
-                  value: _date(record.salaryCreditedDate),
+                  label: context.l10n.actualGeneration,
+                  value: _date(context, record.actualGenerationDate),
+                ),
+                _DetailRow(
+                  label: context.l10n.salaryCredited,
+                  value: _date(context, record.salaryCreditedDate),
                 ),
               ],
             ),
@@ -179,20 +181,20 @@ class _RecordDetails extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Original calculation',
+                    context.l10n.originalCalculation,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   _DetailRow(
-                    label: 'Original gross',
+                    label: context.l10n.originalGross,
                     value: formatMoney(record.originalGrossSalary!),
                   ),
                   _DetailRow(
-                    label: 'Original employee PF',
+                    label: context.l10n.originalEmployeePF,
                     value: formatMoney(record.originalEmployeeContribution!),
                   ),
                   _DetailRow(
-                    label: 'Original company PF',
+                    label: context.l10n.originalCompanyPF,
                     value: formatMoney(record.originalEmployerContribution!),
                   ),
                 ],
@@ -204,24 +206,48 @@ class _RecordDetails extends StatelessWidget {
         FilledButton.icon(
           onPressed: onAdjust,
           icon: const Icon(Icons.edit_outlined),
-          label: const Text('Adjust record'),
+          label: Text(context.l10n.adjustRecord),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: onConfirm,
           icon: const Icon(Icons.verified_outlined),
           label: Text(
-            onConfirm == null ? 'Record confirmed' : 'Confirm record',
+            onConfirm == null
+                ? context.l10n.recordConfirmed
+                : context.l10n.confirmRecord,
           ),
         ),
       ],
     );
   }
 
-  static String _date(DateTime? date) {
-    return date == null ? 'Not recorded' : DateFormat.yMMMd().format(date);
+  static String _date(BuildContext context, DateTime? date) {
+    return date == null
+        ? context.l10n.notRecorded
+        : DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+              .format(date);
   }
 }
+
+String _formatMonth(BuildContext context, DateTime date) =>
+    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
+String _statusLabel(BuildContext context, String status) => switch (status) {
+  'automaticallyCalculated' => context.l10n.automatic,
+  'manuallyCalculated' => context.l10n.manual,
+  'manuallyAdjusted' => context.l10n.adjusted,
+  'confirmed' => context.l10n.confirmed,
+  _ => formatPFStatus(status),
+};
+
+String _sourceLabel(BuildContext context, String source) => switch (source) {
+  'historicalAutomatic' => context.l10n.historicalAutomatic,
+  'automatic' => context.l10n.automaticSource,
+  'manual' => context.l10n.manualSource,
+  _ => source,
+};
 
 class _DetailRow extends StatelessWidget {
   const _DetailRow({required this.label, required this.value});
