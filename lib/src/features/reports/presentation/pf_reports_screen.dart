@@ -8,6 +8,7 @@ import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_report_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class PFStatementReportView {
@@ -80,15 +81,15 @@ class _PFReportsScreenState extends ConsumerState<PFReportsScreen> {
     final profits = ref.watch(profitHistoryProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PF Reports'),
+        title: Text(context.l10n.pfReports),
         actions: <Widget>[
           IconButton(
-            tooltip: 'Exit estimate',
+            tooltip: context.l10n.exitEstimate,
             onPressed: () => context.push('/reports/exit-estimate'),
             icon: const Icon(Icons.directions_walk_outlined),
           ),
           IconButton(
-            tooltip: 'Statement year settings',
+            tooltip: context.l10n.statementYearSettings,
             onPressed: () => context.push('/reports/statement-year'),
             icon: const Icon(Icons.date_range_outlined),
           ),
@@ -108,7 +109,7 @@ class _PFReportsScreenState extends ConsumerState<PFReportsScreen> {
               child: FilledButton.icon(
                 onPressed: _retry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry reports'),
+                label: Text(context.l10n.retryReports),
               ),
             )
           : _ReportContent(
@@ -199,27 +200,27 @@ class _ReportContent extends StatelessWidget {
       children: <Widget>[
         DropdownButtonFormField<_ReportMode>(
           initialValue: mode,
-          decoration: const InputDecoration(labelText: 'Report type'),
-          items: const <DropdownMenuItem<_ReportMode>>[
+          decoration: InputDecoration(labelText: context.l10n.reportType),
+          items: <DropdownMenuItem<_ReportMode>>[
             DropdownMenuItem(
               value: _ReportMode.statementYear,
-              child: Text('PF statement years'),
+              child: Text(context.l10n.pfStatementYears),
             ),
             DropdownMenuItem(
               value: _ReportMode.monthly,
-              child: Text('Monthly PF'),
+              child: Text(context.l10n.monthlyPF),
             ),
             DropdownMenuItem(
               value: _ReportMode.calendarYear,
-              child: Text('Calendar-year PF'),
+              child: Text(context.l10n.calendarYearPF),
             ),
             DropdownMenuItem(
               value: _ReportMode.salary,
-              child: Text('Salary history'),
+              child: Text(context.l10n.salaryHistory),
             ),
             DropdownMenuItem(
               value: _ReportMode.profit,
-              child: Text('Known profit'),
+              child: Text(context.l10n.knownProfitReport),
             ),
           ],
           onChanged: (value) {
@@ -237,9 +238,14 @@ class _ReportContent extends StatelessWidget {
               width: 190,
               child: DropdownButtonFormField<int?>(
                 initialValue: year,
-                decoration: const InputDecoration(labelText: 'Calendar year'),
+                decoration: InputDecoration(
+                  labelText: context.l10n.calendarYear,
+                ),
                 items: <DropdownMenuItem<int?>>[
-                  const DropdownMenuItem(value: null, child: Text('All years')),
+                  DropdownMenuItem(
+                    value: null,
+                    child: Text(context.l10n.allYears),
+                  ),
                   for (final item in years)
                     DropdownMenuItem(value: item, child: Text('$item')),
                 ],
@@ -251,24 +257,27 @@ class _ReportContent extends StatelessWidget {
                 width: 210,
                 child: DropdownButtonFormField<String?>(
                   initialValue: status,
-                  decoration: const InputDecoration(labelText: 'PF status'),
-                  items: const <DropdownMenuItem<String?>>[
-                    DropdownMenuItem(value: null, child: Text('All statuses')),
+                  decoration: InputDecoration(labelText: context.l10n.pfStatus),
+                  items: <DropdownMenuItem<String?>>[
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(context.l10n.allStatuses),
+                    ),
                     DropdownMenuItem(
                       value: 'automaticallyCalculated',
-                      child: Text('Automatically calculated'),
+                      child: Text(context.l10n.automaticallyCalculated),
                     ),
                     DropdownMenuItem(
                       value: 'manuallyCalculated',
-                      child: Text('Manually calculated'),
+                      child: Text(context.l10n.manuallyCalculated),
                     ),
                     DropdownMenuItem(
                       value: 'manuallyAdjusted',
-                      child: Text('Manually adjusted'),
+                      child: Text(context.l10n.manuallyAdjusted),
                     ),
                     DropdownMenuItem(
                       value: 'confirmed',
-                      child: Text('Confirmed'),
+                      child: Text(context.l10n.confirmed),
                     ),
                   ],
                   onChanged: onStatusChanged,
@@ -279,25 +288,25 @@ class _ReportContent extends StatelessWidget {
                 width: 190,
                 child: DropdownButtonFormField<_ContributionView>(
                   initialValue: contribution,
-                  decoration: const InputDecoration(
-                    labelText: 'Contribution type',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.contributionType,
                   ),
-                  items: const <DropdownMenuItem<_ContributionView>>[
+                  items: <DropdownMenuItem<_ContributionView>>[
                     DropdownMenuItem(
                       value: _ContributionView.total,
-                      child: Text('Total PF'),
+                      child: Text(context.l10n.totalPF),
                     ),
                     DropdownMenuItem(
                       value: _ContributionView.employee,
-                      child: Text('Employee'),
+                      child: Text(context.l10n.employee),
                     ),
                     DropdownMenuItem(
                       value: _ContributionView.employer,
-                      child: Text('Employer'),
+                      child: Text(context.l10n.employer),
                     ),
                     DropdownMenuItem(
                       value: _ContributionView.adjustment,
-                      child: Text('Adjustments'),
+                      child: Text(context.l10n.adjustments),
                     ),
                   ],
                   onChanged: (value) {
@@ -317,13 +326,13 @@ class _ReportContent extends StatelessWidget {
               icon: const Icon(Icons.date_range_outlined),
               label: Text(
                 range == null
-                    ? 'Date range'
-                    : '${DateFormat.yMd().format(range!.start)} – ${DateFormat.yMd().format(range!.end)}',
+                    ? context.l10n.dateRange
+                    : '${_formatShortDate(context, range!.start)} – ${_formatShortDate(context, range!.end)}',
               ),
             ),
             if (range != null)
               IconButton(
-                tooltip: 'Clear date range',
+                tooltip: context.l10n.clearDateRange,
                 onPressed: onClearRange,
                 icon: const Icon(Icons.clear),
               ),
@@ -650,6 +659,10 @@ String _formatMoney(Money money) => NumberFormat.currency(
   symbol: money.currencyCode == 'BDT' ? '৳' : '${money.currencyCode} ',
   decimalDigits: money.decimalPlaces,
 ).format(money.minorUnits / _scale(money.decimalPlaces));
+
+String _formatShortDate(BuildContext context, DateTime date) =>
+    DateFormat.yMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
 
 int _scale(int decimalPlaces) {
   var value = 1;
