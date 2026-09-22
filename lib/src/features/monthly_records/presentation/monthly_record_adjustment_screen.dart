@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class MonthlyRecordAdjustmentScreen extends ConsumerStatefulWidget {
@@ -55,7 +56,7 @@ class _MonthlyRecordAdjustmentScreenState
   Widget build(BuildContext context) {
     final record = _record;
     return Scaffold(
-      appBar: AppBar(title: const Text('Adjust PF Record')),
+      appBar: AppBar(title: Text(context.l10n.adjustPFRecord)),
       body: record == null
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -65,35 +66,37 @@ class _MonthlyRecordAdjustmentScreenState
                   padding: const EdgeInsets.all(20),
                   children: <Widget>[
                     Text(
-                      DateFormat.yMMMM().format(record.month.firstDay),
+                      DateFormat.yMMMM(
+                        Localizations.localeOf(context).toLanguageTag(),
+                      ).format(record.month.firstDay),
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'The original calculated values will be retained for audit and comparison.',
-                    ),
+                    Text(context.l10n.auditValuesRetained),
                     const SizedBox(height: 20),
-                    _moneyField(_gross, 'Gross salary'),
+                    _moneyField(_gross, context.l10n.grossSalary),
                     const SizedBox(height: 12),
-                    _moneyField(_basic, 'Basic salary'),
+                    _moneyField(_basic, context.l10n.basicSalary),
                     const SizedBox(height: 12),
-                    _moneyField(_employee, 'Employee PF contribution'),
+                    _moneyField(_employee, context.l10n.employeePFContribution),
                     const SizedBox(height: 12),
-                    _moneyField(_employer, 'Company PF contribution'),
+                    _moneyField(_employer, context.l10n.companyPFContribution),
                     const SizedBox(height: 12),
                     _moneyField(
                       _adjustment,
-                      'Other adjustment',
+                      context.l10n.otherAdjustment,
                       allowNegative: true,
                     ),
                     const SizedBox(height: 12),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Salary credited date'),
+                      title: Text(context.l10n.salaryCreditedDate),
                       subtitle: Text(
                         _salaryCreditedDate == null
-                            ? 'Not recorded'
-                            : DateFormat.yMMMd().format(_salaryCreditedDate!),
+                            ? context.l10n.notRecorded
+                            : DateFormat.yMMMd(
+                                Localizations.localeOf(context).toLanguageTag(),
+                              ).format(_salaryCreditedDate!),
                       ),
                       trailing: const Icon(Icons.calendar_today_outlined),
                       onTap: _pickSalaryDate,
@@ -101,8 +104,8 @@ class _MonthlyRecordAdjustmentScreenState
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _notes,
-                      decoration: const InputDecoration(
-                        labelText: 'Adjustment notes (optional)',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.adjustmentNotesOptional,
                       ),
                       minLines: 2,
                       maxLines: 4,
@@ -111,7 +114,11 @@ class _MonthlyRecordAdjustmentScreenState
                     FilledButton.icon(
                       onPressed: _saving ? null : _save,
                       icon: const Icon(Icons.save_outlined),
-                      label: Text(_saving ? 'Saving…' : 'Save adjustment'),
+                      label: Text(
+                        _saving
+                            ? context.l10n.saving
+                            : context.l10n.saveAdjustment,
+                      ),
                     ),
                   ],
                 ),
@@ -135,7 +142,7 @@ class _MonthlyRecordAdjustmentScreenState
       validator: (value) {
         final number = double.tryParse(value ?? '');
         if (number == null || (!allowNegative && number < 0)) {
-          return 'Enter a valid whole BDT amount';
+          return context.l10n.validWholeBDTAmount;
         }
         return null;
       },
@@ -228,7 +235,7 @@ class _MonthlyRecordAdjustmentScreenState
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save this adjustment.')),
+          SnackBar(content: Text(context.l10n.adjustmentSaveError)),
         );
       }
     }

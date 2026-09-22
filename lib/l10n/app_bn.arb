@@ -363,5 +363,14 @@
   "confirmRecord": "রেকর্ড নিশ্চিত করুন",
   "historicalAutomatic": "পুরোনো স্বয়ংক্রিয় হিসাব",
   "automaticSource": "স্বয়ংক্রিয়",
-  "manualSource": "ম্যানুয়াল"
+  "manualSource": "ম্যানুয়াল",
+  "adjustPFRecord": "PF রেকর্ড সমন্বয়",
+  "auditValuesRetained": "Audit ও তুলনার জন্য মূল হিসাব করা পরিমাণগুলো সংরক্ষিত থাকবে।",
+  "employeePFContribution": "কর্মীর PF অবদান",
+  "companyPFContribution": "প্রতিষ্ঠানের PF অবদান",
+  "salaryCreditedDate": "বেতন জমার তারিখ",
+  "adjustmentNotesOptional": "সমন্বয়ের নোট (ঐচ্ছিক)",
+  "saveAdjustment": "সমন্বয় সংরক্ষণ করুন",
+  "validWholeBDTAmount": "সঠিক পূর্ণ BDT পরিমাণ লিখুন",
+  "adjustmentSaveError": "এই সমন্বয় সংরক্ষণ করা যায়নি।"
 }

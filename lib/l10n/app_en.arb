@@ -363,5 +363,14 @@
   "confirmRecord": "Confirm record",
   "historicalAutomatic": "Historical automatic",
   "automaticSource": "Automatic",
-  "manualSource": "Manual"
+  "manualSource": "Manual",
+  "adjustPFRecord": "Adjust PF Record",
+  "auditValuesRetained": "The original calculated values will be retained for audit and comparison.",
+  "employeePFContribution": "Employee PF contribution",
+  "companyPFContribution": "Company PF contribution",
+  "salaryCreditedDate": "Salary credited date",
+  "adjustmentNotesOptional": "Adjustment notes (optional)",
+  "saveAdjustment": "Save adjustment",
+  "validWholeBDTAmount": "Enter a valid whole BDT amount",
+  "adjustmentSaveError": "Could not save this adjustment."
 }
