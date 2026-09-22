@@ -9,6 +9,7 @@ import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_report_service.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/core/domain/year_month.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
 import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
@@ -129,10 +130,10 @@ class DashboardScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.error_outline),
-                  title: const Text('PF automation check failed'),
-                  subtitle: const Text('Retry to check for overdue PF months.'),
+                  title: Text(context.l10n.automationCheckFailed),
+                  subtitle: Text(context.l10n.automationRetryDescription),
                   trailing: IconButton(
-                    tooltip: 'Retry automation',
+                    tooltip: context.l10n.retryAutomation,
                     onPressed: () => ref.invalidate(pfAutomationRunProvider),
                     icon: const Icon(Icons.refresh),
                   ),
@@ -193,10 +194,8 @@ class DashboardScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.compare_arrows),
-                  title: const Text('Latest statement difference'),
-                  subtitle: const Text(
-                    'Official company statement compared with calculated balance',
-                  ),
+                  title: Text(context.l10n.latestStatementDifference),
+                  subtitle: Text(context.l10n.statementDifferenceDescription),
                   trailing: Text(
                     formatMoney(summary.latestClosingDifference!),
                     style: Theme.of(context).textTheme.titleMedium,
@@ -215,23 +214,36 @@ class DashboardScreen extends ConsumerWidget {
                           ? Icons.autorenew
                           : Icons.pause_circle_outline,
                     ),
-                    title: const Text('Auto Calculate PF'),
-                    trailing: Text(summary.autoCalculate ? 'ON' : 'OFF'),
+                    title: Text(context.l10n.autoCalculatePFTitle),
+                    trailing: Text(
+                      summary.autoCalculate
+                          ? context.l10n.on
+                          : context.l10n.off,
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.work_history_outlined),
-                    title: const Text('Employment dates'),
+                    title: Text(context.l10n.employmentDates),
                     subtitle: Text(
-                      'Joined ${DateFormat.yMMMd().format(summary.joiningDate)}\n'
-                      'PF started ${DateFormat.yMMMd().format(summary.pfStartDate)}',
+                      context.l10n.employmentDateSummary(
+                        _formatDate(context, summary.joiningDate),
+                        _formatDate(context, summary.pfStartDate),
+                      ),
                     ),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.receipt_long_outlined),
-                    title: const Text('Latest PF month'),
-                    subtitle: Text(summary.latestMonth ?? 'No records yet'),
+                    title: Text(context.l10n.latestPFMonth),
+                    subtitle: Text(
+                      summary.latestMonth == null
+                          ? context.l10n.noRecordsYet
+                          : _formatMonth(
+                              context,
+                              summary.latestMonth!.firstDay,
+                            ),
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.go('/records'),
                   ),
@@ -270,7 +282,7 @@ class _PendingAutomationActions extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Text(
-                'Pending PF actions',
+                context.l10n.pendingPFActions,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -290,21 +302,21 @@ class _PendingAutomationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final month = DateFormat.yMMMM().format(item.month.firstDay);
+    final month = _formatMonth(context, item.month.firstDay);
     final (message, action, route) = switch (item.status) {
       AutomationPeriodStatus.pendingSalaryInformation => (
-        'Salary information required',
-        'Add salary',
+        context.l10n.salaryInformationRequired,
+        context.l10n.addSalaryAction,
         '/salary-history/add',
       ),
       AutomationPeriodStatus.pendingRuleInformation => (
-        'PF rule information required',
-        'Add rule',
+        context.l10n.pfRuleInformationRequired,
+        context.l10n.addRuleAction,
         '/pf-rule-history/add',
       ),
       _ => (
-        '$month PF is ready for calculation',
-        'Calculate PF',
+        context.l10n.monthReadyForCalculation(month),
+        context.l10n.calculatePFAction,
         '/records/add?month=${item.month}',
       ),
     };
@@ -387,11 +399,15 @@ class _MaturityCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Maturity',
+                      context.l10n.maturity,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    Text(DateFormat.yMMMd().format(summary.maturityDate)),
-                    Text(summary.maturityDescription),
+                    Text(_formatDate(context, summary.maturityDate)),
+                    Text(
+                      summary.isMature
+                          ? context.l10n.mature
+                          : context.l10n.maturesInDays(summary.daysToMaturity),
+                    ),
                   ],
                 ),
               ),
@@ -461,6 +477,14 @@ class _SetupRequiredDashboard extends StatelessWidget {
   }
 }
 
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
+String _formatMonth(BuildContext context, DateTime date) =>
+    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
 class _DashboardSummary {
   const _DashboardSummary({
     required this.employee,
@@ -472,7 +496,8 @@ class _DashboardSummary {
     required this.afterMaturity,
     required this.monthCount,
     required this.maturityDate,
-    required this.maturityDescription,
+    required this.isMature,
+    required this.daysToMaturity,
     required this.autoCalculate,
     required this.latestMonth,
     required this.joiningDate,
@@ -549,13 +574,10 @@ class _DashboardSummary {
           adjustments,
       monthCount: records.length,
       maturityDate: maturityDate,
-      maturityDescription: status == MaturityStatus.mature
-          ? 'Mature'
-          : 'Matures in ${days < 0 ? 0 : days} days',
+      isMature: status == MaturityStatus.mature,
+      daysToMaturity: days < 0 ? 0 : days,
       autoCalculate: settings.autoCalculate,
-      latestMonth: latest == null
-          ? null
-          : DateFormat.yMMMM().format(latest.firstDay),
+      latestMonth: latest,
       joiningDate: setup.joiningDate,
       pfStartDate: setup.pfStartDate,
       latestClosingDifference: latestClosingDifference,
@@ -571,9 +593,10 @@ class _DashboardSummary {
   final Money afterMaturity;
   final int monthCount;
   final DateTime maturityDate;
-  final String maturityDescription;
+  final bool isMature;
+  final int daysToMaturity;
   final bool autoCalculate;
-  final String? latestMonth;
+  final YearMonth? latestMonth;
   final DateTime joiningDate;
   final DateTime pfStartDate;
   final Money? latestClosingDifference;
