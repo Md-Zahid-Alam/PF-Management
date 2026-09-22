@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class ExitEstimateView {
@@ -92,14 +93,14 @@ class _ExitEstimateScreenState extends ConsumerState<ExitEstimateScreen> {
   Widget build(BuildContext context) {
     final result = ref.watch(exitEstimateProvider(_exitDate));
     return Scaffold(
-      appBar: AppBar(title: const Text('Exit Estimate')),
+      appBar: AppBar(title: Text(context.l10n.exitEstimate)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: <Widget>[
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Expected exit date'),
-            subtitle: Text(DateFormat.yMMMd().format(_exitDate)),
+            title: Text(context.l10n.expectedExitDate),
+            subtitle: Text(_formatDate(context, _exitDate)),
             trailing: const Icon(Icons.calendar_today_outlined),
             onTap: _pickDate,
           ),
@@ -108,7 +109,7 @@ class _ExitEstimateScreenState extends ConsumerState<ExitEstimateScreen> {
             error: (error, stackTrace) => Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text('Estimate unavailable: $error'),
+                child: Text(context.l10n.estimateUnavailable('$error')),
               ),
             ),
             data: (view) => _EstimateCard(view),
@@ -145,38 +146,38 @@ class _EstimateCard extends StatelessWidget {
           children: <Widget>[
             Text(
               estimate.status == MaturityStatus.mature
-                  ? 'Mature at exit'
-                  : 'Before maturity',
+                  ? context.l10n.matureAtExit
+                  : context.l10n.beforeMaturity,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             Text(
-              'Maturity date: ${DateFormat.yMMMd().format(view.maturityDate)}',
+              context.l10n.maturityDateValue(
+                _formatDate(context, view.maturityDate),
+              ),
             ),
             const SizedBox(height: 12),
             _EstimateRow(
-              'Employee contribution',
+              context.l10n.employeeContribution,
               estimate.employeeContribution,
             ),
             _EstimateRow(
-              'Receivable employer contribution',
+              context.l10n.receivableEmployerContribution,
               estimate.employerContribution,
             ),
-            _EstimateRow('Known profit', estimate.knownProfit),
-            _EstimateRow('Adjustments', estimate.adjustments),
+            _EstimateRow(context.l10n.knownProfit, estimate.knownProfit),
+            _EstimateRow(context.l10n.adjustments, estimate.adjustments),
             _EstimateRow(
-              'Forfeited employer contribution',
+              context.l10n.forfeitedEmployerContribution,
               estimate.forfeitedEmployerContribution,
             ),
             const Divider(),
             _EstimateRow(
-              'Estimated receivable',
+              context.l10n.estimatedReceivable,
               estimate.estimatedReceivable,
               bold: true,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Profit is incomplete unless every official profit credit has been entered. This estimate does not predict unknown future profit.',
-            ),
+            Text(context.l10n.exitProfitWarning),
           ],
         ),
       ),
@@ -219,3 +220,7 @@ int _scale(int decimalPlaces) {
   }
   return value;
 }
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);

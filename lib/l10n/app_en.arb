@@ -439,5 +439,16 @@
   "notSpecified": "Not specified",
   "atLeastOneStatementAmount": "Enter at least one official statement amount.",
   "saveActualStatement": "Save actual statement",
-  "actualStatementSaveError": "Could not save actual statement."
+  "actualStatementSaveError": "Could not save actual statement.",
+  "expectedExitDate": "Expected exit date",
+  "estimateUnavailable": "Estimate unavailable: {error}",
+  "@estimateUnavailable": {"placeholders": {"error": {"type": "String"}}},
+  "matureAtExit": "Mature at exit",
+  "beforeMaturity": "Before maturity",
+  "maturityDateValue": "Maturity date: {date}",
+  "@maturityDateValue": {"placeholders": {"date": {"type": "String"}}},
+  "receivableEmployerContribution": "Receivable employer contribution",
+  "forfeitedEmployerContribution": "Forfeited employer contribution",
+  "estimatedReceivable": "Estimated receivable",
+  "exitProfitWarning": "Profit is incomplete unless every official profit credit has been entered. This estimate does not predict unknown future profit."
 }

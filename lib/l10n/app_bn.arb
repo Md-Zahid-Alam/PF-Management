@@ -439,5 +439,16 @@
   "notSpecified": "নির্ধারণ করা হয়নি",
   "atLeastOneStatementAmount": "Official statement-এর অন্তত একটি পরিমাণ লিখুন।",
   "saveActualStatement": "প্রকৃত স্টেটমেন্ট সংরক্ষণ করুন",
-  "actualStatementSaveError": "প্রকৃত স্টেটমেন্ট সংরক্ষণ করা যায়নি।"
+  "actualStatementSaveError": "প্রকৃত স্টেটমেন্ট সংরক্ষণ করা যায়নি।",
+  "expectedExitDate": "প্রত্যাশিত চাকরি ছাড়ার তারিখ",
+  "estimateUnavailable": "আনুমানিক হিসাব পাওয়া যাচ্ছে না: {error}",
+  "@estimateUnavailable": {"placeholders": {"error": {"type": "String"}}},
+  "matureAtExit": "চাকরি ছাড়ার সময় মেয়াদ পূর্ণ",
+  "beforeMaturity": "মেয়াদপূর্তির আগে",
+  "maturityDateValue": "মেয়াদপূর্তির তারিখ: {date}",
+  "@maturityDateValue": {"placeholders": {"date": {"type": "String"}}},
+  "receivableEmployerContribution": "প্রাপ্য প্রতিষ্ঠানের অবদান",
+  "forfeitedEmployerContribution": "বাজেয়াপ্ত প্রতিষ্ঠানের অবদান",
+  "estimatedReceivable": "আনুমানিক প্রাপ্য",
+  "exitProfitWarning": "প্রতিটি official profit credit যোগ না করা পর্যন্ত মুনাফার হিসাব অসম্পূর্ণ। এই হিসাব অজানা ভবিষ্যৎ মুনাফার পূর্বাভাস দেয় না।"
 }
