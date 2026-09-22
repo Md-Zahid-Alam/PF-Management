@@ -422,5 +422,14 @@
   "addActualStatement": "Add actual statement",
   "editActualStatement": "Edit actual statement",
   "differenceValue": "Difference {value}",
-  "@differenceValue": {"placeholders": {"value": {"type": "String"}}}
+  "@differenceValue": {"placeholders": {"value": {"type": "String"}}},
+  "statementYear": "Statement Year",
+  "statementYearDescription": "Choose when the organization’s PF statement year starts. Existing definitions remain effective-dated.",
+  "startMonth": "Start month",
+  "saveNewDefinition": "Save new definition",
+  "history": "History",
+  "historyLoadError": "Could not load history.",
+  "monthDay": "{month} {day}",
+  "@monthDay": {"placeholders": {"month": {"type": "String"}, "day": {"type": "int"}}},
+  "defaultStatementYear": "Default: July 1"
 }

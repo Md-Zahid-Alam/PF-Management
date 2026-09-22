@@ -6,6 +6,7 @@ import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 import 'package:pf_tracker/src/features/reports/presentation/pf_reports_screen.dart';
 
@@ -27,26 +28,22 @@ class _StatementYearScreenState extends ConsumerState<StatementYearScreen> {
   Widget build(BuildContext context) {
     final history = ref.watch(statementYearDefinitionsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Statement Year')),
+      appBar: AppBar(title: Text(context.l10n.statementYear)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const Text(
-              'Choose when the organization’s PF statement year starts. Existing definitions remain effective-dated.',
-            ),
+            Text(context.l10n.statementYearDescription),
             const SizedBox(height: 16),
             DropdownButtonFormField<int>(
               initialValue: _startMonth,
-              decoration: const InputDecoration(labelText: 'Start month'),
+              decoration: InputDecoration(labelText: context.l10n.startMonth),
               items: <DropdownMenuItem<int>>[
                 for (var month = 1; month <= 12; month++)
                   DropdownMenuItem(
                     value: month,
-                    child: Text(
-                      DateFormat.MMMM().format(DateTime(2000, month)),
-                    ),
+                    child: Text(_formatMonth(context, month)),
                   ),
               ],
               onChanged: (value) {
@@ -62,7 +59,7 @@ class _StatementYearScreenState extends ConsumerState<StatementYearScreen> {
             const SizedBox(height: 12),
             DropdownButtonFormField<int>(
               initialValue: _startDay,
-              decoration: const InputDecoration(labelText: 'Start day'),
+              decoration: InputDecoration(labelText: context.l10n.startDay),
               items: <DropdownMenuItem<int>>[
                 for (var day = 1; day <= _daysInMonth(_startMonth); day++)
                   DropdownMenuItem(value: day, child: Text('$day')),
@@ -73,33 +70,42 @@ class _StatementYearScreenState extends ConsumerState<StatementYearScreen> {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Effective from'),
-              subtitle: Text(DateFormat.yMMMd().format(_effectiveFrom)),
+              title: Text(context.l10n.effectiveFrom),
+              subtitle: Text(_formatDate(context, _effectiveFrom)),
               onTap: _pickDate,
             ),
             FilledButton(
               onPressed: _saving ? null : _save,
-              child: Text(_saving ? 'Saving…' : 'Save new definition'),
+              child: Text(
+                _saving ? context.l10n.saving : context.l10n.saveNewDefinition,
+              ),
             ),
             const SizedBox(height: 24),
-            Text('History', style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              context.l10n.history,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             history.when(
               loading: () => const LinearProgressIndicator(),
-              error: (error, stackTrace) =>
-                  const Text('Could not load history.'),
+              error: (error, stackTrace) => Text(context.l10n.historyLoadError),
               data: (items) => Column(
                 children: <Widget>[
                   for (final item in items.reversed)
                     ListTile(
                       title: Text(
-                        '${DateFormat.MMMM().format(DateTime(2000, item.configuration.startMonth))} ${item.configuration.startDay}',
+                        context.l10n.monthDay(
+                          _formatMonth(context, item.configuration.startMonth),
+                          item.configuration.startDay,
+                        ),
                       ),
                       subtitle: Text(
-                        'Effective ${DateFormat.yMMMd().format(item.effectiveFrom)}',
+                        context.l10n.effectiveOn(
+                          _formatDate(context, item.effectiveFrom),
+                        ),
                       ),
                     ),
                   if (items.isEmpty)
-                    const ListTile(title: Text('Default: July 1')),
+                    ListTile(title: Text(context.l10n.defaultStatementYear)),
                 ],
               ),
             ),
@@ -148,3 +154,11 @@ class _StatementYearScreenState extends ConsumerState<StatementYearScreen> {
 }
 
 int _daysInMonth(int month) => DateTime(2000, month + 1, 0).day;
+
+String _formatMonth(BuildContext context, int month) =>
+    DateFormat.MMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(DateTime(2000, month));
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);

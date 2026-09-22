@@ -422,5 +422,14 @@
   "addActualStatement": "প্রকৃত স্টেটমেন্ট যোগ করুন",
   "editActualStatement": "প্রকৃত স্টেটমেন্ট সম্পাদনা",
   "differenceValue": "পার্থক্য {value}",
-  "@differenceValue": {"placeholders": {"value": {"type": "String"}}}
+  "@differenceValue": {"placeholders": {"value": {"type": "String"}}},
+  "statementYear": "স্টেটমেন্ট বছর",
+  "statementYearDescription": "প্রতিষ্ঠানের PF স্টেটমেন্ট বছর কখন শুরু হবে তা বেছে নিন। আগের সংজ্ঞাগুলো কার্যকর তারিখ অনুযায়ী থাকবে।",
+  "startMonth": "শুরুর মাস",
+  "saveNewDefinition": "নতুন সংজ্ঞা সংরক্ষণ করুন",
+  "history": "ইতিহাস",
+  "historyLoadError": "ইতিহাস লোড করা যায়নি।",
+  "monthDay": "{month} {day}",
+  "@monthDay": {"placeholders": {"month": {"type": "String"}, "day": {"type": "int"}}},
+  "defaultStatementYear": "ডিফল্ট: ১ জুলাই"
 }
