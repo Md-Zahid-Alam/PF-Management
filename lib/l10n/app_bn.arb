@@ -372,5 +372,16 @@
   "adjustmentNotesOptional": "সমন্বয়ের নোট (ঐচ্ছিক)",
   "saveAdjustment": "সমন্বয় সংরক্ষণ করুন",
   "validWholeBDTAmount": "সঠিক পূর্ণ BDT পরিমাণ লিখুন",
-  "adjustmentSaveError": "এই সমন্বয় সংরক্ষণ করা যায়নি।"
+  "adjustmentSaveError": "এই সমন্বয় সংরক্ষণ করা যায়নি।",
+  "calculatePFMonth": "PF মাসের হিসাব",
+  "createMonthlyPFRecord": "মাসিক PF রেকর্ড তৈরি করুন",
+  "manualCalculationNotice": "নির্বাচিত মাসের কার্যকর বেতন ও PF নীতিমালা ব্যবহার করা হবে। বিদ্যমান মাস কখনও নকল করা হবে না।",
+  "pfSalaryMonth": "PF / বেতনের মাস",
+  "calculating": "হিসাব হচ্ছে…",
+  "calculateAndSave": "হিসাব করে সংরক্ষণ করুন",
+  "selectPFMonthHelp": "PF মাসের যেকোনো দিন বেছে নিন",
+  "salaryRequiredForMonth": "এই মাসের জন্য বেতনের তথ্য প্রয়োজন।",
+  "pfRuleRequiredForMonth": "এই মাসের জন্য PF নীতিমালার তথ্য প্রয়োজন।",
+  "completeSetupBeforeMonth": "মাসের হিসাব করার আগে PF সেটআপ সম্পন্ন করুন।",
+  "calculateMonthError": "এই PF মাসের হিসাব করা যায়নি।"
 }

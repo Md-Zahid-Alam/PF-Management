@@ -372,5 +372,16 @@
   "adjustmentNotesOptional": "Adjustment notes (optional)",
   "saveAdjustment": "Save adjustment",
   "validWholeBDTAmount": "Enter a valid whole BDT amount",
-  "adjustmentSaveError": "Could not save this adjustment."
+  "adjustmentSaveError": "Could not save this adjustment.",
+  "calculatePFMonth": "Calculate PF Month",
+  "createMonthlyPFRecord": "Create a monthly PF record",
+  "manualCalculationNotice": "The effective salary and PF rule for the selected month will be used. Existing months are never duplicated.",
+  "pfSalaryMonth": "PF / salary month",
+  "calculating": "Calculating…",
+  "calculateAndSave": "Calculate and save",
+  "selectPFMonthHelp": "Select any day in the PF month",
+  "salaryRequiredForMonth": "Salary information is required for this month.",
+  "pfRuleRequiredForMonth": "PF rule information is required for this month.",
+  "completeSetupBeforeMonth": "Complete PF setup before calculating a month.",
+  "calculateMonthError": "Could not calculate this PF month."
 }

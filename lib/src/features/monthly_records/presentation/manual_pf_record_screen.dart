@@ -9,6 +9,7 @@ import 'package:pf_tracker/src/core/domain/pf_automation_service.dart';
 import 'package:pf_tracker/src/core/domain/pf_calculation_engine.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 import 'package:pf_tracker/src/core/domain/year_month.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class ManualPFRecordScreen extends ConsumerStatefulWidget {
@@ -34,24 +35,26 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calculate PF Month')),
+      appBar: AppBar(title: Text(context.l10n.calculatePFMonth)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: <Widget>[
             Text(
-              'Create a monthly PF record',
+              context.l10n.createMonthlyPFRecord,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'The effective salary and PF rule for the selected month will be used. Existing months are never duplicated.',
-            ),
+            Text(context.l10n.manualCalculationNotice),
             const SizedBox(height: 20),
             Card(
               child: ListTile(
-                title: const Text('PF / salary month'),
-                subtitle: Text(DateFormat.yMMMM().format(_month.firstDay)),
+                title: Text(context.l10n.pfSalaryMonth),
+                subtitle: Text(
+                  DateFormat.yMMMM(
+                    Localizations.localeOf(context).toLanguageTag(),
+                  ).format(_month.firstDay),
+                ),
                 trailing: const Icon(Icons.calendar_month_outlined),
                 onTap: _pickMonth,
               ),
@@ -61,7 +64,11 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
               key: const Key('calculateMonthButton'),
               onPressed: _saving ? null : _calculate,
               icon: const Icon(Icons.calculate_outlined),
-              label: Text(_saving ? 'Calculating…' : 'Calculate and save'),
+              label: Text(
+                _saving
+                    ? context.l10n.calculating
+                    : context.l10n.calculateAndSave,
+              ),
             ),
           ],
         ),
@@ -75,7 +82,7 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
       initialDate: _month.firstDay,
       firstDate: DateTime(1950),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
-      helpText: 'Select any day in the PF month',
+      helpText: context.l10n.selectPFMonthHelp,
     );
     if (selected != null && mounted) {
       setState(() => _month = YearMonth.fromDate(selected));
@@ -127,18 +134,18 @@ class _ManualPFRecordScreenState extends ConsumerState<ManualPFRecordScreen> {
     }
   }
 
-  static String _messageFor(Object error) {
+  String _messageFor(Object error) {
     final message = error.toString();
     if (message.contains('Salary information')) {
-      return 'Salary information is required for this month.';
+      return context.l10n.salaryRequiredForMonth;
     }
     if (message.contains('PF rule information')) {
-      return 'PF rule information is required for this month.';
+      return context.l10n.pfRuleRequiredForMonth;
     }
     if (message.contains('Complete PF setup')) {
-      return 'Complete PF setup before calculating a month.';
+      return context.l10n.completeSetupBeforeMonth;
     }
-    return 'Could not calculate this PF month.';
+    return context.l10n.calculateMonthError;
   }
 }
 
