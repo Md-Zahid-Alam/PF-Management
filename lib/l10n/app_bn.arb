@@ -405,5 +405,22 @@
   "employer": "প্রতিষ্ঠান",
   "adjustments": "সমন্বয়",
   "dateRange": "তারিখের সীমা",
-  "clearDateRange": "তারিখের সীমা মুছুন"
+  "clearDateRange": "তারিখের সীমা মুছুন",
+  "pfMonthsCount": "{count}টি PF মাস",
+  "@pfMonthsCount": {"placeholders": {"count": {"type": "int"}}},
+  "totalKnownProfitTitle": "মোট জানা মুনাফা",
+  "noReportRecords": "নির্বাচিত filter-এর সঙ্গে কোনো রেকর্ড মেলেনি।",
+  "statementTitle": "স্টেটমেন্ট {startYear}–{endYear}",
+  "@statementTitle": {"placeholders": {"startYear": {"type": "int"}, "endYear": {"type": "String"}}},
+  "statementPeriodSummary": "{startDate} – {endDate} · {count} মাস",
+  "@statementPeriodSummary": {"placeholders": {"startDate": {"type": "String"}, "endDate": {"type": "String"}, "count": {"type": "int"}}},
+  "openingBalance": "প্রারম্ভিক স্থিতি",
+  "calculatedClosingBalance": "হিসাব করা সমাপনী স্থিতি",
+  "noOfficialStatement": "তুলনার জন্য কোনো official statement রেকর্ড করা নেই।",
+  "profit": "মুনাফা",
+  "closingBalance": "সমাপনী স্থিতি",
+  "addActualStatement": "প্রকৃত স্টেটমেন্ট যোগ করুন",
+  "editActualStatement": "প্রকৃত স্টেটমেন্ট সম্পাদনা",
+  "differenceValue": "পার্থক্য {value}",
+  "@differenceValue": {"placeholders": {"value": {"type": "String"}}}
 }

@@ -345,42 +345,42 @@ class _ReportContent extends StatelessWidget {
   }
 
   List<Widget> _body(BuildContext context) => switch (mode) {
-    _ReportMode.statementYear => _statementWidgets(),
-    _ReportMode.monthly => _monthlyWidgets(),
-    _ReportMode.calendarYear => _yearlyWidgets(),
-    _ReportMode.salary => _salaryWidgets(),
-    _ReportMode.profit => _profitWidgets(),
+    _ReportMode.statementYear => _statementWidgets(context),
+    _ReportMode.monthly => _monthlyWidgets(context),
+    _ReportMode.calendarYear => _yearlyWidgets(context),
+    _ReportMode.salary => _salaryWidgets(context),
+    _ReportMode.profit => _profitWidgets(context),
   };
 
-  List<Widget> _statementWidgets() {
+  List<Widget> _statementWidgets(BuildContext context) {
     final filtered = reports.where((item) {
       return (year == null || item.summary.year.startYear == year) &&
           _inRange(item.summary.periodStart);
     }).toList();
-    return _withSpacing(<Widget>[
+    return _withSpacing(context, <Widget>[
       for (final item in filtered) _StatementCard(item),
     ]);
   }
 
-  List<Widget> _monthlyWidgets() {
+  List<Widget> _monthlyWidgets(BuildContext context) {
     final filtered = records.where((item) {
       return (year == null || item.month.year == year) &&
           (status == null || item.status == status) &&
           _inRange(item.month.firstDay);
     }).toList()..sort((a, b) => b.month.compareTo(a.month));
-    return _withSpacing(<Widget>[
+    return _withSpacing(context, <Widget>[
       for (final item in filtered)
         Card(
           child: ListTile(
-            title: Text(DateFormat.yMMMM().format(item.month.firstDay)),
-            subtitle: Text(formatPFStatus(item.status)),
+            title: Text(_formatMonth(context, item.month.firstDay)),
+            subtitle: Text(_localizedStatus(context, item.status)),
             trailing: Text(_formatMoney(_amountFor(item))),
           ),
         ),
     ]);
   }
 
-  List<Widget> _yearlyWidgets() {
+  List<Widget> _yearlyWidgets(BuildContext context) {
     final grouped = <int, List<StoredMonthlyPFRecord>>{};
     for (final item in records) {
       if ((year == null || item.month.year == year) &&
@@ -389,37 +389,41 @@ class _ReportContent extends StatelessWidget {
       }
     }
     final years = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
-    return _withSpacing(<Widget>[
+    return _withSpacing(context, <Widget>[
       for (final itemYear in years)
         Card(
           child: ListTile(
             title: Text('$itemYear'),
-            subtitle: Text('${grouped[itemYear]!.length} PF months'),
+            subtitle: Text(
+              context.l10n.pfMonthsCount(grouped[itemYear]!.length),
+            ),
             trailing: Text(_formatMoney(_sumRecords(grouped[itemYear]!))),
           ),
         ),
     ]);
   }
 
-  List<Widget> _salaryWidgets() {
+  List<Widget> _salaryWidgets(BuildContext context) {
     final filtered = salaries.where((item) {
       return (year == null || item.effectiveFrom.year == year) &&
           _inRange(item.effectiveFrom);
     }).toList()..sort((a, b) => b.effectiveFrom.compareTo(a.effectiveFrom));
-    return _withSpacing(<Widget>[
+    return _withSpacing(context, <Widget>[
       for (final item in filtered)
         Card(
           child: ListTile(
             title: Text(_formatMoney(item.grossSalary)),
             subtitle: Text(
-              'Effective ${DateFormat.yMMMd().format(item.effectiveFrom)}',
+              context.l10n.effectiveOn(
+                _formatDate(context, item.effectiveFrom),
+              ),
             ),
           ),
         ),
     ]);
   }
 
-  List<Widget> _profitWidgets() {
+  List<Widget> _profitWidgets(BuildContext context) {
     final filtered = profits.where((item) {
       return (year == null || item.creditedDate.year == year) &&
           _inRange(item.creditedDate);
@@ -429,7 +433,7 @@ class _ReportContent extends StatelessWidget {
       widgets.add(
         Card(
           child: ListTile(
-            title: const Text('Total known profit'),
+            title: Text(context.l10n.totalKnownProfitTitle),
             trailing: Text(_formatMoney(_sumProfits(filtered))),
           ),
         ),
@@ -441,12 +445,12 @@ class _ReportContent extends StatelessWidget {
           child: ListTile(
             title: Text(_formatMoney(item.amount)),
             subtitle: Text(
-              'Credited ${DateFormat.yMMMd().format(item.creditedDate)}',
+              context.l10n.creditedOn(_formatDate(context, item.creditedDate)),
             ),
           ),
         ),
     ]);
-    return _withSpacing(widgets);
+    return _withSpacing(context, widgets);
   }
 
   bool _inRange(DateTime date) {
@@ -487,12 +491,12 @@ class _ReportContent extends StatelessWidget {
     return total;
   }
 
-  List<Widget> _withSpacing(List<Widget> widgets) {
+  List<Widget> _withSpacing(BuildContext context, List<Widget> widgets) {
     if (widgets.isEmpty) {
-      return const <Widget>[
+      return <Widget>[
         Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('No records match the selected filters.'),
+          padding: const EdgeInsets.all(24),
+          child: Text(context.l10n.noReportRecords),
         ),
       ];
     }
@@ -518,67 +522,78 @@ class _StatementCard extends StatelessWidget {
       child: ExpansionTile(
         leading: const CircleAvatar(child: Icon(Icons.assessment_outlined)),
         title: Text(
-          'Statement ${summary.year.startYear}–${summary.year.endYear.toString().substring(2)}',
+          context.l10n.statementTitle(
+            summary.year.startYear,
+            summary.year.endYear.toString().substring(2),
+          ),
         ),
         subtitle: Text(
-          '${DateFormat.yMMMd().format(summary.periodStart)} – '
-          '${DateFormat.yMMMd().format(summary.periodEnd)} · '
-          '${summary.monthCount} months',
+          context.l10n.statementPeriodSummary(
+            _formatDate(context, summary.periodStart),
+            _formatDate(context, summary.periodEnd),
+            summary.monthCount,
+          ),
         ),
         childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         children: <Widget>[
-          _AmountRow('Opening balance', snapshot.openingBalance!),
-          _AmountRow('Employee contribution', snapshot.employeeContribution!),
-          _AmountRow('Employer contribution', snapshot.employerContribution!),
+          _AmountRow(context.l10n.openingBalance, snapshot.openingBalance!),
+          _AmountRow(
+            context.l10n.employeeContribution,
+            snapshot.employeeContribution!,
+          ),
+          _AmountRow(
+            context.l10n.employerContribution,
+            snapshot.employerContribution!,
+          ),
           if (snapshot.profit == null)
-            const ListTile(
+            ListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: Text('Known profit'),
-              trailing: Text('Not entered'),
+              title: Text(context.l10n.knownProfit),
+              trailing: Text(context.l10n.notEntered),
             )
           else
-            _AmountRow('Known profit', snapshot.profit!),
-          _AmountRow('Adjustments', snapshot.adjustments!),
+            _AmountRow(context.l10n.knownProfit, snapshot.profit!),
+          _AmountRow(context.l10n.adjustments, snapshot.adjustments!),
           const Divider(),
           _AmountRow(
-            'Calculated closing balance',
+            context.l10n.calculatedClosingBalance,
             snapshot.closingBalance!,
             bold: true,
           ),
           const SizedBox(height: 12),
           if (report.comparison == null)
-            const Text('No official statement recorded for comparison.')
+            Text(context.l10n.noOfficialStatement)
           else
             Column(
               children: <Widget>[
                 _ComparisonRow(
-                  label: 'Opening balance',
+                  label: context.l10n.openingBalance,
                   actual: report.actual!.snapshot.openingBalance,
                   difference: report.comparison!.openingDifference,
                 ),
                 _ComparisonRow(
-                  label: 'Employee contribution',
+                  label: context.l10n.employeeContribution,
                   actual: report.actual!.snapshot.employeeContribution,
                   difference: report.comparison!.employeeDifference,
                 ),
                 _ComparisonRow(
-                  label: 'Employer contribution',
+                  label: context.l10n.employerContribution,
                   actual: report.actual!.snapshot.employerContribution,
                   difference: report.comparison!.employerDifference,
                 ),
                 _ComparisonRow(
-                  label: 'Profit',
+                  label: context.l10n.profit,
                   actual: report.actual!.snapshot.profit,
                   difference: report.comparison!.profitDifference,
                 ),
                 _ComparisonRow(
-                  label: 'Adjustments',
+                  label: context.l10n.adjustments,
                   actual: report.actual!.snapshot.adjustments,
                   difference: report.comparison!.adjustmentDifference,
                 ),
                 _ComparisonRow(
-                  label: 'Closing balance',
+                  label: context.l10n.closingBalance,
                   actual: report.actual!.snapshot.closingBalance,
                   difference: report.comparison!.closingDifference,
                 ),
@@ -593,8 +608,8 @@ class _StatementCard extends StatelessWidget {
               icon: const Icon(Icons.fact_check_outlined),
               label: Text(
                 report.actual == null
-                    ? 'Add actual statement'
-                    : 'Edit actual statement',
+                    ? context.l10n.addActualStatement
+                    : context.l10n.editActualStatement,
               ),
             ),
           ),
@@ -625,7 +640,9 @@ class _ComparisonRow extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(label),
       subtitle: Text(
-        'Difference ${difference == null ? '—' : _formatMoney(difference!)}',
+        context.l10n.differenceValue(
+          difference == null ? '—' : _formatMoney(difference!),
+        ),
       ),
       trailing: Text(_formatMoney(actual!)),
     );
@@ -663,6 +680,23 @@ String _formatMoney(Money money) => NumberFormat.currency(
 String _formatShortDate(BuildContext context, DateTime date) =>
     DateFormat.yMd(Localizations.localeOf(context).toLanguageTag())
         .format(date);
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
+String _formatMonth(BuildContext context, DateTime date) =>
+    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
+String _localizedStatus(BuildContext context, String status) =>
+    switch (status) {
+      'automaticallyCalculated' => context.l10n.automaticallyCalculated,
+      'manuallyCalculated' => context.l10n.manuallyCalculated,
+      'manuallyAdjusted' => context.l10n.manuallyAdjusted,
+      'confirmed' => context.l10n.confirmed,
+      _ => formatPFStatus(status),
+    };
 
 int _scale(int decimalPlaces) {
   var value = 1;

@@ -405,5 +405,22 @@
   "employer": "Employer",
   "adjustments": "Adjustments",
   "dateRange": "Date range",
-  "clearDateRange": "Clear date range"
+  "clearDateRange": "Clear date range",
+  "pfMonthsCount": "{count} PF months",
+  "@pfMonthsCount": {"placeholders": {"count": {"type": "int"}}},
+  "totalKnownProfitTitle": "Total known profit",
+  "noReportRecords": "No records match the selected filters.",
+  "statementTitle": "Statement {startYear}–{endYear}",
+  "@statementTitle": {"placeholders": {"startYear": {"type": "int"}, "endYear": {"type": "String"}}},
+  "statementPeriodSummary": "{startDate} – {endDate} · {count} months",
+  "@statementPeriodSummary": {"placeholders": {"startDate": {"type": "String"}, "endDate": {"type": "String"}, "count": {"type": "int"}}},
+  "openingBalance": "Opening balance",
+  "calculatedClosingBalance": "Calculated closing balance",
+  "noOfficialStatement": "No official statement recorded for comparison.",
+  "profit": "Profit",
+  "closingBalance": "Closing balance",
+  "addActualStatement": "Add actual statement",
+  "editActualStatement": "Edit actual statement",
+  "differenceValue": "Difference {value}",
+  "@differenceValue": {"placeholders": {"value": {"type": "String"}}}
 }
