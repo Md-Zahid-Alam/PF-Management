@@ -450,5 +450,21 @@
   "receivableEmployerContribution": "প্রাপ্য প্রতিষ্ঠানের অবদান",
   "forfeitedEmployerContribution": "বাজেয়াপ্ত প্রতিষ্ঠানের অবদান",
   "estimatedReceivable": "আনুমানিক প্রাপ্য",
-  "exitProfitWarning": "প্রতিটি official profit credit যোগ না করা পর্যন্ত মুনাফার হিসাব অসম্পূর্ণ। এই হিসাব অজানা ভবিষ্যৎ মুনাফার পূর্বাভাস দেয় না।"
+  "exitProfitWarning": "প্রতিটি official profit credit যোগ না করা পর্যন্ত মুনাফার হিসাব অসম্পূর্ণ। এই হিসাব অজানা ভবিষ্যৎ মুনাফার পূর্বাভাস দেয় না।",
+  "pfDashboard": "PF ড্যাশবোর্ড",
+  "retryDashboard": "ড্যাশবোর্ড আবার লোড করুন",
+  "dashboardCalculationError": "ড্যাশবোর্ডের হিসাবে সমস্যা আছে। PF সেটআপ ও কার্যকর তারিখভিত্তিক ইতিহাস পরীক্ষা করুন।",
+  "openSettings": "সেটিংস খুলুন",
+  "helloEmployee": "স্বাগতম, {name}",
+  "@helloEmployee": {"placeholders": {"name": {"type": "String"}}},
+  "myContribution": "আমার অবদান",
+  "knownProfitDashboard": "জানা মুনাফা",
+  "pfMonths": "PF মাস",
+  "currentCalculatedBalance": "বর্তমান হিসাব করা PF স্থিতি",
+  "leavingTodayEstimate": "আজ চাকরি ছাড়লে আনুমানিক প্রাপ্য: {amount}",
+  "@leavingTodayEstimate": {"placeholders": {"amount": {"type": "String"}}},
+  "includesRecordedProfit": "রেকর্ড করা {amount} মুনাফা অন্তর্ভুক্ত।",
+  "@includesRecordedProfit": {"placeholders": {"amount": {"type": "String"}}},
+  "profitNotEntered": "মুনাফা যোগ করা হয়নি।",
+  "completePFSetup": "PF সেটআপ সম্পন্ন করুন"
 }

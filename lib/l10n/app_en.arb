@@ -450,5 +450,21 @@
   "receivableEmployerContribution": "Receivable employer contribution",
   "forfeitedEmployerContribution": "Forfeited employer contribution",
   "estimatedReceivable": "Estimated receivable",
-  "exitProfitWarning": "Profit is incomplete unless every official profit credit has been entered. This estimate does not predict unknown future profit."
+  "exitProfitWarning": "Profit is incomplete unless every official profit credit has been entered. This estimate does not predict unknown future profit.",
+  "pfDashboard": "PF Dashboard",
+  "retryDashboard": "Retry dashboard",
+  "dashboardCalculationError": "Dashboard calculation needs attention. Check your PF setup and effective-dated histories.",
+  "openSettings": "Open settings",
+  "helloEmployee": "Hello, {name}",
+  "@helloEmployee": {"placeholders": {"name": {"type": "String"}}},
+  "myContribution": "My contribution",
+  "knownProfitDashboard": "Known profit",
+  "pfMonths": "PF months",
+  "currentCalculatedBalance": "CURRENT CALCULATED PF BALANCE",
+  "leavingTodayEstimate": "Estimated if leaving today: {amount}",
+  "@leavingTodayEstimate": {"placeholders": {"amount": {"type": "String"}}},
+  "includesRecordedProfit": "Includes {amount} recorded profit.",
+  "@includesRecordedProfit": {"placeholders": {"amount": {"type": "String"}}},
+  "profitNotEntered": "Profit has not been entered.",
+  "completePFSetup": "Complete PF setup"
 }

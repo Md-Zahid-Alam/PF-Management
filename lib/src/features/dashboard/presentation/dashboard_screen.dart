@@ -10,6 +10,7 @@ import 'package:pf_tracker/src/core/domain/pf_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_report_service.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/presentation/formatters.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -42,7 +43,7 @@ class DashboardScreen extends ConsumerWidget {
         statementDefinitions.hasError ||
         rules.hasError) {
       return Scaffold(
-        appBar: AppBar(title: const Text('PF Dashboard')),
+        appBar: AppBar(title: Text(context.l10n.pfDashboard)),
         body: Center(
           child: FilledButton.icon(
             onPressed: () {
@@ -55,7 +56,7 @@ class DashboardScreen extends ConsumerWidget {
               ref.invalidate(pfRuleHistoryProvider);
             },
             icon: const Icon(Icons.refresh),
-            label: const Text('Retry dashboard'),
+            label: Text(context.l10n.retryDashboard),
           ),
         ),
       );
@@ -78,7 +79,7 @@ class DashboardScreen extends ConsumerWidget {
       );
     } on Object {
       return Scaffold(
-        appBar: AppBar(title: const Text('PF Dashboard')),
+        appBar: AppBar(title: Text(context.l10n.pfDashboard)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -87,14 +88,14 @@ class DashboardScreen extends ConsumerWidget {
               children: <Widget>[
                 const Icon(Icons.error_outline, size: 48),
                 const SizedBox(height: 12),
-                const Text(
-                  'Dashboard calculation needs attention. Check your PF setup and effective-dated histories.',
+                Text(
+                  context.l10n.dashboardCalculationError,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
                   onPressed: () => context.go('/settings'),
-                  child: const Text('Open settings'),
+                  child: Text(context.l10n.openSettings),
                 ),
               ],
             ),
@@ -103,7 +104,7 @@ class DashboardScreen extends ConsumerWidget {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Dashboard')),
+      appBar: AppBar(title: Text(context.l10n.pfDashboard)),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(initialPFSetupProvider);
@@ -120,7 +121,7 @@ class DashboardScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           children: <Widget>[
             Text(
-              'Hello, ${setupValue.employeeName}',
+              context.l10n.helloEmployee(setupValue.employeeName),
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             if (automation.hasError) ...<Widget>[
@@ -148,7 +149,7 @@ class DashboardScreen extends ConsumerWidget {
               children: <Widget>[
                 Expanded(
                   child: _SummaryCard(
-                    label: 'My contribution',
+                    label: context.l10n.myContribution,
                     value: formatMoney(summary.employee),
                     icon: Icons.person_outline,
                   ),
@@ -156,7 +157,7 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _SummaryCard(
-                    label: 'Company contribution',
+                    label: context.l10n.companyContribution,
                     value: formatMoney(summary.employer),
                     icon: Icons.business_outlined,
                   ),
@@ -168,17 +169,17 @@ class DashboardScreen extends ConsumerWidget {
               children: <Widget>[
                 Expanded(
                   child: _SummaryCard(
-                    label: 'Known profit',
+                    label: context.l10n.knownProfitDashboard,
                     value: summary.profitEntered
                         ? formatMoney(summary.profit)
-                        : 'Not entered',
+                        : context.l10n.notEntered,
                     icon: Icons.trending_up,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _SummaryCard(
-                    label: 'PF months',
+                    label: context.l10n.pfMonths,
                     value: '${summary.monthCount}',
                     icon: Icons.calendar_month_outlined,
                   ),
@@ -335,7 +336,7 @@ class _BalanceCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'CURRENT CALCULATED PF BALANCE',
+              context.l10n.currentCalculatedBalance,
               style: Theme.of(context).textTheme.labelLarge
                   ?.copyWith(color: colors.onPrimaryContainer),
             ),
@@ -346,12 +347,16 @@ class _BalanceCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Estimated if leaving today: ${formatMoney(summary.receivableToday)}',
+              context.l10n.leavingTodayEstimate(
+                formatMoney(summary.receivableToday),
+              ),
             ),
             Text(
               summary.profitEntered
-                  ? 'Includes ${formatMoney(summary.profit)} recorded profit.'
-                  : 'Profit has not been entered.',
+                  ? context.l10n.includesRecordedProfit(
+                      formatMoney(summary.profit),
+                    )
+                  : context.l10n.profitNotEntered,
             ),
           ],
         ),
@@ -445,11 +450,11 @@ class _SetupRequiredDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('PF Dashboard')),
+      appBar: AppBar(title: Text(context.l10n.pfDashboard)),
       body: Center(
         child: FilledButton(
           onPressed: () => context.go('/setup'),
-          child: const Text('Complete PF setup'),
+          child: Text(context.l10n.completePFSetup),
         ),
       ),
     );
