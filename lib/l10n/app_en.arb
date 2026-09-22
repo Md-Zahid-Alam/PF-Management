@@ -431,5 +431,13 @@
   "historyLoadError": "Could not load history.",
   "monthDay": "{month} {day}",
   "@monthDay": {"placeholders": {"month": {"type": "String"}, "day": {"type": "int"}}},
-  "defaultStatementYear": "Default: July 1"
+  "defaultStatementYear": "Default: July 1",
+  "actualStatementTitle": "Actual Statement {startYear}–{endYear}",
+  "@actualStatementTitle": {"placeholders": {"startYear": {"type": "int"}, "endYear": {"type": "String"}}},
+  "actualStatementInstructions": "Enter values exactly as shown on the official statement. Blank fields remain unknown and do not produce a difference.",
+  "statementDateOptional": "Statement date (optional)",
+  "notSpecified": "Not specified",
+  "atLeastOneStatementAmount": "Enter at least one official statement amount.",
+  "saveActualStatement": "Save actual statement",
+  "actualStatementSaveError": "Could not save actual statement."
 }

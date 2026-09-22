@@ -431,5 +431,13 @@
   "historyLoadError": "ইতিহাস লোড করা যায়নি।",
   "monthDay": "{month} {day}",
   "@monthDay": {"placeholders": {"month": {"type": "String"}, "day": {"type": "int"}}},
-  "defaultStatementYear": "ডিফল্ট: ১ জুলাই"
+  "defaultStatementYear": "ডিফল্ট: ১ জুলাই",
+  "actualStatementTitle": "প্রকৃত স্টেটমেন্ট {startYear}–{endYear}",
+  "@actualStatementTitle": {"placeholders": {"startYear": {"type": "int"}, "endYear": {"type": "String"}}},
+  "actualStatementInstructions": "Official statement-এ যেভাবে আছে ঠিক সেভাবে পরিমাণ লিখুন। খালি field অজানা থাকবে এবং কোনো পার্থক্য তৈরি করবে না।",
+  "statementDateOptional": "স্টেটমেন্টের তারিখ (ঐচ্ছিক)",
+  "notSpecified": "নির্ধারণ করা হয়নি",
+  "atLeastOneStatementAmount": "Official statement-এর অন্তত একটি পরিমাণ লিখুন।",
+  "saveActualStatement": "প্রকৃত স্টেটমেন্ট সংরক্ষণ করুন",
+  "actualStatementSaveError": "প্রকৃত স্টেটমেন্ট সংরক্ষণ করা যায়নি।"
 }

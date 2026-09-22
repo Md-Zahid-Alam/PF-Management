@@ -7,6 +7,7 @@ import 'package:pf_tracker/src/core/database/drift_repositories.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
 import 'package:pf_tracker/src/core/domain/pf_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 import 'package:pf_tracker/src/features/reports/presentation/pf_reports_screen.dart';
 
@@ -67,7 +68,10 @@ class _ActualStatementFormScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Actual Statement ${widget.startYear}–${(widget.startYear + 1).toString().substring(2)}',
+          context.l10n.actualStatementTitle(
+            widget.startYear,
+            (widget.startYear + 1).toString().substring(2),
+          ),
         ),
       ),
       body: SafeArea(
@@ -78,43 +82,43 @@ class _ActualStatementFormScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                const Text(
-                  'Enter values exactly as shown on the official statement. Blank fields remain unknown and do not produce a difference.',
-                ),
+                Text(context.l10n.actualStatementInstructions),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Statement date (optional)'),
+                  title: Text(context.l10n.statementDateOptional),
                   subtitle: Text(
                     _statementDate == null
-                        ? 'Not specified'
-                        : DateFormat.yMMMd().format(_statementDate!),
+                        ? context.l10n.notSpecified
+                        : DateFormat.yMMMd(
+                            Localizations.localeOf(context).toLanguageTag(),
+                          ).format(_statementDate!),
                   ),
                   trailing: const Icon(Icons.calendar_today_outlined),
                   onTap: _pickDate,
                 ),
-                _moneyField(_opening, 'Opening balance'),
-                _moneyField(_employee, 'Employee contribution'),
-                _moneyField(_employer, 'Employer contribution'),
-                _moneyField(_profit, 'Profit'),
-                _moneyField(_adjustments, 'Adjustments'),
+                _moneyField(_opening, context.l10n.openingBalance),
+                _moneyField(_employee, context.l10n.employeeContribution),
+                _moneyField(_employer, context.l10n.employerContribution),
+                _moneyField(_profit, context.l10n.profit),
+                _moneyField(_adjustments, context.l10n.adjustments),
                 _moneyField(
                   _closing,
-                  'Closing balance',
+                  context.l10n.closingBalance,
                   key: const Key('actualClosingBalanceField'),
                 ),
                 if (_emptyStatement)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      'Enter at least one official statement amount.',
-                      style: TextStyle(color: Colors.red),
+                      context.l10n.atLeastOneStatementAmount,
+                      style: const TextStyle(color: Colors.red),
                     ),
                   ),
                 TextFormField(
                   controller: _notes,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes (optional)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.notesOptional,
                   ),
                   minLines: 2,
                   maxLines: 4,
@@ -123,7 +127,11 @@ class _ActualStatementFormScreenState
                 FilledButton(
                   key: const Key('saveActualStatementButton'),
                   onPressed: _saving ? null : _save,
-                  child: Text(_saving ? 'Saving…' : 'Save actual statement'),
+                  child: Text(
+                    _saving
+                        ? context.l10n.saving
+                        : context.l10n.saveActualStatement,
+                  ),
                 ),
               ],
             ),
@@ -159,7 +167,7 @@ class _ActualStatementFormScreenState
             _money(value);
             return null;
           } on Object {
-            return 'Enter a valid whole BDT amount';
+            return context.l10n.validWholeBDTAmount;
           }
         },
       ),
@@ -242,7 +250,7 @@ class _ActualStatementFormScreenState
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save actual statement.')),
+          SnackBar(content: Text(context.l10n.actualStatementSaveError)),
         );
       }
     }
