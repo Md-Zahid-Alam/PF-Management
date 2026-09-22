@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/money.dart';
 import 'package:pf_tracker/src/core/domain/persistence_models.dart';
+import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class MonthlyRecordsScreen extends ConsumerStatefulWidget {
@@ -31,10 +32,10 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
     final records = ref.watch(monthlyPFRecordsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monthly PF Records'),
+        title: Text(context.l10n.monthlyPFRecords),
         actions: <Widget>[
           IconButton(
-            tooltip: 'Salary history',
+            tooltip: context.l10n.salaryHistory,
             onPressed: () => context.push('/salary-history'),
             icon: const Icon(Icons.payments_outlined),
           ),
@@ -46,7 +47,7 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
           child: FilledButton.icon(
             onPressed: () => ref.invalidate(monthlyPFRecordsProvider),
             icon: const Icon(Icons.refresh),
-            label: const Text('Retry records'),
+            label: Text(context.l10n.retryRecords),
           ),
         ),
         data: (items) {
@@ -60,9 +61,9 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: TextField(
                   controller: _search,
-                  decoration: const InputDecoration(
-                    labelText: 'Search month or status',
-                    prefixIcon: Icon(Icons.search),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.searchMonthOrStatus,
+                    prefixIcon: const Icon(Icons.search),
                   ),
                   onChanged: (value) => setState(() {}),
                 ),
@@ -74,11 +75,13 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
                     Expanded(
                       child: DropdownButtonFormField<int?>(
                         initialValue: _year,
-                        decoration: const InputDecoration(labelText: 'Year'),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.year,
+                        ),
                         items: <DropdownMenuItem<int?>>[
-                          const DropdownMenuItem(
+                          DropdownMenuItem(
                             value: null,
-                            child: Text('All'),
+                            child: Text(context.l10n.all),
                           ),
                           for (final year in years)
                             DropdownMenuItem(value: year, child: Text('$year')),
@@ -90,24 +93,29 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String?>(
                         initialValue: _status,
-                        decoration: const InputDecoration(labelText: 'Status'),
-                        items: const <DropdownMenuItem<String?>>[
-                          DropdownMenuItem(value: null, child: Text('All')),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.status,
+                        ),
+                        items: <DropdownMenuItem<String?>>[
+                          DropdownMenuItem(
+                            value: null,
+                            child: Text(context.l10n.all),
+                          ),
                           DropdownMenuItem(
                             value: 'automaticallyCalculated',
-                            child: Text('Automatic'),
+                            child: Text(context.l10n.automatic),
                           ),
                           DropdownMenuItem(
                             value: 'manuallyCalculated',
-                            child: Text('Manual'),
+                            child: Text(context.l10n.manual),
                           ),
                           DropdownMenuItem(
                             value: 'manuallyAdjusted',
-                            child: Text('Adjusted'),
+                            child: Text(context.l10n.adjusted),
                           ),
                           DropdownMenuItem(
                             value: 'confirmed',
-                            child: Text('Confirmed'),
+                            child: Text(context.l10n.confirmed),
                           ),
                         ],
                         onChanged: (value) => setState(() => _status = value),
@@ -140,7 +148,7 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/records/add'),
         icon: const Icon(Icons.calculate_outlined),
-        label: const Text('Calculate month'),
+        label: Text(context.l10n.calculateMonth),
       ),
     );
   }
@@ -162,18 +170,20 @@ class _MonthlyRecordsScreenState extends ConsumerState<MonthlyRecordsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete PF record?'),
+        title: Text(context.l10n.deletePFRecordTitle),
         content: Text(
-          'Delete ${DateFormat.yMMMM().format(record.month.firstDay)}? This cannot be undone.',
+          context.l10n.deletePFRecordMessage(
+            _formatMonth(context, record.month.firstDay),
+          ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -212,13 +222,13 @@ class _RecordCard extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      DateFormat.yMMMM().format(record.month.firstDay),
+                      _formatMonth(context, record.month.firstDay),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
-                  Chip(label: Text(_statusLabel(record.status))),
+                  Chip(label: Text(_statusLabel(context, record.status))),
                   IconButton(
-                    tooltip: 'Delete record',
+                    tooltip: context.l10n.deleteRecord,
                     onPressed: onDelete,
                     icon: const Icon(Icons.delete_outline),
                   ),
@@ -226,22 +236,24 @@ class _RecordCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               _AmountLine(
-                label: 'Employee',
+                label: context.l10n.employee,
                 amount: record.employeeContribution,
               ),
               _AmountLine(
-                label: 'Company',
+                label: context.l10n.company,
                 amount: record.employerContribution,
               ),
               const Divider(),
               _AmountLine(
-                label: 'Total contribution',
+                label: context.l10n.totalContribution,
                 amount: total,
                 bold: true,
               ),
               if (record.salaryCreditedDate != null)
                 Text(
-                  'Salary credited ${DateFormat.yMMMd().format(record.salaryCreditedDate!)}',
+                  context.l10n.salaryCreditedOn(
+                    _formatDate(context, record.salaryCreditedDate!),
+                  ),
                 ),
             ],
           ),
@@ -282,11 +294,11 @@ class _EmptyRecordsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Text(
-          'No matching PF records. Calculate a month or adjust the filters.',
+          context.l10n.noMatchingPFRecords,
           textAlign: TextAlign.center,
         ),
       ),
@@ -294,13 +306,21 @@ class _EmptyRecordsState extends StatelessWidget {
   }
 }
 
-String _statusLabel(String status) => switch (status) {
-  'automaticallyCalculated' => 'Automatic',
-  'manuallyCalculated' => 'Manual',
-  'manuallyAdjusted' => 'Adjusted',
-  'confirmed' => 'Confirmed',
+String _statusLabel(BuildContext context, String status) => switch (status) {
+  'automaticallyCalculated' => context.l10n.automatic,
+  'manuallyCalculated' => context.l10n.manual,
+  'manuallyAdjusted' => context.l10n.adjusted,
+  'confirmed' => context.l10n.confirmed,
   _ => status,
 };
+
+String _formatMonth(BuildContext context, DateTime date) =>
+    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
+
+String _formatDate(BuildContext context, DateTime date) =>
+    DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
 
 String _formatMoney(Money money) {
   return NumberFormat.currency(
