@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/src/core/security/pin_security.dart';
 import 'package:pf_tracker/src/core/security/app_lock_controller.dart';
+import 'package:pf_tracker/src/core/security/biometric_gateway.dart';
 import 'package:pf_tracker/src/core/security/security_repository.dart';
 
 final secureKeyValueStoreProvider = Provider<SecureKeyValueStore>((ref) {
@@ -23,6 +24,14 @@ final securityPreferencesProvider = FutureProvider<SecurityPreferences>((ref) {
 
 final appLockControllerProvider = Provider<AppLockController>((ref) {
   return AppLockController(ref.watch(securityRepositoryProvider));
+});
+
+final biometricGatewayProvider = Provider<BiometricGateway>((ref) {
+  return LocalAuthBiometricGateway();
+});
+
+final biometricAvailabilityProvider = FutureProvider<bool>((ref) {
+  return ref.watch(biometricGatewayProvider).isAvailable();
 });
 
 final pinCredentialFactoryProvider =

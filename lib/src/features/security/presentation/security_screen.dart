@@ -13,6 +13,7 @@ class SecurityScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final hasPin = ref.watch(hasPinProvider);
     final preferences = ref.watch(securityPreferencesProvider);
+    final biometricAvailability = ref.watch(biometricAvailabilityProvider);
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.security)),
       body: ListView(
@@ -58,6 +59,85 @@ class SecurityScreen extends ConsumerWidget {
             subtitle: Text(context.l10n.changePinDescription),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/security/change-pin'),
+          ),
+          biometricAvailability.when(
+            loading: () => ListTile(
+              leading: const Icon(Icons.fingerprint),
+              title: Text(context.l10n.biometricUnlock),
+              trailing: const SizedBox.square(
+                dimension: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+            error: (error, stackTrace) => SwitchListTile(
+              secondary: const Icon(Icons.fingerprint),
+              title: Text(context.l10n.biometricUnlock),
+              subtitle: Text(context.l10n.biometricUnavailable),
+              value: false,
+              onChanged: null,
+            ),
+            data: (available) {
+              if (!available) {
+                return SwitchListTile(
+                  key: const Key('biometricUnavailableTile'),
+                  secondary: const Icon(Icons.fingerprint),
+                  title: Text(context.l10n.biometricUnlock),
+                  subtitle: Text(context.l10n.biometricUnavailable),
+                  value: false,
+                  onChanged: null,
+                );
+              }
+              return preferences.when(
+                loading: () => ListTile(
+                  leading: const Icon(Icons.fingerprint),
+                  title: Text(context.l10n.biometricUnlock),
+                  trailing: const SizedBox.square(
+                    dimension: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                error: (error, stackTrace) => SwitchListTile(
+                  secondary: const Icon(Icons.fingerprint),
+                  title: Text(context.l10n.biometricUnlock),
+                  subtitle: Text(context.l10n.securityDataUnavailable),
+                  value: false,
+                  onChanged: null,
+                ),
+                data: (value) => SwitchListTile(
+                  key: const Key('biometricUnlockSwitch'),
+                  secondary: const Icon(Icons.fingerprint),
+                  title: Text(context.l10n.biometricUnlock),
+                  subtitle: Text(context.l10n.biometricUnlockDescription),
+                  value: value.biometricEnabled,
+                  onChanged: (enabled) async {
+                    if (enabled) {
+                      final verified = await ref
+                          .read(biometricGatewayProvider)
+                          .authenticate(
+                            reason: context.l10n.enableBiometricReason,
+                          );
+                      if (!context.mounted) {
+                        return;
+                      }
+                      if (!verified) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(context.l10n.biometricNotVerified),
+                          ),
+                        );
+                        return;
+                      }
+                    }
+                    await ref
+                        .read(securityRepositoryProvider)
+                        .savePreferences(
+                          value.copyWith(biometricEnabled: enabled),
+                        );
+                    ref.invalidate(securityPreferencesProvider);
+                  },
+                ),
+              );
+            },
           ),
           preferences.when(
             loading: () => ListTile(

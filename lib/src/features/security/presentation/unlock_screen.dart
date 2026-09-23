@@ -25,6 +25,9 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
   bool _verifying = false;
   bool _obscurePin = true;
   bool _incorrect = false;
+  bool _biometricEnabled = false;
+  bool _biometricAvailable = false;
+  bool _biometricVerifying = false;
 
   @override
   void initState() {
@@ -41,17 +44,25 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
 
   Future<void> _loadAttemptState() async {
     try {
-      final guard = await ref
-          .read(securityRepositoryProvider)
-          .readAttemptGuard();
+      final repository = ref.read(securityRepositoryProvider);
+      final guard = await repository.readAttemptGuard();
+      final preferences = await repository.readPreferences();
+      final biometricAvailable = preferences.biometricEnabled
+          ? await ref.read(biometricGatewayProvider).isAvailable()
+          : false;
       if (!mounted) {
         return;
       }
       setState(() {
         _guard = guard;
+        _biometricEnabled = preferences.biometricEnabled;
+        _biometricAvailable = biometricAvailable;
         _loading = false;
       });
       _startTimerIfBlocked();
+      if (biometricAvailable && !guard.isBlockedAt(DateTime.now().toUtc())) {
+        await _unlockWithBiometric();
+      }
     } on Object {
       if (mounted) {
         setState(() => _loading = false);
@@ -79,7 +90,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
   }
 
   Future<void> _unlock() async {
-    if (_loading || _verifying) {
+    if (_loading || _verifying || _biometricVerifying) {
       return;
     }
     final now = DateTime.now().toUtc();
@@ -137,6 +148,32 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
     }
   }
 
+  Future<void> _unlockWithBiometric() async {
+    if (_loading ||
+        _verifying ||
+        _biometricVerifying ||
+        !_biometricEnabled ||
+        !_biometricAvailable ||
+        _guard.isBlockedAt(DateTime.now().toUtc())) {
+      return;
+    }
+    setState(() => _biometricVerifying = true);
+    final verified = await ref
+        .read(biometricGatewayProvider)
+        .authenticate(reason: context.l10n.unlockBiometricReason);
+    if (!mounted) {
+      return;
+    }
+    if (verified) {
+      await ref.read(securityRepositoryProvider).clearAttemptGuard();
+      if (mounted) {
+        context.go(widget.destination);
+      }
+      return;
+    }
+    setState(() => _biometricVerifying = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now().toUtc();
@@ -179,7 +216,11 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                     key: const Key('unlockPinField'),
                     controller: _pinController,
                     autofocus: true,
-                    enabled: !_loading && !blocked && !_verifying,
+                    enabled:
+                        !_loading &&
+                        !blocked &&
+                        !_verifying &&
+                        !_biometricVerifying,
                     obscureText: _obscurePin,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.done,
@@ -215,10 +256,11 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     key: const Key('unlockButton'),
-                    onPressed: _loading || blocked || _verifying
+                    onPressed:
+                        _loading || blocked || _verifying || _biometricVerifying
                         ? null
                         : _unlock,
-                    icon: _loading || _verifying
+                    icon: _loading || _verifying || _biometricVerifying
                         ? const SizedBox.square(
                             dimension: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
@@ -226,6 +268,17 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                         : const Icon(Icons.lock_open_rounded),
                     label: Text(context.l10n.unlock),
                   ),
+                  if (_biometricEnabled && _biometricAvailable) ...<Widget>[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      key: const Key('biometricUnlockButton'),
+                      onPressed: _loading || blocked || _biometricVerifying
+                          ? null
+                          : _unlockWithBiometric,
+                      icon: const Icon(Icons.fingerprint),
+                      label: Text(context.l10n.useBiometric),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Text(
                     context.l10n.pinStaysOnDevice,

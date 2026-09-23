@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/l10n/generated/app_localizations.dart';
+import 'package:pf_tracker/src/core/security/biometric_gateway.dart';
 import 'package:pf_tracker/src/core/security/security_provider.dart';
 import 'package:pf_tracker/src/core/security/security_repository.dart';
 import 'package:pf_tracker/src/features/security/presentation/security_screen.dart';
@@ -38,13 +39,37 @@ void main() {
 
     expect(find.byKey(const Key('unlockDestination')), findsOneWidget);
   });
+
+  testWidgets('enables biometrics only after successful verification', (
+    tester,
+  ) async {
+    final repository = SecurityRepository(_MemorySecureStore());
+    final gateway = _FakeBiometricGateway(result: true);
+    final router = _router();
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(_app(router, repository, gateway: gateway));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('biometricUnlockSwitch')));
+    await tester.pumpAndSettle();
+
+    expect(gateway.authenticateCalls, 1);
+    expect((await repository.readPreferences()).biometricEnabled, isTrue);
+  });
 }
 
-Widget _app(GoRouter router, SecurityRepository repository) {
+Widget _app(
+  GoRouter router,
+  SecurityRepository repository, {
+  BiometricGateway? gateway,
+}) {
   return ProviderScope(
     overrides: [
       securityRepositoryProvider.overrideWithValue(repository),
       hasPinProvider.overrideWith((ref) async => true),
+      biometricGatewayProvider.overrideWithValue(
+        gateway ?? _FakeBiometricGateway(result: false),
+      ),
     ],
     child: MaterialApp.router(
       locale: const Locale('en'),
@@ -53,6 +78,22 @@ Widget _app(GoRouter router, SecurityRepository repository) {
       routerConfig: router,
     ),
   );
+}
+
+class _FakeBiometricGateway implements BiometricGateway {
+  _FakeBiometricGateway({required this.result});
+
+  final bool result;
+  int authenticateCalls = 0;
+
+  @override
+  Future<bool> authenticate({required String reason}) async {
+    authenticateCalls += 1;
+    return result;
+  }
+
+  @override
+  Future<bool> isAvailable() async => true;
 }
 
 GoRouter _router() {

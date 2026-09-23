@@ -83,6 +83,15 @@ $signingMarker''');
     return;
   }
   var manifest = manifestFile.readAsStringSync();
+  if (!manifest.contains('android.permission.USE_BIOMETRIC')) {
+    manifest = manifest.replaceFirstMapped(
+      RegExp(r'<manifest[^>]*>'),
+      (match) =>
+          '${match.group(0)}\n'
+          '    <uses-permission '
+          'android:name="android.permission.USE_BIOMETRIC"/>',
+    );
+  }
   if (manifest.contains(RegExp(r'android:allowBackup="[^"]*"'))) {
     manifest = manifest.replaceFirst(
       RegExp(r'android:allowBackup="[^"]*"'),
@@ -99,5 +108,40 @@ $signingMarker''');
     'android:label="PF Ledger"',
   );
   manifestFile.writeAsStringSync(manifest);
+
+  final activityFiles = Directory('android/app/src/main/kotlin')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((file) => file.path.endsWith('MainActivity.kt'));
+  if (activityFiles.isEmpty) {
+    stderr.writeln('Generated Android MainActivity is missing.');
+    exitCode = 1;
+    return;
+  }
+  for (final activityFile in activityFiles) {
+    var activity = activityFile.readAsStringSync();
+    activity = activity.replaceAll(
+      'io.flutter.embedding.android.FlutterActivity',
+      'io.flutter.embedding.android.FlutterFragmentActivity',
+    );
+    activity = activity.replaceAll(
+      'MainActivity : FlutterActivity()',
+      'MainActivity : FlutterFragmentActivity()',
+    );
+    activityFile.writeAsStringSync(activity);
+  }
+
+  final styleFiles = Directory('android/app/src/main/res')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((file) => file.path.endsWith('styles.xml'));
+  for (final styleFile in styleFiles) {
+    var styles = styleFile.readAsStringSync();
+    styles = styles.replaceAll(
+      RegExp(r'@android:style/Theme\.[^"<]*NoTitleBar'),
+      'Theme.AppCompat.DayNight.NoActionBar',
+    );
+    styleFile.writeAsStringSync(styles);
+  }
   stdout.writeln('Configured generated Android host for PF Ledger.');
 }
