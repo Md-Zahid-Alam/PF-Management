@@ -83,10 +83,21 @@ $signingMarker''');
     return;
   }
   var manifest = manifestFile.readAsStringSync();
+  if (manifest.contains(RegExp(r'android:allowBackup="[^"]*"'))) {
+    manifest = manifest.replaceFirst(
+      RegExp(r'android:allowBackup="[^"]*"'),
+      'android:allowBackup="false"',
+    );
+  } else {
+    manifest = manifest.replaceFirst(
+      '<application',
+      '<application android:allowBackup="false"',
+    );
+  }
   manifest = manifest.replaceFirst(
     RegExp(r'android:label="[^"]*"'),
     'android:label="PF Ledger"',
   );
   manifestFile.writeAsStringSync(manifest);
-  stdout.writeln('Configured generated Android host for local notifications.');
+  stdout.writeln('Configured generated Android host for PF Ledger.');
 }
