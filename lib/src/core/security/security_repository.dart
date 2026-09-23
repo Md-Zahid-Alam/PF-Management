@@ -106,14 +106,15 @@ class SecurityRepository {
     if (failedAttempts is! int || failedAttempts < 0) {
       throw const FormatException('Invalid PIN attempt count.');
     }
-    if (blockedUntilValue != null && blockedUntilValue is! String) {
-      throw const FormatException('Invalid PIN lockout time.');
-    }
-    final blockedUntil = blockedUntilValue == null
-        ? null
-        : DateTime.tryParse(blockedUntilValue)?.toUtc();
-    if (blockedUntilValue != null && blockedUntil == null) {
-      throw const FormatException('Invalid PIN lockout time.');
+    DateTime? blockedUntil;
+    if (blockedUntilValue != null) {
+      if (blockedUntilValue is! String) {
+        throw const FormatException('Invalid PIN lockout time.');
+      }
+      blockedUntil = DateTime.tryParse(blockedUntilValue)?.toUtc();
+      if (blockedUntil == null) {
+        throw const FormatException('Invalid PIN lockout time.');
+      }
     }
     return PinAttemptGuard(
       failedAttempts: failedAttempts,
