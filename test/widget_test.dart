@@ -6,27 +6,27 @@ import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/security/security_provider.dart';
-import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 
 void main() {
-  testWidgets('starts in the guided PF setup flow', (tester) async {
+  testWidgets('starts in the Bangla PIN creation flow', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           initialSetupRepositoryProvider.overrideWithValue(
             _EmptySetupRepository(),
           ),
-          hasPinProvider.overrideWith((ref) async => true),
+          hasPinProvider.overrideWith((ref) async => false),
         ],
         child: const PFTrackerApp(),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('PF Ledger সেটআপ করুন'), findsOneWidget);
-    expect(find.text('প্রোফাইল ও চাকরি'), findsOneWidget);
+    expect(find.text('অ্যাপের PIN তৈরি করুন'), findsOneWidget);
     expect(
-      Localizations.localeOf(tester.element(find.byType(OnboardingScreen))),
+      Localizations.localeOf(
+        tester.element(find.byKey(const Key('createPinField'))),
+      ),
       const Locale('bn'),
     );
   });

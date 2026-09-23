@@ -22,24 +22,29 @@ void main() {
     expect(find.byKey(const Key('createPinDestination')), findsOneWidget);
   });
 
-  testWidgets('opens setup when initial setup is incomplete', (tester) async {
+  testWidgets('requires unlock before opening incomplete setup', (
+    tester,
+  ) async {
     final router = _router();
     addTearDown(router.dispose);
 
     await tester.pumpWidget(_app(router, _StartupRepository(completed: false)));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('setupDestination')), findsOneWidget);
+    expect(find.byKey(const Key('unlockToSetupDestination')), findsOneWidget);
   });
 
-  testWidgets('opens dashboard when initial setup is complete', (tester) async {
+  testWidgets('requires unlock before opening dashboard', (tester) async {
     final router = _router();
     addTearDown(router.dispose);
 
     await tester.pumpWidget(_app(router, _StartupRepository(completed: true)));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('dashboardDestination')), findsOneWidget);
+    expect(
+      find.byKey(const Key('unlockToDashboardDestination')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('offers retry when setup status cannot be loaded', (
@@ -58,7 +63,7 @@ void main() {
     await tester.tap(find.byKey(const Key('retryStartupButton')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('setupDestination')), findsOneWidget);
+    expect(find.byKey(const Key('unlockToSetupDestination')), findsOneWidget);
   });
 }
 
@@ -98,6 +103,19 @@ GoRouter _router() {
         path: '/security/create-pin',
         builder: (context, state) =>
             const SizedBox(key: Key('createPinDestination')),
+      ),
+      GoRoute(
+        path: '/security/unlock',
+        builder: (context, state) {
+          final destination = state.uri.queryParameters['destination'];
+          return SizedBox(
+            key: Key(
+              destination == '/setup'
+                  ? 'unlockToSetupDestination'
+                  : 'unlockToDashboardDestination',
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/',

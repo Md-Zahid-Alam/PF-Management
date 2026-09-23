@@ -21,3 +21,9 @@ final pinCredentialFactoryProvider =
       return (pin) =>
           Isolate.run(() => PinSecurityService().createCredential(pin));
     });
+
+final pinVerifierProvider =
+    Provider<Future<bool> Function(String, PinCredential)>((ref) {
+      return (pin, credential) =>
+          Isolate.run(() => PinSecurityService().verify(pin, credential));
+    });

@@ -23,6 +23,7 @@ import 'package:pf_tracker/src/features/salary_history/presentation/salary_histo
 import 'package:pf_tracker/src/features/salary_schedule/presentation/salary_schedule_form_screen.dart';
 import 'package:pf_tracker/src/features/salary_schedule/presentation/salary_schedule_history_screen.dart';
 import 'package:pf_tracker/src/features/security/presentation/create_pin_screen.dart';
+import 'package:pf_tracker/src/features/security/presentation/unlock_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/backup_restore_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/about_screen.dart';
 import 'package:pf_tracker/src/features/settings/presentation/settings_screen.dart';
@@ -38,6 +39,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/security/create-pin',
       builder: (context, state) => const CreatePinScreen(),
+    ),
+    GoRoute(
+      path: '/security/unlock',
+      builder: (context, state) {
+        final requested = state.uri.queryParameters['destination'];
+        final destination = requested == '/setup' ? '/setup' : '/';
+        return UnlockScreen(destination: destination);
+      },
     ),
     GoRoute(
       path: '/backup-restore',

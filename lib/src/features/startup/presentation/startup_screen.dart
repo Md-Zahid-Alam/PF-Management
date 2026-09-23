@@ -40,7 +40,13 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
       if (!mounted) {
         return;
       }
-      context.go(hasCompletedSetup ? '/' : '/setup');
+      final destination = hasCompletedSetup ? '/' : '/setup';
+      context.go(
+        Uri(
+          path: '/security/unlock',
+          queryParameters: <String, String>{'destination': destination},
+        ).toString(),
+      );
     } on Object catch (error) {
       if (mounted) {
         setState(() => _error = error);

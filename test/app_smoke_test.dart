@@ -8,24 +8,23 @@ import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/security/security_provider.dart';
 
 void main() {
-  testWidgets('opens the first-time setup flow', (tester) async {
+  testWidgets('opens the first-time PIN creation flow', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           initialSetupRepositoryProvider.overrideWithValue(
             _EmptySetupRepository(),
           ),
-          hasPinProvider.overrideWith((ref) async => true),
+          hasPinProvider.overrideWith((ref) async => false),
         ],
         child: const PFTrackerApp(),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('PF Ledger সেটআপ করুন'), findsOneWidget);
-    expect(find.text('প্রোফাইল ও চাকরি'), findsOneWidget);
-    expect(find.byKey(const Key('employeeNameField')), findsOneWidget);
-    expect(find.text('এগিয়ে যান'), findsWidgets);
+    expect(find.text('অ্যাপের PIN তৈরি করুন'), findsOneWidget);
+    expect(find.byKey(const Key('createPinField')), findsOneWidget);
+    expect(find.byKey(const Key('confirmPinField')), findsOneWidget);
   });
 }
 
