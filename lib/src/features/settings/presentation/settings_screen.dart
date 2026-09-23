@@ -23,6 +23,14 @@ class SettingsScreen extends ConsumerWidget {
           const _LanguageSettingsSection(),
           const Divider(),
           ListTile(
+            key: const Key('securitySettingsTile'),
+            leading: const Icon(Icons.security_outlined),
+            title: Text(context.l10n.security),
+            subtitle: Text(context.l10n.securityDescription),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/security'),
+          ),
+          ListTile(
             leading: const Icon(Icons.person_outline),
             title: Text(context.l10n.profile),
             subtitle: Text(context.l10n.profileDescription),
