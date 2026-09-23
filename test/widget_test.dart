@@ -5,6 +5,7 @@ import 'package:pf_tracker/src/app/pf_tracker_app.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/core/security/security_provider.dart';
 import 'package:pf_tracker/src/features/onboarding/presentation/onboarding_screen.dart';
 
 void main() {
@@ -15,6 +16,7 @@ void main() {
           initialSetupRepositoryProvider.overrideWithValue(
             _EmptySetupRepository(),
           ),
+          hasPinProvider.overrideWith((ref) async => true),
         ],
         child: const PFTrackerApp(),
       ),

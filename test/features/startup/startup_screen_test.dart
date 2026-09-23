@@ -6,9 +6,22 @@ import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
+import 'package:pf_tracker/src/core/security/security_provider.dart';
 import 'package:pf_tracker/src/features/startup/presentation/startup_screen.dart';
 
 void main() {
+  testWidgets('requires PIN creation before opening PF data', (tester) async {
+    final router = _router();
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      _app(router, _StartupRepository(completed: true), hasPin: false),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('createPinDestination')), findsOneWidget);
+  });
+
   testWidgets('opens setup when initial setup is incomplete', (tester) async {
     final router = _router();
     addTearDown(router.dispose);
@@ -49,9 +62,16 @@ void main() {
   });
 }
 
-Widget _app(GoRouter router, InitialSetupRepository repository) {
+Widget _app(
+  GoRouter router,
+  InitialSetupRepository repository, {
+  bool hasPin = true,
+}) {
   return ProviderScope(
-    overrides: [initialSetupRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      initialSetupRepositoryProvider.overrideWithValue(repository),
+      hasPinProvider.overrideWith((ref) async => hasPin),
+    ],
     child: MaterialApp.router(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -73,6 +93,11 @@ GoRouter _router() {
         path: '/setup',
         builder: (context, state) =>
             const SizedBox(key: Key('setupDestination')),
+      ),
+      GoRoute(
+        path: '/security/create-pin',
+        builder: (context, state) =>
+            const SizedBox(key: Key('createPinDestination')),
       ),
       GoRoute(
         path: '/',

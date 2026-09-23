@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/presentation/localization.dart';
+import 'package:pf_tracker/src/core/security/security_provider.dart';
 
 class StartupScreen extends ConsumerStatefulWidget {
   const StartupScreen({super.key});
@@ -25,6 +26,14 @@ class _StartupScreenState extends ConsumerState<StartupScreen> {
       setState(() => _error = null);
     }
     try {
+      final hasPin = await ref.read(hasPinProvider.future);
+      if (!mounted) {
+        return;
+      }
+      if (!hasPin) {
+        context.go('/security/create-pin');
+        return;
+      }
       final hasCompletedSetup = await ref
           .read(initialSetupRepositoryProvider)
           .hasCompletedSetup();
