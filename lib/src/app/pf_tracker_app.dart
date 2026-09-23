@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/app/router.dart';
 import 'package:pf_tracker/src/core/domain/app_preferences.dart';
+import 'package:pf_tracker/src/core/security/app_lock_controller.dart';
+import 'package:pf_tracker/src/core/security/security_provider.dart';
 import 'package:pf_tracker/src/core/theme/app_theme.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
@@ -29,9 +33,32 @@ class _PFTrackerAppState extends ConsumerState<PFTrackerApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      ref.invalidate(pfAutomationRunProvider);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        ref.invalidate(pfAutomationRunProvider);
+        unawaited(_resumeFromBackground());
+        break;
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        ref
+            .read(appLockControllerProvider)
+            .recordBackgrounded(DateTime.now().toUtc());
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        break;
     }
+  }
+
+  Future<void> _resumeFromBackground() async {
+    final shouldLock = await ref
+        .read(appLockControllerProvider)
+        .shouldLockOnResume(DateTime.now().toUtc());
+    if (!mounted || !shouldLock) {
+      return;
+    }
+    final current = appRouter.routeInformationProvider.value.uri.toString();
+    appRouter.go(unlockLocation(current));
   }
 
   @override

@@ -49,6 +49,16 @@ class SecurityPreferences {
   final bool biometricEnabled;
   final AutoLockDuration autoLockDuration;
 
+  SecurityPreferences copyWith({
+    bool? biometricEnabled,
+    AutoLockDuration? autoLockDuration,
+  }) {
+    return SecurityPreferences(
+      biometricEnabled: biometricEnabled ?? this.biometricEnabled,
+      autoLockDuration: autoLockDuration ?? this.autoLockDuration,
+    );
+  }
+
   Map<String, Object?> toJson() => <String, Object?>{
     'biometricEnabled': biometricEnabled,
     'autoLockDuration': autoLockDuration.name,

@@ -2,6 +2,7 @@ import 'dart:isolate';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pf_tracker/src/core/security/pin_security.dart';
+import 'package:pf_tracker/src/core/security/app_lock_controller.dart';
 import 'package:pf_tracker/src/core/security/security_repository.dart';
 
 final secureKeyValueStoreProvider = Provider<SecureKeyValueStore>((ref) {
@@ -14,6 +15,14 @@ final securityRepositoryProvider = Provider<SecurityRepository>((ref) {
 
 final hasPinProvider = FutureProvider<bool>((ref) {
   return ref.watch(securityRepositoryProvider).hasPin();
+});
+
+final securityPreferencesProvider = FutureProvider<SecurityPreferences>((ref) {
+  return ref.watch(securityRepositoryProvider).readPreferences();
+});
+
+final appLockControllerProvider = Provider<AppLockController>((ref) {
+  return AppLockController(ref.watch(securityRepositoryProvider));
 });
 
 final pinCredentialFactoryProvider =
