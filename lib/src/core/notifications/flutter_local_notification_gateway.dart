@@ -5,11 +5,10 @@ import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 
 class FlutterLocalNotificationGateway implements AutomationNotificationGateway {
-  FlutterLocalNotificationGateway({
-    required LocalePreferenceRepository localeRepository,
+  FlutterLocalNotificationGateway(
+    this._localeRepository, {
     FlutterLocalNotificationsPlugin? plugin,
-  }) : _localeRepository = localeRepository,
-       _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   static const _channelId = 'pf_automation';
 

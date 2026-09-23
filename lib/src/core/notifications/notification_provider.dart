@@ -6,6 +6,6 @@ import 'package:pf_tracker/src/core/notifications/flutter_local_notification_gat
 final automationNotificationGatewayProvider =
     Provider<AutomationNotificationGateway>((ref) {
       return FlutterLocalNotificationGateway(
-        localeRepository: ref.watch(localePreferenceRepositoryProvider),
+        ref.watch(localePreferenceRepositoryProvider),
       );
     });
