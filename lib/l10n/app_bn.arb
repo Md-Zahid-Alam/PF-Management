@@ -491,5 +491,15 @@
   "maturity": "মেয়াদপূর্তি",
   "mature": "মেয়াদ পূর্ণ",
   "maturesInDays": "মেয়াদপূর্তিতে {count} দিন বাকি",
-  "@maturesInDays": {"placeholders": {"count": {"type": "int"}}}
+  "@maturesInDays": {"placeholders": {"count": {"type": "int"}}},
+  "pfCalculationReady": "PF হিসাব প্রস্তুত",
+  "pfCalculated": "PF হিসাব সম্পন্ন",
+  "salaryWaitingNotification": "{month} মাসের PF বেতনের তথ্যের অপেক্ষায় আছে।",
+  "@salaryWaitingNotification": {"placeholders": {"month": {"type": "String"}}},
+  "calculationReadyNotification": "{month} মাসের PF হিসাবের জন্য প্রস্তুত।",
+  "@calculationReadyNotification": {"placeholders": {"month": {"type": "String"}}},
+  "calculatedNotification": "{month} মাসের PF স্বয়ংক্রিয়ভাবে হিসাব করা হয়েছে।",
+  "@calculatedNotification": {"placeholders": {"month": {"type": "String"}}},
+  "pfAutomationChannel": "PF স্বয়ংক্রিয় কার্যক্রম",
+  "pfAutomationChannelDescription": "PF হিসাবের অনুস্মারক ও ফলাফল"
 }

@@ -1,15 +1,20 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/widgets.dart';
+import 'package:pf_tracker/l10n/generated/app_localizations.dart';
 import 'package:pf_tracker/src/core/domain/automation_models.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 
 class FlutterLocalNotificationGateway implements AutomationNotificationGateway {
-  FlutterLocalNotificationGateway({FlutterLocalNotificationsPlugin? plugin})
-    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationGateway({
+    required LocalePreferenceRepository localeRepository,
+    FlutterLocalNotificationsPlugin? plugin,
+  }) : _localeRepository = localeRepository,
+       _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   static const _channelId = 'pf_automation';
-  static const _channelName = 'PF automation';
 
   final FlutterLocalNotificationsPlugin _plugin;
+  final LocalePreferenceRepository _localeRepository;
   bool _initialized = false;
 
   @override
@@ -38,15 +43,18 @@ class FlutterLocalNotificationGateway implements AutomationNotificationGateway {
   @override
   Future<void> show(AutomationNotification notification) async {
     await initialize();
+    final preference = await _localeRepository.get();
+    final l10n = lookupAppLocalizations(Locale(preference.languageCode));
+    final (title, body) = localizedAutomationNotification(l10n, notification);
     await _plugin.show(
       id: _notificationId(notification),
-      title: notification.title,
-      body: notification.body,
-      notificationDetails: const NotificationDetails(
+      title: title,
+      body: body,
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
-          _channelName,
-          channelDescription: 'PF calculation reminders and results',
+          l10n.pfAutomationChannel,
+          channelDescription: l10n.pfAutomationChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
         ),
@@ -60,4 +68,29 @@ class FlutterLocalNotificationGateway implements AutomationNotificationGateway {
     final monthPart = month == null ? 0 : month.year * 100 + month.month;
     return monthPart * 10 + notification.type.index;
   }
+}
+
+(String, String) localizedAutomationNotification(
+  AppLocalizations l10n,
+  AutomationNotification notification,
+) {
+  final month = notification.month?.toString() ?? '';
+  return switch (notification.type) {
+    AutomationNotificationType.missingSalaryInformation => (
+      l10n.salaryInformationRequired,
+      l10n.salaryWaitingNotification(month),
+    ),
+    AutomationNotificationType.calculationDue => (
+      l10n.pfCalculationReady,
+      l10n.calculationReadyNotification(month),
+    ),
+    AutomationNotificationType.automaticallyCalculated => (
+      l10n.pfCalculated,
+      l10n.calculatedNotification(month),
+    ),
+    AutomationNotificationType.maturityApproaching => (
+      l10n.pfMaturity,
+      l10n.maturityDate,
+    ),
+  };
 }

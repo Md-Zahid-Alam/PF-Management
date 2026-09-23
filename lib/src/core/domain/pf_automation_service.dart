@@ -128,8 +128,6 @@ class PFAutomationService {
           settings,
           AutomationNotification(
             type: AutomationNotificationType.missingSalaryInformation,
-            title: 'Salary information required',
-            body: '$month PF is waiting for salary information.',
             month: month,
           ),
         );
@@ -146,8 +144,6 @@ class PFAutomationService {
           settings,
           AutomationNotification(
             type: AutomationNotificationType.calculationDue,
-            title: 'PF calculation ready',
-            body: '$month PF is ready for calculation.',
             month: month,
           ),
         );
@@ -177,8 +173,6 @@ class PFAutomationService {
         settings,
         AutomationNotification(
           type: AutomationNotificationType.automaticallyCalculated,
-          title: 'PF calculated',
-          body: '$month PF was calculated automatically.',
           month: month,
         ),
       );

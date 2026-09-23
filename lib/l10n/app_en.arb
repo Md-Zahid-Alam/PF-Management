@@ -491,5 +491,15 @@
   "maturity": "Maturity",
   "mature": "Mature",
   "maturesInDays": "Matures in {count} days",
-  "@maturesInDays": {"placeholders": {"count": {"type": "int"}}}
+  "@maturesInDays": {"placeholders": {"count": {"type": "int"}}},
+  "pfCalculationReady": "PF calculation ready",
+  "pfCalculated": "PF calculated",
+  "salaryWaitingNotification": "{month} PF is waiting for salary information.",
+  "@salaryWaitingNotification": {"placeholders": {"month": {"type": "String"}}},
+  "calculationReadyNotification": "{month} PF is ready for calculation.",
+  "@calculationReadyNotification": {"placeholders": {"month": {"type": "String"}}},
+  "calculatedNotification": "{month} PF was calculated automatically.",
+  "@calculatedNotification": {"placeholders": {"month": {"type": "String"}}},
+  "pfAutomationChannel": "PF automation",
+  "pfAutomationChannelDescription": "PF calculation reminders and results"
 }

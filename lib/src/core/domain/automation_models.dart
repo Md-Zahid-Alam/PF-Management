@@ -107,15 +107,8 @@ enum AutomationNotificationType {
 }
 
 class AutomationNotification {
-  const AutomationNotification({
-    required this.type,
-    required this.title,
-    required this.body,
-    this.month,
-  });
+  const AutomationNotification({required this.type, this.month});
 
   final AutomationNotificationType type;
-  final String title;
-  final String body;
   final YearMonth? month;
 }
