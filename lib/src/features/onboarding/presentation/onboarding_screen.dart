@@ -13,9 +13,14 @@ import 'package:pf_tracker/src/core/domain/setup_models.dart';
 import 'package:pf_tracker/src/core/presentation/localization.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({this.editExisting = false, super.key});
+  const OnboardingScreen({
+    this.editExisting = false,
+    this.initialStep = 0,
+    super.key,
+  }) : assert(initialStep >= 0 && initialStep <= 2);
 
   final bool editExisting;
+  final int initialStep;
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -36,7 +41,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _windowStart = TextEditingController(text: '1');
   final _windowEnd = TextEditingController(text: '5');
 
-  var _step = 0;
+  late int _step;
   var _joiningDate = DateTime.now();
   DateTime? _probationStartDate;
   DateTime? _permanentDate;
@@ -49,10 +54,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   var _entitledBeforeMaturity = false;
   var _entitledAfterMaturity = true;
   var _saving = false;
+  late bool _loadingExisting;
 
   @override
   void initState() {
     super.initState();
+    _step = widget.initialStep;
+    _loadingExisting = widget.editExisting;
     WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
   }
 
@@ -80,6 +88,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    if (_loadingExisting) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.editPFSetup)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -237,6 +251,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   children: <Widget>[
                     const SizedBox(height: 8),
                     _requiredTextField(
+                      key: const Key('organizationNameField'),
                       controller: _organizationName,
                       label: l10n.organizationName,
                     ),
@@ -595,7 +610,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     try {
       final repository = ref.read(initialSetupRepositoryProvider);
       final existing = await repository.load();
-      if (!mounted || existing == null) {
+      if (!mounted) {
+        return;
+      }
+      if (existing == null) {
+        setState(() => _loadingExisting = false);
         return;
       }
       if (!widget.editExisting) {
@@ -636,9 +655,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             existing.salarySchedule.schedule.paymentMonthOffset;
         _paymentWindowStartMonthOffset =
             existing.salarySchedule.schedule.paymentWindowStartMonthOffset;
+        _loadingExisting = false;
       });
     } on Object {
       // A setup read failure leaves the recoverable setup form visible.
+      if (mounted) {
+        setState(() => _loadingExisting = false);
+      }
     }
   }
 

@@ -78,7 +78,12 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/setup/edit',
-      builder: (context, state) => const OnboardingScreen(editExisting: true),
+      builder: (context, state) => OnboardingScreen(
+        editExisting: true,
+        initialStep: state.uri.queryParameters['section'] == 'organization'
+            ? 1
+            : 0,
+      ),
     ),
     GoRoute(
       path: '/historical-reconstruction',

@@ -31,6 +31,7 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/security'),
           ),
           ListTile(
+            key: const Key('profileSettingsTile'),
             leading: const Icon(Icons.person_outline),
             title: Text(context.l10n.profile),
             subtitle: Text(context.l10n.profileDescription),
@@ -38,11 +39,12 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/setup/edit'),
           ),
           ListTile(
+            key: const Key('organizationAndRulesSettingsTile'),
             leading: const Icon(Icons.business_outlined),
             title: Text(context.l10n.organizationAndRules),
             subtitle: Text(context.l10n.organizationAndRulesDescription),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/setup/edit'),
+            onTap: () => context.push('/setup/edit?section=organization'),
           ),
           ListTile(
             leading: const Icon(Icons.calendar_month_outlined),
