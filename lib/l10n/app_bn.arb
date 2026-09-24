@@ -519,6 +519,7 @@
   "completePFSetup": "PF সেটআপ সম্পন্ন করুন",
   "automationCheckFailed": "PF automation পরীক্ষা ব্যর্থ হয়েছে",
   "automationRetryDescription": "বকেয়া PF মাস পরীক্ষা করতে আবার চেষ্টা করুন।",
+  "automationScheduleMissingDescription": "আপনার PF শুরুর মাস থেকে প্রযোজ্য বেতন প্রদানের সময়সূচি যোগ করে আবার চেষ্টা করুন।",
   "retryAutomation": "Automation আবার পরীক্ষা করুন",
   "pendingPFActions": "বাকি PF কাজ",
   "salaryInformationRequired": "বেতনের তথ্য প্রয়োজন",

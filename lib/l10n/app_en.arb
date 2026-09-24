@@ -519,6 +519,7 @@
   "completePFSetup": "Complete PF setup",
   "automationCheckFailed": "PF automation check failed",
   "automationRetryDescription": "Retry to check for overdue PF months.",
+  "automationScheduleMissingDescription": "Add a salary schedule covering your PF start month, then retry.",
   "retryAutomation": "Retry automation",
   "pendingPFActions": "Pending PF actions",
   "salaryInformationRequired": "Salary information required",

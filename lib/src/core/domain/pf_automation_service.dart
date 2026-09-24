@@ -289,7 +289,12 @@ class PFAutomationService {
     AutomationNotification notification,
   ) async {
     if (settings.notificationsEnabled) {
-      await notificationGateway.show(notification);
+      try {
+        await notificationGateway.show(notification);
+      } on Object {
+        // Notifications are best-effort. A device notification failure must not
+        // prevent PF records from being calculated or reported to the user.
+      }
     }
   }
 

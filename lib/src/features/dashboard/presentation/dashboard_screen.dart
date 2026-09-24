@@ -131,7 +131,9 @@ class DashboardScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.error_outline),
                   title: Text(context.l10n.automationCheckFailed),
-                  subtitle: Text(context.l10n.automationRetryDescription),
+                  subtitle: Text(
+                    _automationErrorDescription(context, automation.error),
+                  ),
                   trailing: IconButton(
                     tooltip: context.l10n.retryAutomation,
                     onPressed: () => ref.invalidate(pfAutomationRunProvider),
@@ -255,6 +257,14 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _automationErrorDescription(BuildContext context, Object? error) {
+  if (error is MissingCalculationInput &&
+      error.message.startsWith('Salary schedule is required')) {
+    return context.l10n.automationScheduleMissingDescription;
+  }
+  return context.l10n.automationRetryDescription;
 }
 
 class _PendingAutomationActions extends StatelessWidget {

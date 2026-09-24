@@ -88,8 +88,6 @@ final pfAutomationRunProvider = FutureProvider<List<AutomationPeriodResult>>((
     return const <AutomationPeriodResult>[];
   }
 
-  await notificationGateway.initialize();
-
   final salaryHistory = await salaryRepository.getForEmployment(
     DriftInitialSetupRepository.employmentId,
   );

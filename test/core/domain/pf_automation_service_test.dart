@@ -136,6 +136,30 @@ void main() {
     );
   });
 
+  test('notification failure does not fail automatic calculation', () async {
+    service = PFAutomationService(
+      engine: engine,
+      monthlyRepository: records,
+      settingsRepository: settings,
+      notificationGateway: _FailingNotificationGateway(),
+    );
+
+    final results = await service.processDuePeriods(
+      today: DateTime(2026, 2, 12),
+      employmentId: 'employment-1',
+      employment: _employment,
+      salaryHistory: <StoredSalary>[_salary()],
+      ruleHistory: <StoredPFRule>[_rule()],
+      schedules: <EffectiveSalarySchedule>[_schedule],
+    );
+
+    expect(
+      results.single.status,
+      AutomationPeriodStatus.automaticallyCalculated,
+    );
+    expect(records.items, hasLength(1));
+  });
+
   test('legacy policy cannot exclude an approved partial PF month', () async {
     final employment = EmploymentDates(
       joiningDate: DateTime(2025, 12, 15),
@@ -437,5 +461,18 @@ class _RecordingNotificationGateway implements AutomationNotificationGateway {
   @override
   Future<void> show(AutomationNotification notification) async {
     items.add(notification);
+  }
+}
+
+class _FailingNotificationGateway implements AutomationNotificationGateway {
+  @override
+  Future<void> initialize() async => throw StateError('Unavailable');
+
+  @override
+  Future<bool> requestPermission() async => false;
+
+  @override
+  Future<void> show(AutomationNotification notification) async {
+    await initialize();
   }
 }
