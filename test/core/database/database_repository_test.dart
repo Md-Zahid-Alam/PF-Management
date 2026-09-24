@@ -326,8 +326,8 @@ void main() {
       ),
       throwsStateError,
     );
-    final unchanged =
-        (await repository.getForOrganization('organization-1')).single;
+    final unchanged = (await repository.getForOrganization('organization-1'))
+        .single;
     expect(unchanged.schedule.paymentWindowStartDay, 1);
     expect(unchanged.schedule.paymentWindowEndDay, 5);
   });

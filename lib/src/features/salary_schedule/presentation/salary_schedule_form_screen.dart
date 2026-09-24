@@ -42,9 +42,8 @@ class _SalaryScheduleFormScreenState
     if (widget.scheduleId case final String scheduleId) {
       final history = ref.watch(salaryScheduleHistoryProvider);
       return history.when(
-        loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
         error: (error, stackTrace) => Scaffold(
           appBar: AppBar(title: Text(context.l10n.editSalarySchedule)),
           body: Center(child: Text(context.l10n.scheduleSaveError)),

@@ -173,12 +173,16 @@ class DriftSalaryScheduleRepository implements SalaryScheduleRepository {
         throw StateError('A salary schedule already exists for this month.');
       }
 
-      final revised = <EffectiveSalarySchedule>[
-        for (final item in existing)
-          if (item.id == normalizedSchedule.id) normalizedSchedule else item,
-      ]..sort(
-        (left, right) => left.effectiveFrom.compareTo(right.effectiveFrom),
-      );
+      final revised =
+          <EffectiveSalarySchedule>[
+            for (final item in existing)
+              if (item.id == normalizedSchedule.id)
+                normalizedSchedule
+              else
+                item,
+          ]..sort(
+            (left, right) => left.effectiveFrom.compareTo(right.effectiveFrom),
+          );
       final recordMonths = await _recordMonthsForOrganization(organizationId);
       for (final month in recordMonths) {
         final before = _scheduleForMonth(existing, month);
@@ -190,26 +194,26 @@ class DriftSalaryScheduleRepository implements SalaryScheduleRepository {
         }
       }
 
-      await (database.update(database.salarySchedules)
-            ..where((row) => row.id.equals(normalizedSchedule.id)))
-          .write(
-            db.SalarySchedulesCompanion(
-              effectiveFrom: Value(normalizedSchedule.effectiveFrom),
-              paymentMonthOffset: Value(
-                normalizedSchedule.schedule.paymentMonthOffset,
-              ),
-              paymentWindowStartMonthOffset: Value(
-                normalizedSchedule.schedule.paymentWindowStartMonthOffset,
-              ),
-              paymentWindowStartDay: Value(
-                normalizedSchedule.schedule.paymentWindowStartDay,
-              ),
-              paymentWindowEndDay: Value(
-                normalizedSchedule.schedule.paymentWindowEndDay,
-              ),
-              updatedAt: Value(updatedAt),
-            ),
-          );
+      await (database.update(
+        database.salarySchedules,
+      )..where((row) => row.id.equals(normalizedSchedule.id))).write(
+        db.SalarySchedulesCompanion(
+          effectiveFrom: Value(normalizedSchedule.effectiveFrom),
+          paymentMonthOffset: Value(
+            normalizedSchedule.schedule.paymentMonthOffset,
+          ),
+          paymentWindowStartMonthOffset: Value(
+            normalizedSchedule.schedule.paymentWindowStartMonthOffset,
+          ),
+          paymentWindowStartDay: Value(
+            normalizedSchedule.schedule.paymentWindowStartDay,
+          ),
+          paymentWindowEndDay: Value(
+            normalizedSchedule.schedule.paymentWindowEndDay,
+          ),
+          updatedAt: Value(updatedAt),
+        ),
+      );
     });
   }
 

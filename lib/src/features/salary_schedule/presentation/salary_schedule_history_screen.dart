@@ -43,9 +43,7 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
                       '/salary-schedule-history/${schedule.id}/edit',
                     )
                   : null,
-              onDelete: canEdit
-                  ? () => _delete(context, ref, schedule)
-                  : null,
+              onDelete: canEdit ? () => _delete(context, ref, schedule) : null,
             );
           },
         ),
@@ -153,10 +151,7 @@ class _ScheduleCard extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => <PopupMenuEntry<String>>[
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text(context.l10n.edit),
-                  ),
+                  PopupMenuItem(value: 'edit', child: Text(context.l10n.edit)),
                   PopupMenuItem(
                     value: 'delete',
                     child: Text(context.l10n.delete),
