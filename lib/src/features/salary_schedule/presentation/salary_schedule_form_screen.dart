@@ -10,7 +10,9 @@ import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/features/pf_data_providers.dart';
 
 class SalaryScheduleFormScreen extends ConsumerStatefulWidget {
-  const SalaryScheduleFormScreen({super.key});
+  const SalaryScheduleFormScreen({super.key, this.scheduleId});
+
+  final String? scheduleId;
 
   @override
   ConsumerState<SalaryScheduleFormScreen> createState() =>
@@ -26,6 +28,7 @@ class _SalaryScheduleFormScreenState
   var _startOffset = 1;
   var _endOffset = 1;
   var _saving = false;
+  var _initializedForEdit = false;
 
   @override
   void dispose() {
@@ -36,8 +39,41 @@ class _SalaryScheduleFormScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (widget.scheduleId case final String scheduleId) {
+      final history = ref.watch(salaryScheduleHistoryProvider);
+      return history.when(
+        loading: () => const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+        error: (error, stackTrace) => Scaffold(
+          appBar: AppBar(title: Text(context.l10n.editSalarySchedule)),
+          body: Center(child: Text(context.l10n.scheduleSaveError)),
+        ),
+        data: (items) {
+          final matches = items.where((item) => item.id == scheduleId);
+          if (matches.isEmpty) {
+            return Scaffold(
+              appBar: AppBar(title: Text(context.l10n.editSalarySchedule)),
+              body: Center(child: Text(context.l10n.scheduleSaveError)),
+            );
+          }
+          _initializeForEdit(matches.single);
+          return _buildForm(context, editing: true);
+        },
+      );
+    }
+    return _buildForm(context, editing: false);
+  }
+
+  Widget _buildForm(BuildContext context, {required bool editing}) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.newSalarySchedule)),
+      appBar: AppBar(
+        title: Text(
+          editing
+              ? context.l10n.editSalarySchedule
+              : context.l10n.newSalarySchedule,
+        ),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -101,6 +137,16 @@ class _SalaryScheduleFormScreenState
     );
   }
 
+  void _initializeForEdit(EffectiveSalarySchedule schedule) {
+    if (_initializedForEdit) return;
+    _initializedForEdit = true;
+    _effectiveFrom = schedule.effectiveFrom;
+    _startOffset = schedule.schedule.paymentWindowStartMonthOffset;
+    _endOffset = schedule.schedule.paymentMonthOffset;
+    _startDay.text = schedule.schedule.paymentWindowStartDay.toString();
+    _endDay.text = schedule.schedule.paymentWindowEndDay.toString();
+  }
+
   DropdownButtonFormField<int> _monthDropdown({
     required String label,
     required int value,
@@ -151,24 +197,33 @@ class _SalaryScheduleFormScreenState
     setState(() => _saving = true);
     final now = DateTime.now();
     try {
-      await ref
-          .read(salaryScheduleRepositoryProvider)
-          .save(
-            organizationId: DriftInitialSetupRepository.organizationId,
-            schedule: EffectiveSalarySchedule(
-              id: 'schedule-${now.microsecondsSinceEpoch}',
-              effectiveFrom: _effectiveFrom,
-              schedule: SalarySchedule(
-                paymentMonthOffset: _endOffset,
-                paymentWindowStartMonthOffset: _startOffset,
-                paymentWindowStartDay: startDay,
-                paymentWindowEndDay: endDay,
-              ),
-            ),
-            createdAt: now,
-            updatedAt: now,
-          );
+      final repository = ref.read(salaryScheduleRepositoryProvider);
+      final schedule = EffectiveSalarySchedule(
+        id: widget.scheduleId ?? 'schedule-${now.microsecondsSinceEpoch}',
+        effectiveFrom: _effectiveFrom,
+        schedule: SalarySchedule(
+          paymentMonthOffset: _endOffset,
+          paymentWindowStartMonthOffset: _startOffset,
+          paymentWindowStartDay: startDay,
+          paymentWindowEndDay: endDay,
+        ),
+      );
+      if (widget.scheduleId == null) {
+        await repository.save(
+          organizationId: DriftInitialSetupRepository.organizationId,
+          schedule: schedule,
+          createdAt: now,
+          updatedAt: now,
+        );
+      } else {
+        await repository.updateUnused(
+          organizationId: DriftInitialSetupRepository.organizationId,
+          schedule: schedule,
+          updatedAt: now,
+        );
+      }
       ref.invalidate(salaryScheduleHistoryProvider);
+      ref.invalidate(salaryScheduleEditableProvider);
       ref.invalidate(pfAutomationRunProvider);
       if (mounted) context.pop();
     } on Object {

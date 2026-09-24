@@ -262,6 +262,7 @@
   "retryScheduleHistory": "সময়সূচির ইতিহাস আবার লোড করুন",
   "newSchedule": "নতুন সময়সূচি",
   "newSalarySchedule": "নতুন বেতন প্রদানের সময়সূচি",
+  "editSalarySchedule": "বেতন প্রদানের সময়সূচি সম্পাদনা",
   "deleteSalaryScheduleTitle": "বেতন প্রদানের সময়সূচি মুছবেন?",
   "deleteSalaryScheduleMessage": "{date} থেকে কার্যকর সময়সূচিটি মুছবেন? PF রেকর্ড তৈরি হওয়ার পর সময়সূচি সুরক্ষিত থাকে।",
   "@deleteSalaryScheduleMessage": {"placeholders": {"date": {"type": "String"}}},

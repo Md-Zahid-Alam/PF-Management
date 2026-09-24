@@ -262,6 +262,7 @@
   "retryScheduleHistory": "Retry schedule history",
   "newSchedule": "New schedule",
   "newSalarySchedule": "New Salary Schedule",
+  "editSalarySchedule": "Edit Salary Schedule",
   "deleteSalaryScheduleTitle": "Delete salary schedule?",
   "deleteSalaryScheduleMessage": "Delete the schedule effective {date}? Schedules are protected after PF records exist.",
   "@deleteSalaryScheduleMessage": {"placeholders": {"date": {"type": "String"}}},

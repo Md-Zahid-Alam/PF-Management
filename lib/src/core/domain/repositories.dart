@@ -21,6 +21,12 @@ abstract interface class SalaryScheduleRepository {
     required DateTime createdAt,
     required DateTime updatedAt,
   });
+  Future<bool> isUnused(String id, String organizationId);
+  Future<void> updateUnused({
+    required String organizationId,
+    required EffectiveSalarySchedule schedule,
+    required DateTime updatedAt,
+  });
   Future<void> deleteUnused(String id, String organizationId);
 }
 

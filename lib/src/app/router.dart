@@ -110,6 +110,12 @@ final GoRouter appRouter = GoRouter(
           path: 'add',
           builder: (context, state) => const SalaryScheduleFormScreen(),
         ),
+        GoRoute(
+          path: ':scheduleId/edit',
+          builder: (context, state) => SalaryScheduleFormScreen(
+            scheduleId: state.pathParameters['scheduleId'],
+          ),
+        ),
       ],
     ),
     GoRoute(

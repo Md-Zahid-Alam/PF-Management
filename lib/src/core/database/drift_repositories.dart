@@ -139,6 +139,81 @@ class DriftSalaryScheduleRepository implements SalaryScheduleRepository {
   }
 
   @override
+  Future<bool> isUnused(String id, String organizationId) async {
+    final schedules = await getForOrganization(organizationId);
+    final recordMonths = await _recordMonthsForOrganization(organizationId);
+    return !recordMonths.any(
+      (month) => _scheduleForMonth(schedules, month)?.id == id,
+    );
+  }
+
+  @override
+  Future<void> updateUnused({
+    required String organizationId,
+    required EffectiveSalarySchedule schedule,
+    required DateTime updatedAt,
+  }) async {
+    await database.transaction(() async {
+      final existing = await getForOrganization(organizationId);
+      if (!existing.any((item) => item.id == schedule.id)) {
+        throw StateError('Salary schedule does not exist.');
+      }
+      final normalizedSchedule = EffectiveSalarySchedule(
+        id: schedule.id,
+        effectiveFrom: _dateOnly(schedule.effectiveFrom),
+        schedule: schedule.schedule,
+      );
+      final duplicateMonth = existing.any(
+        (item) =>
+            item.id != normalizedSchedule.id &&
+            item.effectiveFrom.year == normalizedSchedule.effectiveFrom.year &&
+            item.effectiveFrom.month == normalizedSchedule.effectiveFrom.month,
+      );
+      if (duplicateMonth) {
+        throw StateError('A salary schedule already exists for this month.');
+      }
+
+      final revised = <EffectiveSalarySchedule>[
+        for (final item in existing)
+          if (item.id == normalizedSchedule.id) normalizedSchedule else item,
+      ]..sort(
+        (left, right) => left.effectiveFrom.compareTo(right.effectiveFrom),
+      );
+      final recordMonths = await _recordMonthsForOrganization(organizationId);
+      for (final month in recordMonths) {
+        final before = _scheduleForMonth(existing, month);
+        final after = _scheduleForMonth(revised, month);
+        if (before?.id == normalizedSchedule.id || before?.id != after?.id) {
+          throw StateError(
+            'Salary schedules cannot be changed after PF records exist.',
+          );
+        }
+      }
+
+      await (database.update(database.salarySchedules)
+            ..where((row) => row.id.equals(normalizedSchedule.id)))
+          .write(
+            db.SalarySchedulesCompanion(
+              effectiveFrom: Value(normalizedSchedule.effectiveFrom),
+              paymentMonthOffset: Value(
+                normalizedSchedule.schedule.paymentMonthOffset,
+              ),
+              paymentWindowStartMonthOffset: Value(
+                normalizedSchedule.schedule.paymentWindowStartMonthOffset,
+              ),
+              paymentWindowStartDay: Value(
+                normalizedSchedule.schedule.paymentWindowStartDay,
+              ),
+              paymentWindowEndDay: Value(
+                normalizedSchedule.schedule.paymentWindowEndDay,
+              ),
+              updatedAt: Value(updatedAt),
+            ),
+          );
+    });
+  }
+
+  @override
   Future<void> deleteUnused(String id, String organizationId) async {
     final schedules = await getForOrganization(organizationId);
     if (schedules.length <= 1) {
@@ -183,6 +258,37 @@ class DriftSalaryScheduleRepository implements SalaryScheduleRepository {
     await (database.delete(
       database.salarySchedules,
     )..where((row) => row.id.equals(id))).go();
+  }
+
+  Future<List<DateTime>> _recordMonthsForOrganization(
+    String organizationId,
+  ) async {
+    final employments = await (database.select(
+      database.employments,
+    )..where((row) => row.organizationId.equals(organizationId))).get();
+    final employmentIds = employments
+        .map((employment) => employment.id)
+        .toList(growable: false);
+    if (employmentIds.isEmpty) return const <DateTime>[];
+    final records = await (database.select(
+      database.monthlyPfRecords,
+    )..where((row) => row.employmentId.isIn(employmentIds))).get();
+    return records.map((record) => record.pfMonth).toList(growable: false);
+  }
+
+  EffectiveSalarySchedule? _scheduleForMonth(
+    List<EffectiveSalarySchedule> schedules,
+    DateTime month,
+  ) {
+    EffectiveSalarySchedule? selected;
+    for (final schedule in schedules) {
+      if (!schedule.effectiveFrom.isAfter(month) &&
+          (selected == null ||
+              schedule.effectiveFrom.isAfter(selected.effectiveFrom))) {
+        selected = schedule;
+      }
+    }
+    return selected;
   }
 }
 

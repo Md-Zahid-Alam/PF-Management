@@ -261,6 +261,24 @@ void main() {
         'schedule-2',
       ]);
 
+      expect(await repository.isUnused('schedule-2', 'organization-1'), isTrue);
+      await repository.updateUnused(
+        organizationId: 'organization-1',
+        schedule: EffectiveSalarySchedule(
+          id: 'schedule-2',
+          effectiveFrom: DateTime(2026, 7),
+          schedule: const SalarySchedule(
+            paymentMonthOffset: 0,
+            paymentWindowStartDay: 25,
+            paymentWindowEndDay: 30,
+          ),
+        ),
+        updatedAt: now.add(const Duration(minutes: 1)),
+      );
+      final revised = await repository.getForOrganization('organization-1');
+      expect(revised.last.schedule.paymentWindowStartDay, 25);
+      expect(revised.last.schedule.paymentWindowEndDay, 30);
+
       await repository.deleteUnused('schedule-2', 'organization-1');
       await expectLater(
         repository.deleteUnused('schedule-1', 'organization-1'),
@@ -268,6 +286,51 @@ void main() {
       );
     },
   );
+
+  test('used salary schedule cannot be edited', () async {
+    final repository = DriftSalaryScheduleRepository(database);
+    final original = EffectiveSalarySchedule(
+      id: 'schedule-used',
+      effectiveFrom: DateTime(2026),
+      schedule: const SalarySchedule(
+        paymentMonthOffset: 1,
+        paymentWindowStartDay: 1,
+        paymentWindowEndDay: 5,
+      ),
+    );
+    await repository.save(
+      organizationId: 'organization-1',
+      schedule: original,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await DriftMonthlyPFRepository(database).create(_monthlyRecord(now: now));
+
+    expect(
+      await repository.isUnused('schedule-used', 'organization-1'),
+      isFalse,
+    );
+    await expectLater(
+      repository.updateUnused(
+        organizationId: 'organization-1',
+        schedule: EffectiveSalarySchedule(
+          id: original.id,
+          effectiveFrom: original.effectiveFrom,
+          schedule: const SalarySchedule(
+            paymentMonthOffset: 1,
+            paymentWindowStartDay: 3,
+            paymentWindowEndDay: 7,
+          ),
+        ),
+        updatedAt: now.add(const Duration(minutes: 1)),
+      ),
+      throwsStateError,
+    );
+    final unchanged =
+        (await repository.getForOrganization('organization-1')).single;
+    expect(unchanged.schedule.paymentWindowStartDay, 1);
+    expect(unchanged.schedule.paymentWindowEndDay, 5);
+  });
 
   test('database prevents duplicate employment and PF month records', () async {
     final repository = DriftMonthlyPFRepository(database);

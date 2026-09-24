@@ -26,6 +26,16 @@ final salaryScheduleHistoryProvider =
           .getForOrganization(DriftInitialSetupRepository.organizationId);
     });
 
+final salaryScheduleEditableProvider = FutureProvider.family<bool, String>((
+  ref,
+  scheduleId,
+) {
+  return ref.watch(salaryScheduleRepositoryProvider).isUnused(
+    scheduleId,
+    DriftInitialSetupRepository.organizationId,
+  );
+});
+
 final pfRuleHistoryProvider = FutureProvider<List<StoredPFRule>>((ref) {
   return ref
       .watch(pfRuleRepositoryProvider)

@@ -31,10 +31,21 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final schedule = items[items.length - 1 - index];
+            final editable = ref.watch(
+              salaryScheduleEditableProvider(schedule.id),
+            );
+            final canEdit = editable.asData?.value == true;
             return _ScheduleCard(
               schedule: schedule,
               isCurrent: index == 0,
-              onDelete: () => _delete(context, ref, schedule),
+              onEdit: canEdit
+                  ? () => context.push(
+                      '/salary-schedule-history/${schedule.id}/edit',
+                    )
+                  : null,
+              onDelete: canEdit
+                  ? () => _delete(context, ref, schedule)
+                  : null,
             );
           },
         ),
@@ -82,6 +93,7 @@ class SalaryScheduleHistoryScreen extends ConsumerWidget {
             DriftInitialSetupRepository.organizationId,
           );
       ref.invalidate(salaryScheduleHistoryProvider);
+      ref.invalidate(salaryScheduleEditableProvider);
       ref.invalidate(pfAutomationRunProvider);
     } on Object {
       if (context.mounted) {
@@ -97,12 +109,14 @@ class _ScheduleCard extends StatelessWidget {
   const _ScheduleCard({
     required this.schedule,
     required this.isCurrent,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final EffectiveSalarySchedule schedule;
   final bool isCurrent;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -128,12 +142,27 @@ class _ScheduleCard extends StatelessWidget {
           ),
         ),
         isThreeLine: true,
-        trailing: PopupMenuButton<String>(
-          onSelected: (_) => onDelete(),
-          itemBuilder: (context) => <PopupMenuEntry<String>>[
-            PopupMenuItem(value: 'delete', child: Text(context.l10n.delete)),
-          ],
-        ),
+        trailing: onEdit == null
+            ? null
+            : PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    onEdit?.call();
+                  } else if (value == 'delete') {
+                    onDelete?.call();
+                  }
+                },
+                itemBuilder: (context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text(context.l10n.edit),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(context.l10n.delete),
+                  ),
+                ],
+              ),
       ),
     );
   }
