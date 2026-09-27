@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pf_tracker/src/core/presentation/brand_identity_header.dart';
 import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/core/security/pin_security.dart';
 import 'package:pf_tracker/src/core/security/security_provider.dart';
@@ -195,12 +196,8 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Image.asset(
-                    'assets/branding/pf_ledger_icon.png',
-                    width: 88,
-                    height: 88,
-                  ),
-                  const SizedBox(height: 20),
+                  const BrandIdentityHeader(),
+                  const SizedBox(height: 24),
                   Text(
                     context.l10n.unlockPFApp,
                     textAlign: TextAlign.center,

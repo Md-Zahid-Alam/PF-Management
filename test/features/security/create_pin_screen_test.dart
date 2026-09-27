@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/l10n/generated/app_localizations.dart';
+import 'package:pf_tracker/src/core/branding/brand_identity.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
 import 'package:pf_tracker/src/core/domain/repositories.dart';
 import 'package:pf_tracker/src/core/domain/setup_models.dart';
@@ -25,9 +26,13 @@ void main() {
     await tester.pumpWidget(
       _app(router: router, locale: const Locale('en'), repository: repository),
     );
+    expect(find.byKey(const Key('securityDeveloperBrand')), findsOneWidget);
+    expect(find.text(BrandIdentity.brandName), findsOneWidget);
     await tester.enterText(find.byKey(const Key('createPinField')), '2580');
     await tester.enterText(find.byKey(const Key('confirmPinField')), '2580');
-    await tester.tap(find.byKey(const Key('savePinButton')));
+    final saveButton = find.byKey(const Key('savePinButton'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('setupDestination')), findsOneWidget);
@@ -48,7 +53,9 @@ void main() {
     );
     await tester.enterText(find.byKey(const Key('createPinField')), '2580');
     await tester.enterText(find.byKey(const Key('confirmPinField')), '2581');
-    await tester.tap(find.byKey(const Key('savePinButton')));
+    final saveButton = find.byKey(const Key('savePinButton'));
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
     await tester.pump();
 
     expect(find.text('PIN দুটি মিলছে না'), findsOneWidget);

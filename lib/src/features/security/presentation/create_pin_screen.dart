@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pf_tracker/src/core/database/database_provider.dart';
+import 'package:pf_tracker/src/core/presentation/brand_identity_header.dart';
 import 'package:pf_tracker/src/core/presentation/localization.dart';
 import 'package:pf_tracker/src/core/security/pin_security.dart';
 import 'package:pf_tracker/src/core/security/security_provider.dart';
@@ -72,7 +73,7 @@ class _CreatePinScreenState extends ConsumerState<CreatePinScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    const Icon(Icons.lock_outline_rounded, size: 72),
+                    const BrandIdentityHeader(),
                     const SizedBox(height: 24),
                     Text(
                       context.l10n.createAppPin,
